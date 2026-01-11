@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Print Header (reusable component) -->
+    {% include 'components/print_header.html' %}
+
+    <div class="no-print bg-white rounded-xl shadow-md p-6 border border-gray-100 mb-8">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h1 class="text-2xl font-black text-gray-900">الجدول اليومي الشامل</h1>
+                <p class="text-gray-600 font-medium">عرض كافة القاعات والأنشطة ليوم محدد</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <button onclick="window.print()"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-xl hover:bg-blue-700 flex items-center gap-2 font-bold shadow-lg shadow-blue-100 transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                    </svg>
+                    طباعة التقرير الرسمي
+                </button>
+            </div>
+        </div>
+
+        <form method="GET" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-end border-t pt-6">
+            <div class="space-y-2">
+                <label class="text-sm font-black text-gray-700 uppercase tracking-widest">اختر اليوم</label>
+                <select name="day"
+                    class="w-full rounded-xl border-gray-200 bg-gray-50 font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all">
+                    {% for d in days %}
+                    <option value="{{ d }}" {% if d == day %}selected{% endif %}>{{ d }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm font-black text-gray-700 uppercase tracking-widest">الكلية</label>
+                <select name="college"
+                    class="w-full rounded-xl border-gray-200 bg-gray-50 font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all">
+                    <option value="">كافة الكليات</option>
+                    {% for college in colleges %}
+                    <option value="{{ college.id }}" {% if selected_college == college.id|stringformat:"i" %}selected{% endif %}>
+                        {{ college.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <button type="submit"
+                class="bg-gray-900 text-white px-6 py-3 rounded-xl hover:bg-black font-bold h-[52px] transition-all">
+                تحديث العرض
+            </button>
+        </form>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div class="print-container">
+        {% for item in room_data %}
+        <div
+            class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden mb-6 page-break-inside-avoid print:shadow-none print:border-black">
+            <div
+                class="bg-gray-50 px-6 py-4 border-b border-gray-200 flex justify-between items-center print:bg-gray-100 print:border-black">
+                <h3 class="text-lg font-black text-gray-900">{{ item.room.name }}</h3>
+                <span
+                    class="text-sm font-bold text-blue-600 bg-blue-50 px-3 py-1 rounded-full print:text-black print:bg-transparent">
+                    {{ item.room.department.name }}
+                </span>
+            </div>
+
+            <div class="p-0">
+                {% if item.schedules %}
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="bg-gray-50 print:bg-transparent">
+                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">الموعد</th>
+                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">المادة</th>
+                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">الأستاذ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 print:divide-black">
+                        {% for schedule in item.schedules %}
+                        <tr class="hover:bg-gray-50 transition-colors print:hover:bg-transparent">
+                            <td class="px-6 py-4 font-bold border-l border-gray-50 print:border-black">
+                                {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                            </td>
+                            <td class="px-6 py-4 font-black text-blue-700 print:text-black">{{ schedule.subject.name }}</td>
+                            <td class="px-6 py-4 text-gray-600 font-bold print:text-black">{{ schedule.instructor.name }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="p-8 text-center text-gray-400 font-bold italic bg-gray-50/30">
+                    لا توجد حصص مجدولة لهذا اليوم
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+
+        <!-- Print Footer Signature (Only visible in print) -->
+        <div class="signature-section print-only hidden print:grid mt-12 border-t pt-8 border-black">
+            <div class="text-center">
+                <p class="font-black mb-16">توقيع مسؤول الجدول</p>
+                <div class="w-48 h-0.5 bg-black mx-auto"></div>
+            </div>
+            <div class="text-center">
+                <p class="font-black mb-16">توقيع عميد الكلية</p>
+                <div class="w-48 h-0.5 bg-black mx-auto"></div>
+            </div>
+            <div class="text-center">
+                <p class="font-black mb-16">ختم الجامعة</p>
+                <div class="w-48 h-0.5 bg-black mx-auto"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* ضمان سلوك الطباعة حتى بدون Tailwind build */
+    @media print {
+        .no-print { display: none !important; }
+
+        .print-container {
+            display: block !important;
+        }
+
+        .page-break-inside-avoid {
+            page-break-inside: avoid;
+            break-inside: avoid;
+        }
+
+        /* مهم: إذا بقيت hidden بسبب عدم تفعيل print: في Tailwind CDN */
+        .signature-section {
+            display: grid !important;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2rem;
+        }
+    }
+</style>
+{% endblock %}

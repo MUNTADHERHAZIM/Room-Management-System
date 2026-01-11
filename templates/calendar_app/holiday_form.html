@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto font-sans">
+    <!-- Breadcrumbs -->
+    <nav class="flex mb-6 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+        aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-2 space-x-reverse">
+            <li><a href="{% url 'core:dashboard' %}" class="hover:text-blue-600">الرئيسية</a></li>
+            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+                </svg></li>
+            <li><a href="{% url 'calendar_app:holidays' %}" class="hover:text-blue-600">العطل الرسمية</a></li>
+            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+                </svg></li>
+            <li class="text-blue-600 font-bold" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+        <!-- Form Header -->
+        <div
+            class="bg-gradient-to-l from-amber-500 to-orange-600 px-8 py-8 md:py-10 text-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-white/5 backdrop-blur-3xl"></div>
+            <div class="relative z-10">
+                <div class="inline-flex p-3 bg-white/20 rounded-2xl backdrop-blur-xl mb-4 shadow-inner">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">{{ title }}</h1>
+                <p class="text-amber-50 mt-2 font-medium opacity-90">تحديد العطل الرسمية لتعطيل الجدولة في التواريخ
+                    المحددة</p>
+            </div>
+        </div>
+
+        <form method="POST" class="p-8 md:p-12 space-y-10" novalidate>
+            {% csrf_token %}
+
+            <!-- Non-field Errors -->
+            {% if form.non_field_errors %}
+            <div
+                class="bg-red-50 border-r-4 border-red-500 text-red-700 p-5 rounded-2xl flex items-start gap-3 animate-shake">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div class="space-y-1">
+                    {% for error in form.non_field_errors %}
+                    <p class="font-bold">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Name -->
+                <div class="space-y-2 md:col-span-2">
+                    <label class="block text-sm font-bold text-gray-700" for="{{ form.name.id_for_label }}">
+                        {{ form.name.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="text-red-500 text-xs font-bold mt-1.5 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd"
+                                d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                clip-rule="evenodd" />
+                        </svg>{{ form.name.errors.0 }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <!-- Date -->
+                <div class="space-y-2">
+                    <label class="block text-sm font-bold text-gray-700" for="{{ form.date.id_for_label }}">
+                        {{ form.date.label }} <span class="text-red-500">*</span>
+                    </label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                    <p class="text-red-500 text-xs font-bold mt-1.5">{{ form.date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Recurring -->
+                <div class="flex items-center gap-3 pt-8">
+                    <div class="flex items-center h-5">
+                        {{ form.recurring }}
+                    </div>
+                    <div class="ml-3 text-sm">
+                        <label for="{{ form.recurring.id_for_label }}" class="font-bold text-gray-700">
+                            {{ form.recurring.label }}
+                        </label>
+                        <p class="text-gray-500 font-medium">تكرار هذه العطلة في نفس التاريخ من كل عام</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description -->
+            <div class="space-y-4">
+                <label class="block text-sm font-bold text-gray-700" for="{{ form.description.id_for_label }}">
+                    {{ form.description.label }}
+                </label>
+                {{ form.description }}
+                {% if form.description.errors %}
+                <p class="text-red-500 text-xs font-bold mt-1.5">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-100">
+                <button type="submit"
+                    class="flex-1 bg-gradient-to-l from-amber-600 to-orange-700 text-white py-4 rounded-2xl hover:from-amber-700 hover:to-orange-800 transition-all font-extrabold text-lg shadow-xl shadow-amber-200 active:scale-[0.98]">
+                    حفظ العطلة
+                </button>
+                <a href="{% url 'calendar_app:holidays' %}"
+                    class="flex-1 text-center bg-gray-50 text-gray-700 py-4 rounded-2xl hover:bg-gray-100 transition-all font-bold text-lg border border-gray-200 active:scale-[0.98]">
+                    إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes shake {
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        25% {
+            transform: translateX(-5px);
+        }
+
+        75% {
+            transform: translateX(5px);
+        }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .animate-shake {
+        animation: shake 0.4s ease-in-out;
+    }
+
+    /* Custom CSS to mimic @apply functionalities since tailwind build is not active */
+    input[type="text"],
+    input[type="date"],
+    textarea {
+        width: 100%;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb;
+        background-color: rgba(249, 250, 251, 0.5);
+        padding: 0.875rem 1rem;
+        font-weight: 500;
+        transition: all 0.3s;
+        outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="date"]:focus,
+    textarea:focus {
+        background-color: white;
+        border-color: #f59e0b;
+        box-shadow: 0 0 0 4px rgba(254, 243, 199, 1);
+    }
+</style>
+{% endblock %}

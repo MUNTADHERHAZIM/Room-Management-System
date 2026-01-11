@@ -1,0 +1,283 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Breadcrumbs -->
+    <nav class="flex mb-6 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+        aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-2 space-x-reverse">
+            <li><a href="{% url 'core:dashboard' %}" class="hover:text-blue-600">الرئيسية</a></li>
+            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+                </svg></li>
+            <li><a href="{% url 'rooms:list' %}" class="hover:text-blue-600">القاعات</a></li>
+            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+                </svg></li>
+            <li class="text-blue-600 font-bold" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+        <!-- Form Header -->
+        <div class="bg-gradient-to-l from-blue-600 to-indigo-700 px-8 py-8 md:py-10 text-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-blue-900/10 backdrop-blur-3xl"></div>
+            <div class="relative z-10">
+                <div class="inline-flex p-3 bg-white/20 rounded-2xl backdrop-blur-xl mb-4 shadow-inner">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">{{ title }}</h1>
+                <p class="text-blue-100 mt-2 font-medium opacity-90">أدخل معلومات القاعة بدقة لضمان دقة التقارير</p>
+            </div>
+        </div>
+
+        <form method="POST" class="p-8 md:p-12 space-y-10" novalidate>
+            {% csrf_token %}
+
+            <!-- Non-field Errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border-r-4 border-red-500 text-red-700 p-5 rounded-2xl flex items-start gap-3 animate-shake">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div class="space-y-1">
+                    {% for error in form.non_field_errors %}
+                    <p class="font-bold">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Basic Info Section -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 border-b border-gray-100 pb-3">
+                    <div class="w-1.5 h-6 bg-blue-600 rounded-full"></div>
+                    <h2 class="text-xl font-extrabold text-gray-800">المعلومات الأساسية</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Name -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.name.id_for_label }}">
+                            {{ form.name.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                            <p class="text-red-500 text-xs font-bold mt-1.5 flex items-center gap-1.5">
+                                <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd"
+                                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                        clip-rule="evenodd" />
+                                </svg>
+                                {{ form.name.errors.0 }}
+                            </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Room Type -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.room_type.id_for_label }}">
+                            {{ form.room_type.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.room_type }}
+                        {% if form.room_type.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.room_type.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <!-- Department -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.department.id_for_label }}">
+                            {{ form.department.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.department }}
+                        {% if form.department.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.department.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <!-- Capacity -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.capacity.id_for_label }}">
+                            {{ form.capacity.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.capacity }}
+                        {% if form.capacity.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.capacity.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <!-- Floor -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.floor.id_for_label }}">
+                            {{ form.floor.label }}
+                        </label>
+                        {{ form.floor }}
+                        {% if form.floor.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.floor.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Features Section -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 border-b border-gray-100 pb-3">
+                    <div class="w-1.5 h-6 bg-indigo-600 rounded-full"></div>
+                    <h2 class="text-xl font-extrabold text-gray-800">التجهيزات والإعدادات</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4 bg-gray-50/50 p-6 rounded-2xl border border-gray-100">
+                        <p class="text-sm font-bold text-gray-500 mb-4 uppercase tracking-widest">تجهيزات القاعة</p>
+
+                        <div class="grid grid-cols-2 gap-4">
+                            <!-- Projector (switch style) -->
+                            <label class="flex items-center gap-3 group cursor-pointer">
+                                <div class="relative">
+                                    <span class="sr-only">{{ form.has_projector.label }}</span>
+
+                                    {# نخلي الـ input peer حتى تشتغل peer-checked #}
+                                    <span class="sr-only">
+                                        {{ form.has_projector }}
+                                    </span>
+                                    <input
+                                        type="checkbox"
+                                        name="{{ form.has_projector.html_name }}"
+                                        id="{{ form.has_projector.id_for_label }}"
+                                        class="peer sr-only"
+                                        {% if form.has_projector.value %}checked{% endif %}
+                                    >
+
+                                    <span class="block w-10 h-6 bg-gray-200 rounded-full transition-colors peer-checked:bg-blue-600"></span>
+                                    <span class="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-transform peer-checked:translate-x-4"></span>
+                                </div>
+
+                                <span class="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                    {{ form.has_projector.label }}
+                                </span>
+                            </label>
+
+                            <label class="flex items-center gap-3 group cursor-pointer">
+                                {{ form.has_computers }}
+                                <span class="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                    {{ form.has_computers.label }}
+                                </span>
+                            </label>
+
+                            <label class="flex items-center gap-3 group cursor-pointer">
+                                {{ form.has_whiteboard }}
+                                <span class="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                    {{ form.has_whiteboard.label }}
+                                </span>
+                            </label>
+
+                            <label class="flex items-center gap-3 group cursor-pointer">
+                                {{ form.has_air_conditioning }}
+                                <span class="text-sm font-bold text-gray-700 group-hover:text-blue-600 transition-colors">
+                                    {{ form.has_air_conditioning.label }}
+                                </span>
+                            </label>
+                        </div>
+                    </div>
+
+                    <div class="space-y-4 bg-blue-50/30 p-6 rounded-2xl border border-blue-100">
+                        <p class="text-sm font-bold text-gray-500 mb-4 uppercase tracking-widest">حالة القاعة</p>
+                        <label class="flex items-center gap-4 group cursor-pointer">
+                            <div class="w-12 h-12 bg-white rounded-xl shadow-sm border border-gray-100 flex items-center justify-center transition-transform group-active:scale-95">
+                                {{ form.is_active }}
+                            </div>
+                            <div>
+                                <span class="block text-sm font-bold text-gray-800">{{ form.is_active.label }}</span>
+                                <span class="text-[11px] text-gray-500 font-medium">سيتم عرض القاعة في جميع القوائم والجداول إذا كانت فعالة</span>
+                            </div>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div class="space-y-4">
+                <label class="block text-sm font-bold text-gray-700" for="{{ form.notes.id_for_label }}">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.notes.errors.0 }}</p>{% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-100">
+                <button type="submit"
+                    class="flex-1 bg-gradient-to-l from-blue-600 to-indigo-700 text-white py-4 rounded-2xl hover:from-blue-700 hover:to-indigo-800 transition-all font-extrabold text-lg shadow-xl shadow-blue-200 active:scale-[0.98]">
+                    حفظ المعلومات
+                </button>
+                <a href="{% url 'rooms:list' %}"
+                    class="flex-1 text-center bg-gray-50 text-gray-700 py-4 rounded-2xl hover:bg-gray-100 transition-all font-bold text-lg border border-gray-200 active:scale-[0.98]">
+                    إلغاء والتراجع
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .animate-fade-in { animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both; }
+    .animate-shake   { animation: shake 0.4s ease-in-out; }
+
+    /* Improve select appearance */
+    select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: left 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-left: 2.5rem !important;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+
+    /* بديل @apply (يعمل بدون Tailwind build) */
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+        width: 100%;
+        border-radius: 0.75rem;                /* rounded-xl */
+        border: 1px solid #e5e7eb;            /* gray-200 */
+        background: rgba(249, 250, 251, 0.5); /* gray-50/50 */
+        font-weight: 500;
+        padding: 0.75rem 1rem;                /* py-3 px-4 */
+        transition: all 300ms ease;
+        outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    select:focus,
+    textarea:focus {
+        background: #ffffff;
+        border-color: #3b82f6;                /* blue-500 */
+        box-shadow: 0 0 0 4px rgba(59,130,246,0.20);
+    }
+
+    input[type="checkbox"] {
+        width: 1.25rem;                       /* w-5 */
+        height: 1.25rem;                      /* h-5 */
+        border-radius: 0.25rem;
+        border: 1px solid #d1d5db;            /* gray-300 */
+        accent-color: #2563eb;                /* blue-600 */
+        transition: all 200ms ease;
+    }
+</style>
+{% endblock %}

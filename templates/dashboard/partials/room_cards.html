@@ -1,0 +1,126 @@
+{# templates/dashboard/partials/room_cards.html #}
+{% for item in rooms_with_status %}
+<div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
+    <!-- Status Bar -->
+    <div class="h-2
+        {% if item.status == 'free' %}bg-green-500
+        {% elif item.status == 'busy' %}bg-red-500
+        {% elif item.status == 'soon' %}bg-yellow-500
+        {% elif item.status == 'holiday' %}bg-gray-400
+        {% else %}bg-gray-300{% endif %}">
+    </div>
+
+    <div class="p-4">
+        <!-- Room Name & Type -->
+        <div class="flex items-start justify-between mb-3">
+            <div class="min-w-0">
+                <h3 class="font-bold text-lg text-gray-900 truncate">
+                    {{ item.room.name|default:"قاعة" }}
+                </h3>
+                <p class="text-sm text-gray-500">
+                    {{ item.room.get_room_type_display|default:"—" }}
+                </p>
+            </div>
+
+            <span class="shrink-0 px-3 py-1 rounded-full text-xs font-medium
+                {% if item.status == 'free' %}bg-green-100 text-green-800
+                {% elif item.status == 'busy' %}bg-red-100 text-red-800
+                {% elif item.status == 'soon' %}bg-yellow-100 text-yellow-800
+                {% elif item.status == 'holiday' %}bg-gray-100 text-gray-800
+                {% else %}bg-gray-100 text-gray-800{% endif %}">
+                {% if item.status == 'free' %}متاحة
+                {% elif item.status == 'busy' %}مشغولة
+                {% elif item.status == 'soon' %}قريباً
+                {% elif item.status == 'holiday' %}عطلة
+                {% else %}غير معروف{% endif %}
+            </span>
+        </div>
+
+        <!-- Department Info -->
+        <div class="text-sm text-gray-600 mb-3">
+            <span class="inline-flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+                </svg>
+                {{ item.room.department.name|default:"بدون قسم" }}
+            </span>
+        </div>
+
+        <!-- Current/Upcoming Schedule -->
+        {% if item.schedule %}
+        <div class="bg-gray-50 rounded-lg p-3 mb-3">
+            <div class="flex items-center gap-2 text-sm">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <span class="font-medium">
+                    {{ item.schedule.start_time|time:"H:i" }} - {{ item.schedule.end_time|time:"H:i" }}
+                </span>
+            </div>
+
+            <p class="font-medium text-gray-900 mt-1 truncate" title="{{ item.schedule.subject.name }}">
+                {{ item.schedule.subject.name|default:"—" }}
+            </p>
+
+            <p class="text-sm text-gray-600 truncate" title="{{ item.schedule.instructor.name }}">
+                {{ item.schedule.instructor.name|default:"—" }}
+            </p>
+        </div>
+        {% else %}
+        {% if item.status == 'busy' %}
+        <div class="bg-red-50 rounded-lg p-3 mb-3 text-sm text-red-700">
+            الحالة مشغولة ولكن لا يوجد Schedule مرتبط الآن (تحقق من منطق الحالة في الـ view).
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <!-- Room Info -->
+        <div class="flex items-center gap-4 text-sm text-gray-500">
+            <span class="flex items-center gap-1" title="السعة">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                {{ item.room.capacity|default:"—" }}
+            </span>
+
+            {% if item.room.has_projector %}
+            <span class="flex items-center gap-1" title="بروجكتر">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </span>
+            {% endif %}
+
+            {% if item.room.has_computers %}
+            <span class="flex items-center gap-1" title="حاسبات">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                </svg>
+            </span>
+            {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-4 pt-3 border-t flex gap-2">
+            <a href="{% url 'rooms:detail' item.room.pk %}"
+                class="flex-1 text-center py-2 px-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition text-sm font-medium">
+                التفاصيل
+            </a>
+        </div>
+    </div>
+</div>
+
+{% empty %}
+<div class="col-span-full text-center py-12 text-gray-500">
+    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+    </svg>
+    <p class="text-lg">لا توجد قاعات مطابقة للبحث</p>
+</div>
+{% endfor %}

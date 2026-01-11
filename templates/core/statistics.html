@@ -1,0 +1,289 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}الإحصائيات التحليلية - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-8 font-sans animate-fade-in">
+    <!-- Header Section -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <div>
+            <h1 class="text-3xl font-black text-gray-900 tracking-tight">الإحصائيات والتحليلات الذكية</h1>
+            <p class="text-gray-500 mt-2 font-medium">نظرة شاملة وعميقة على أداء وإشغال القاعات والكوادر التدريسية</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-50 px-6 py-3 rounded-2xl border border-blue-100">
+                <span class="block text-[10px] font-black text-blue-400 uppercase tracking-widest mb-1">نسبة الإشغال الآن</span>
+                <div class="flex items-center gap-3">
+                    <span class="text-2xl font-black text-blue-700">{{ occupancy_rate|default:0 }}%</span>
+                    <div class="w-24 h-2 bg-blue-100 rounded-full overflow-hidden">
+                        <div class="h-full bg-blue-600 rounded-full transition-all duration-1000"
+                             style="width: {{ occupancy_rate|default:0 }}%"></div>
+                    </div>
+                </div>
+            </div>
+            <button onclick="window.print()"
+                    class="bg-gray-100 hover:bg-gray-200 text-gray-700 p-4 rounded-2xl transition-all shadow-sm no-print">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                          d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                </svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Quick Stats Grid -->
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-6">
+        {% for label, value, color, icon in stats_cards %}
+        <div class="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:-translate-y-1 transition-all group overflow-hidden relative">
+            <div class="absolute -right-4 -bottom-4 opacity-5 group-hover:scale-110 transition-transform duration-500">
+                {{ icon|safe }}
+            </div>
+            <div class="relative z-10">
+                <div class="w-12 h-12 rounded-2xl bg-{{ color }}-50 flex items-center justify-center text-{{ color }}-600 mb-4 group-hover:bg-{{ color }}-600 group-hover:text-white transition-all duration-300">
+                    {{ icon|safe }}
+                </div>
+                <div class="text-2xl font-black text-gray-900">{{ value }}</div>
+                <div class="text-xs font-bold text-gray-400 mt-1">{{ label }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Main Charts Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Room Types Distribution -->
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-black text-gray-900">توزيع القاعات حسب النوع</h3>
+                <span class="px-3 py-1 bg-gray-50 rounded-full text-[10px] font-black text-gray-400 uppercase tracking-widest">تفاعلي</span>
+            </div>
+            <div class="h-[350px]">
+                <canvas id="roomTypesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Weekly Activity Trend -->
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+            <div class="flex items-center justify-between mb-8">
+                <h3 class="text-xl font-black text-gray-900">نشاط الحصص الأسبوعي</h3>
+                <div class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-600"></span>
+                    <span class="text-[10px] font-black text-gray-400 uppercase tracking-widest">حسب اليوم</span>
+                </div>
+            </div>
+            <div class="h-[350px]">
+                <canvas id="activityChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Most Active Departments -->
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+            <h3 class="text-xl font-black text-gray-900 mb-8">الأقسام الأكثر نشاطاً</h3>
+            <div class="h-[350px]">
+                <canvas id="deptChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Current Occupancy Breakdown -->
+        <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100 relative overflow-hidden">
+            <h3 class="text-xl font-black text-gray-900 mb-8">حالة القاعات اللحظية</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 h-full items-center">
+                <div class="relative">
+                    <canvas id="occupancyChart"></canvas>
+                    <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                        <span class="text-4xl font-black text-gray-900">{{ busy_count|default:0 }}</span>
+                        <span class="text-[10px] font-black text-gray-400 uppercase">مشغولة</span>
+                    </div>
+                </div>
+                <div class="space-y-4">
+                    <div class="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+                            <span class="font-bold text-gray-700">قاعات متاحة</span>
+                        </div>
+                        <span class="text-xl font-black text-emerald-700">{{ free_count|default:0 }}</span>
+                    </div>
+                    <div class="p-4 bg-rose-50 rounded-2xl border border-rose-100 flex items-center justify-between">
+                        <div class="flex items-center gap-3">
+                            <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+                            <span class="font-bold text-gray-700">قاعات مشغولة</span>
+                        </div>
+                        <span class="text-xl font-black text-rose-700">{{ busy_count|default:0 }}</span>
+                    </div>
+                    <div class="pt-4 mt-4 border-t border-gray-100">
+                        <p class="text-xs text-gray-400 font-medium leading-relaxed">
+                            ملاحظة: يتم تحديث هذه البيانات تلقائياً بناءً على الوقت الحالي وجداول الحصص المعتمدة.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Top Performers Section -->
+    <div class="bg-white p-8 rounded-3xl shadow-sm border border-gray-100">
+        <h3 class="text-2xl font-black text-gray-900 mb-8">أكثر الكوادر نشاطاً</h3>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
+            {% for entry in top_instructors %}
+            <div class="bg-gray-50 p-6 rounded-3xl border border-transparent hover:border-blue-200 hover:bg-white transition-all group text-center">
+                <div class="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-blue-600 mx-auto mb-4 shadow-sm group-hover:scale-110 group-hover:rotate-6 transition-all duration-300">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                    </svg>
+                </div>
+                <div class="font-black text-gray-900 truncate mb-1">{{ entry.name }}</div>
+                <div class="text-[10px] font-bold text-gray-400 uppercase mb-4">{{ entry.department.name }}</div>
+                <div class="inline-flex items-center gap-2 px-4 py-1.5 bg-blue-600 text-white rounded-full text-xs font-black shadow-lg shadow-blue-100">
+                    {{ entry.sessions }} حصة
+                </div>
+            </div>
+            {% empty %}
+            <p class="text-gray-500 text-center py-8 col-span-5">لا توجد بيانات متاحة حالياً</p>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{# JSON safe injection for Chart.js #}
+{{ room_types_labels|json_script:"roomTypesLabels" }}
+{{ room_types_values|json_script:"roomTypesValues" }}
+{{ days_labels|json_script:"daysLabels" }}
+{{ days_values|json_script:"daysValues" }}
+{{ dept_labels|json_script:"deptLabels" }}
+{{ dept_values|json_script:"deptValues" }}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    // Parse JSON safely from Django
+    const roomTypesLabels = JSON.parse(document.getElementById('roomTypesLabels').textContent || "[]");
+    const roomTypesValues = JSON.parse(document.getElementById('roomTypesValues').textContent || "[]");
+
+    const daysLabels = JSON.parse(document.getElementById('daysLabels').textContent || "[]");
+    const daysValues = JSON.parse(document.getElementById('daysValues').textContent || "[]");
+
+    const deptLabels = JSON.parse(document.getElementById('deptLabels').textContent || "[]");
+    const deptValues = JSON.parse(document.getElementById('deptValues').textContent || "[]");
+
+    Chart.defaults.font.family = 'Inter, system-ui, sans-serif';
+    Chart.defaults.color = '#94a3b8';
+
+    // Room Types Chart
+    new Chart(document.getElementById('roomTypesChart'), {
+        type: 'polarArea',
+        data: {
+            labels: roomTypesLabels,
+            datasets: [{
+                data: roomTypesValues,
+                backgroundColor: [
+                    'rgba(59, 130, 246, 0.7)',
+                    'rgba(16, 185, 129, 0.7)',
+                    'rgba(245, 158, 11, 0.7)',
+                    'rgba(139, 92, 246, 0.7)',
+                    'rgba(236, 72, 153, 0.7)'
+                ],
+                borderWidth: 0
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { usePointStyle: true, font: { weight: 'bold', size: 11 } }
+                }
+            },
+            scales: { r: { grid: { color: '#f1f5f9' }, ticks: { display: false } } }
+        }
+    });
+
+    // Activity Trend Chart
+    new Chart(document.getElementById('activityChart'), {
+        type: 'bar',
+        data: {
+            labels: daysLabels,
+            datasets: [{
+                label: 'عدد الحصص',
+                data: daysValues,
+                backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                borderRadius: 12,
+                barThickness: 24
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { borderDash: [5, 5], color: '#f1f5f9' }, ticks: { font: { weight: 'bold' } } },
+                x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+            }
+        }
+    });
+
+    // Department Activity Chart
+    new Chart(document.getElementById('deptChart'), {
+        type: 'line',
+        data: {
+            labels: deptLabels,
+            datasets: [{
+                label: 'النشاط',
+                data: deptValues,
+                borderColor: '#6366f1',
+                backgroundColor: 'rgba(99, 102, 241, 0.1)',
+                fill: true,
+                tension: 0.4,
+                pointRadius: 6,
+                pointBackgroundColor: '#fff',
+                pointBorderWidth: 3
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: { grid: { borderDash: [5, 5], color: '#f1f5f9' }, ticks: { display: false } },
+                x: { grid: { display: false }, ticks: { font: { weight: 'bold' } } }
+            }
+        }
+    });
+
+    // Occupancy Status Chart
+    new Chart(document.getElementById('occupancyChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['مشغولة', 'متاحة'],
+            datasets: [{
+                data: [Number("{{ busy_count|default:0 }}"), Number("{{ free_count|default:0 }}")],
+                backgroundColor: ['#f43f5e', '#10b981'],
+                borderWidth: 8,
+                borderColor: '#fff'
+            }]
+        },
+        options: {
+            cutout: '80%',
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } }
+        }
+    });
+</script>
+
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in { animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
+
+    @media print {
+        .shadow-sm, .shadow-xl { box-shadow: none !important; border: 1px solid #eee !important; }
+        .no-print { display: none !important; }
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+</style>
+{% endblock %}

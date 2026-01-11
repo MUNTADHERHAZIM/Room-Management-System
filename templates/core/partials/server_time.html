@@ -1,0 +1,15 @@
+{% load arabic_tags %}
+<div id="current-time" class="bg-white/10 px-4 py-2 rounded-lg text-sm flex items-center gap-3"
+    hx-get="{% url 'core:server_time' %}" hx-trigger="every 60s" hx-swap="outerHTML">
+    <div class="flex items-center gap-1.5 border-l border-white/20 pl-3">
+        <svg class="w-4 h-4 text-blue-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <span class="font-bold tracking-wider" id="js-clock">{{ current_time|date:"H:i:s" }}</span>
+    </div>
+    <div class="flex items-center gap-2">
+        <span class="text-white font-medium">{{ current_day }}</span>
+        <span class="text-blue-200 text-xs">{{ current_time|date:"Y/m/d" }}</span>
+    </div>
+</div>

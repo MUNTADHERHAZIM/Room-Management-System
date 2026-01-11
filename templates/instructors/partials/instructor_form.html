@@ -1,0 +1,43 @@
+<form method="POST" hx-post="{{ request.path }}" hx-target="closest div" class="space-y-6">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="bg-red-50 border-r-4 border-red-500 text-red-700 p-4 rounded-xl text-sm animate-shake">
+        {% for error in form.non_field_errors %}
+        <p class="font-bold">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.name.label }}</label>
+            {{ form.name }}
+            {% if form.name.errors %}<p class="text-red-500 text-xs font-bold mt-1">{{ form.name.errors.0 }}</p>{% endif
+            %}
+        </div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.academic_title.label }}</label>
+            {{ form.academic_title }}
+        </div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.department.label }}</label>
+            {{ form.department }}
+        </div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.specialization.label }}</label>
+            {{ form.specialization }}
+        </div>
+    </div>
+
+    <div class="flex gap-3 pt-4 border-t">
+        <button type="submit"
+            class="flex-1 bg-indigo-600 text-white py-3 rounded-xl hover:bg-indigo-700 transition font-bold shadow-lg shadow-indigo-100">حفظ
+            البيانات</button>
+        <button type="button" @click="open = false"
+            class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 transition font-bold">إلغاء</button>
+    </div>
+</form>

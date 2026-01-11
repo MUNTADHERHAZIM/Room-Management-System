@@ -1,0 +1,216 @@
+{% extends 'base.html' %}
+
+{% block title %}
+{% if room.name %}
+{{ room.name }}
+{% elif room.room_number %}
+{{ room.room_number }}
+{% else %}
+قاعة
+{% endif %}
+- نظام إدارة القاعات
+{% endblock %}
+
+{% block content %}
+<!-- Print Header -->
+{% include 'components/print_header.html' %}
+
+<div class="no-print">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div class="min-w-0">
+            <h1 class="text-2xl font-bold text-gray-900 truncate">
+                {{ room.name|default:"قاعة" }}
+            </h1>
+            <p class="text-gray-600 truncate">
+                {{ room.department.name|default:"—" }} - {{ room.department.college.name|default:"—" }}
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <button onclick="window.print()"
+                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                طباعة الجدول
+            </button>
+            <a href="{% url 'rooms:edit' room.pk %}"
+                class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
+                تعديل
+            </a>
+            <a href="{% url 'rooms:list' %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200">
+                العودة
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
+        <!-- Room Info -->
+        <div class="bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-lg font-bold mb-4">معلومات القاعة</h2>
+
+            <div class="space-y-4">
+                <div class="flex justify-between">
+                    <span class="text-gray-600">النوع</span>
+                    <span class="font-medium">
+                        {{ room.get_room_type_display|default:room.room_type|default:"—" }}
+                    </span>
+                </div>
+
+                <div class="flex justify-between">
+                    <span class="text-gray-600">السعة</span>
+                    <span class="font-medium">{{ room.capacity|default:"—" }} مقعد</span>
+                </div>
+
+                {% if room.floor %}
+                <div class="flex justify-between">
+                    <span class="text-gray-600">الطابق</span>
+                    <span class="font-medium">{{ room.floor }}</span>
+                </div>
+                {% endif %}
+
+                <div class="flex justify-between">
+                    <span class="text-gray-600">الحالة الحالية</span>
+                    <span class="px-2 py-1 rounded-full text-xs font-medium
+                            {% if status == 'free' %}bg-green-100 text-green-800
+                            {% elif status == 'busy' %}bg-red-100 text-red-800
+                            {% elif status == 'soon' %}bg-yellow-100 text-yellow-800
+                            {% elif status == 'holiday' %}bg-gray-100 text-gray-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                        {% if status == 'free' %}متاحة
+                        {% elif status == 'busy' %}مشغولة
+                        {% elif status == 'soon' %}قريباً
+                        {% elif status == 'holiday' %}عطلة
+                        {% else %}—{% endif %}
+                    </span>
+                </div>
+            </div>
+
+            <div class="mt-6 pt-4 border-t">
+                <h3 class="font-medium mb-3">التجهيزات</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% if room.has_projector %}
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">بروجكتر</span>
+                    {% endif %}
+                    {% if room.has_computers %}
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">حاسبات</span>
+                    {% endif %}
+                    {% if room.has_whiteboard %}
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">سبورة</span>
+                    {% endif %}
+                    {% if room.has_air_conditioning %}
+                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">تكييف</span>
+                    {% endif %}
+
+                    {% if not room.has_projector and not room.has_computers and not room.has_whiteboard and not room.has_air_conditioning %}
+                    <span class="text-gray-400 text-sm">—</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Schedules -->
+        <div class="lg:col-span-2 bg-white rounded-xl shadow-md p-6">
+            <h2 class="text-lg font-bold mb-4">جدول الحصص الأسبوعي</h2>
+
+            {% if schedules %}
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-4 py-2 text-right text-sm">اليوم</th>
+                            <th class="px-4 py-2 text-right text-sm">الوقت</th>
+                            <th class="px-4 py-2 text-right text-sm">المادة</th>
+                            <th class="px-4 py-2 text-right text-sm">الأستاذ</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        {% for schedule in schedules %}
+                        <tr>
+                            <td class="px-4 py-3 font-bold">
+                                {{ schedule.get_day_display|default:schedule.day|default:"—" }}
+                            </td>
+                            <td class="px-4 py-3">
+                                {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                            </td>
+                            <td class="px-4 py-3">{{ schedule.subject.name|default:"—" }}</td>
+                            <td class="px-4 py-3">{{ schedule.instructor.name|default:"—" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-center py-8">لا توجد حصص مجدولة لهذه القاعة</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Print Only Table -->
+<div class="print-only hidden print:block">
+    <table class="w-full border-collapse border border-black text-sm">
+        <thead>
+            <tr class="bg-gray-100 text-black border-black">
+                <th class="border border-black px-4 py-2 text-right">اليوم</th>
+                <th class="border border-black px-4 py-2 text-right">الموعد</th>
+                <th class="border border-black px-4 py-2 text-right">المادة الدراسية</th>
+                <th class="border border-black px-4 py-2 text-right">الأستاذ</th>
+                <th class="border border-black px-4 py-2 text-right">ملاحظات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for schedule in schedules %}
+            <tr class="border-black">
+                <td class="border border-black px-4 py-2 font-bold">
+                    {{ schedule.get_day_display|default:schedule.day|default:"—" }}
+                </td>
+                <td class="border border-black px-4 py-2">
+                    {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                </td>
+                <td class="border border-black px-4 py-2">{{ schedule.subject.name|default:"—" }}</td>
+                <td class="border border-black px-4 py-2">{{ schedule.instructor.name|default:"—" }}</td>
+                <td class="border border-black px-4 py-2 text-xs">{{ schedule.notes|default:"" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="border border-black px-4 py-6 text-center text-gray-600">
+                    لا توجد حصص للطباعة
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Signature Lines -->
+    <div class="signature-section mt-10">
+        <div class="signature-box">توقيع مسؤول القاعات</div>
+        <div class="signature-box">توقيع رئيس القسم</div>
+        <div class="signature-box">ختم الكلية</div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .no-print { display: none !important; }
+
+        /* Tailwind CDN قد لا يطبق print:block بشكل موثوق */
+        .print-only { display: block !important; }
+
+        .signature-section {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .signature-box {
+            border-top: 2px solid #000;
+            padding-top: 2.5rem;
+            text-align: center;
+            font-weight: 700;
+        }
+    }
+</style>
+{% endblock %}

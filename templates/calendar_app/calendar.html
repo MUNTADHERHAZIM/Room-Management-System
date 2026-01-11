@@ -1,0 +1,97 @@
+{# templates/calendar/monthly_calendar.html #}
+{% extends 'base.html' %}
+
+{% block title %}التقويم - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">التقويم الشهري</h1>
+            <p class="text-gray-600">{{ month_name }} {{ year }}</p>
+        </div>
+
+        <div class="flex items-center gap-2">
+            <a href="?year={{ prev_year }}&month={{ prev_month }}"
+               class="bg-gray-100 p-2 rounded-lg hover:bg-gray-200"
+               aria-label="الشهر السابق">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+            </a>
+
+            <span class="px-4 py-2 font-medium">{{ month_name }} {{ year }}</span>
+
+            <a href="?year={{ next_year }}&month={{ next_month }}"
+               class="bg-gray-100 p-2 rounded-lg hover:bg-gray-200"
+               aria-label="الشهر التالي">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <!-- Calendar Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden">
+        <table class="w-full table-fixed">
+            <thead class="bg-gray-50">
+                <tr>
+                    {% for day_name in day_names %}
+                        <th class="px-2 py-3 text-center text-sm font-medium text-gray-700">
+                            {{ day_name }}
+                        </th>
+                    {% endfor %}
+                </tr>
+            </thead>
+
+            <tbody class="divide-y divide-gray-200">
+                {% for week in calendar_data %}
+                    <tr class="divide-x divide-gray-200">
+                        {% for day_data in week %}
+                            <td class="p-2 align-top h-32
+                                       {% if day_data.is_today %}bg-blue-50{% elif day_data.holiday %}bg-red-50{% else %}bg-white{% endif %}">
+                                {% if day_data.day %}
+                                    <!-- Day header -->
+                                    <div class="flex items-center justify-between mb-2">
+                                        <span class="text-sm font-medium
+                                                     {% if day_data.is_today %}bg-blue-600 text-white px-2 py-1 rounded-full{% else %}text-gray-700{% endif %}">
+                                            {{ day_data.day }}
+                                        </span>
+
+                                        {% if day_data.holiday %}
+                                            <span class="text-xs text-red-600 truncate max-w-[110px]"
+                                                  title="{{ day_data.holiday.name }}">
+                                                {{ day_data.holiday.name }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Schedules -->
+                                    <div class="space-y-1">
+                                        {% for schedule in day_data.schedules %}
+                                            <div class="text-xs bg-blue-100 text-blue-800 rounded p-1 truncate"
+                                                 title="{{ schedule.subject.name }}{% if schedule.room %} - {{ schedule.room.name }}{% endif %}">
+                                                {{ schedule.subject.name }}
+                                            </div>
+                                        {% empty %}
+                                            <div class="text-xs text-gray-400 text-center">—</div>
+                                        {% endfor %}
+
+                                        {% if day_data.more_count|default:0 > 0 %}
+                                            <div class="text-xs text-gray-500 text-center">
+                                                +{{ day_data.more_count }} المزيد
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

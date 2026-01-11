@@ -1,0 +1,123 @@
+{# templates/dashboard/dashboard.html #}
+{% extends 'base.html' %}
+
+{% block title %}لوحة التحكم - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">لوحة التحكم</h1>
+            <p class="text-gray-600">مراقبة حالة القاعات لحظياً</p>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="flex flex-wrap gap-4">
+            <div class="bg-gradient-to-l from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-lg">
+                <div class="text-3xl font-bold">{{ stats.free }}</div>
+                <div class="text-green-100 text-sm">متاحة</div>
+            </div>
+            <div class="bg-gradient-to-l from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg">
+                <div class="text-3xl font-bold">{{ stats.busy }}</div>
+                <div class="text-red-100 text-sm">مشغولة</div>
+            </div>
+            <div class="bg-gradient-to-l from-yellow-500 to-yellow-600 text-white px-6 py-3 rounded-xl shadow-lg">
+                <div class="text-3xl font-bold">{{ stats.soon }}</div>
+                <div class="text-yellow-100 text-sm">قريباً</div>
+            </div>
+            <div class="bg-gradient-to-l from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl shadow-lg">
+                <div class="text-3xl font-bold">{{ stats.total }}</div>
+                <div class="text-blue-100 text-sm">الإجمالي</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-md p-4">
+        <form method="GET" class="flex flex-wrap gap-4 items-end" id="filters-form">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">الكلية</label>
+                <select name="college" class="form-select w-full rounded-lg border-gray-300"
+                        hx-get="{% url 'core:dashboard' %}"
+                        hx-target="#room-cards"
+                        hx-trigger="change"
+                        hx-include="#filters-form">
+                    <option value="">جميع الكليات</option>
+                    {% for college in colleges %}
+                        <option value="{{ college.id }}" {% if selected_college == college.id %}selected{% endif %}>
+                            {{ college.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">القسم</label>
+                <select name="department" class="form-select w-full rounded-lg border-gray-300"
+                        hx-get="{% url 'core:dashboard' %}"
+                        hx-target="#room-cards"
+                        hx-trigger="change"
+                        hx-include="#filters-form">
+                    <option value="">جميع الأقسام</option>
+                    {% for department in departments %}
+                        <option value="{{ department.id }}" {% if selected_department == department.id %}selected{% endif %}>
+                            {{ department.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">نوع القاعة</label>
+                <select name="room_type" class="form-select w-full rounded-lg border-gray-300"
+                        hx-get="{% url 'core:dashboard' %}"
+                        hx-target="#room-cards"
+                        hx-trigger="change"
+                        hx-include="#filters-form">
+                    <option value="">جميع الأنواع</option>
+                    {% for value, label in room_types %}
+                        <option value="{{ value }}" {% if selected_room_type == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">الحالة</label>
+                <select name="status" class="form-select w-full rounded-lg border-gray-300"
+                        hx-get="{% url 'core:dashboard' %}"
+                        hx-target="#room-cards"
+                        hx-trigger="change"
+                        hx-include="#filters-form">
+                    <option value="">جميع الحالات</option>
+                    <option value="free" {% if selected_status == 'free' %}selected{% endif %}>متاحة</option>
+                    <option value="busy" {% if selected_status == 'busy' %}selected{% endif %}>مشغولة</option>
+                    <option value="soon" {% if selected_status == 'soon' %}selected{% endif %}>قريباً</option>
+                </select>
+            </div>
+
+            <div class="flex-1 min-w-[250px]">
+                <label class="block text-sm font-medium text-gray-700 mb-1">بحث</label>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="ابحث عن قاعة..."
+                       class="form-input w-full rounded-lg border-gray-300"
+                       hx-get="{% url 'core:dashboard' %}"
+                       hx-target="#room-cards"
+                       hx-trigger="keyup changed delay:500ms"
+                       hx-include="#filters-form">
+            </div>
+        </form>
+    </div>
+
+    <!-- Room Cards (auto refresh WITH filters) -->
+    <div id="room-cards"
+         class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+         hx-get="{% url 'core:dashboard' %}"
+         hx-trigger="every 60s"
+         hx-swap="innerHTML"
+         hx-include="#filters-form">
+        {% include 'dashboard/partials/room_cards.html' %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}أيام الراحة - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">أيام الراحة للأقسام</h1>
+            <p class="text-gray-600">تحديد الأيام التي لا تُجدول فيها حصص</p>
+        </div>
+        <a href="{% url 'calendar_app:off_day_create' %}"
+            class="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-lg hover:bg-blue-700 transition shadow-md">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            إضافة يوم راحة
+        </a>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {% for dept_data in departments %}
+        <div class="bg-white rounded-xl shadow-md overflow-hidden">
+            <div class="bg-gradient-to-l from-purple-600 to-purple-700 px-4 py-3">
+                <h3 class="font-bold text-white">{{ dept_data.department.name }}</h3>
+                <p class="text-purple-200 text-sm">{{ dept_data.department.college.name }}</p>
+            </div>
+            <div class="p-4">
+                {% for off_day in dept_data.days %}
+                <div class="flex items-center justify-between py-2 border-b last:border-b-0">
+                    <span class="font-medium">{{ off_day.day }}</span>
+                    <a href="{% url 'calendar_app:off_day_delete' off_day.pk %}"
+                        class="text-red-500 hover:text-red-700 text-sm">حذف</a>
+                </div>
+                {% empty %}
+                <p class="text-gray-400 text-center py-4">لا توجد أيام راحة</p>
+                {% endfor %}
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full text-center py-12 text-gray-500">
+            <p>لا توجد أيام راحة محددة</p>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

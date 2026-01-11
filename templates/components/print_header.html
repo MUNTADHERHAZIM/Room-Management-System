@@ -1,0 +1,21 @@
+{% load arabic_tags %}
+<div class="print-only hidden print:block mb-8">
+    <div class="print-header">
+        <div class="flex flex-col">
+            <h2 class="text-xl font-black">جامعة الكنوز</h2>
+            <p class="text-sm font-bold text-gray-600">نظام إدارة القاعات والمختبرات</p>
+        </div>
+        <div class="text-center">
+            <h1 class="text-2xl font-black underline">{{ title }}</h1>
+            <p class="text-sm mt-1 font-bold">تاريخ الطباعة: {{ now|arabic_full_date }}</p>
+        </div>
+        <div class="flex flex-col text-left items-end">
+            <h2 class="text-xl font-black">{{ college_name|default:"كلية الهندسة" }}</h2>
+            <p class="text-sm font-bold text-gray-600">{{ department_name|default:"قسم علوم الحاسوب" }}</p>
+
+        
+            <!--  اسم المطور  MUNTADHER HAZIM -->
+            <p class="text-sm font-bold text-gray-600">المطور: muntader hazim</p>
+        </div>
+    </div>
+</div>

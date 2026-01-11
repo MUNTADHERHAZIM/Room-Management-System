@@ -1,0 +1,315 @@
+{# templates/schedules/grid.html #}
+{% extends 'base.html' %}
+{% load arabic_tags %}
+
+{% block title %}الجدول الشبكي - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<!-- Print Header -->
+{% include 'components/print_header.html' with title="الجدول الأسبوعي العام للقاعات" %}
+
+<div class="no-print space-y-6">
+    <!-- Header Section -->
+    <div class="flex flex-wrap items-center justify-between gap-4 animate-fade-in-down">
+        <div>
+            <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">الجدول الشبكي الأسبوعي</h1>
+            <p class="text-gray-500 mt-1">نظرة شاملة على إشغال القاعات طوال أيام الأسبوع</p>
+        </div>
+        <div class="flex items-center gap-3">
+            <button onclick="window.print()"
+                class="inline-flex items-center gap-2 bg-blue-600 text-white px-5 py-2.5 rounded-xl hover:bg-blue-700 transition shadow-sm font-semibold active:scale-95">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                </svg>
+                طباعة الجدول
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters Section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 animate-fade-in-down"
+        style="animation-delay: 100ms;">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
+            <!-- College Filter -->
+            <div class="space-y-2">
+                <label class="block text-sm font-bold text-gray-700">الكلية</label>
+                <select name="college"
+                    class="form-select w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white"
+                    onchange="this.form.submit()">
+                    <option value="">جميع الكليات</option>
+                    {% for college in colleges %}
+                    <option value="{{ college.id }}" {% if selected_college|add:0 == college.id %}selected{% endif %}>
+                        {{ college.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Department Filter -->
+            <div class="space-y-2">
+                <label class="block text-sm font-bold text-gray-700">القسم</label>
+                <select name="department"
+                    class="form-select w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white"
+                    onchange="this.form.submit()">
+                    <option value="">جميع الأقسام</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if selected_department|add:0 == dept.id %}selected{% endif %}>
+                        {{ dept.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Room Filter -->
+            <div class="space-y-2">
+                <label class="block text-sm font-bold text-gray-700">القاعة</label>
+                <select name="room"
+                    class="form-select w-full rounded-xl border-gray-200 focus:ring-blue-500 focus:border-blue-500 transition-all bg-gray-50 hover:bg-white"
+                    onchange="this.form.submit()">
+                    <option value="">جميع القاعات</option>
+                    {% for room_obj in rooms %}
+                    <option value="{{ room_obj.id }}" {% if selected_room|add:0 == room_obj.id %}selected{% endif %}>
+                        {{ room_obj.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Grid Table -->
+    <div class="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up"
+        style="animation-delay: 200ms;">
+        <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+                <thead>
+                    <tr class="bg-gradient-to-l from-gray-50 to-gray-100 border-b border-gray-200">
+                        <th
+                            class="px-6 py-5 text-right text-sm font-bold text-gray-800 min-w-[220px] border-l sticky right-0 bg-gray-50 z-20">
+                            القاعة</th>
+                        {% for day in days %}
+                        <th
+                            class="px-4 py-5 text-center text-sm font-bold text-gray-800 border-l border-gray-200 last:border-l-0 min-w-[160px]">
+                            {{ day }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-100">
+                    {% for room_data in grid_data %}
+                    <tr class="hover:bg-blue-50/10 transition-colors group">
+                        <td
+                            class="px-6 py-6 border-l border-gray-100 bg-white sticky right-0 z-10 shadow-[2px_0_5px_rgba(0,0,0,0.02)]">
+                            <div class="flex items-center gap-4">
+                                <div
+                                    class="w-12 h-12 bg-blue-50 group-hover:bg-blue-600 rounded-2xl flex items-center justify-center shrink-0 transition-all duration-300 shadow-sm group-hover:shadow-blue-200 group-hover:rotate-3">
+                                    <svg class="w-6 h-6 text-blue-600 group-hover:text-white transition-colors"
+                                        fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+                                    </svg>
+                                </div>
+                                <div class="min-w-0">
+                                    <div
+                                        class="font-bold text-gray-900 group-hover:text-blue-700 text-base leading-tight truncate transition-colors">
+                                        {{ room_data.room.name }}</div>
+                                    <div
+                                        class="text-[11px] font-bold text-gray-400 mt-1 uppercase tracking-widest truncate">
+                                        {{ room_data.room.department.name|default:"بدون قسم" }}
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+
+                        {% for day in days %}
+                        <td class="px-3 py-5 align-top border-l border-gray-100 last:border-l-0">
+                            {% with room_data.days|get_item:day as day_schedules %}
+                            {% if day_schedules %}
+                            <div class="space-y-3">
+                                {% for schedule in day_schedules %}
+                                <div
+                                    class="relative bg-white border border-gray-200 hover:border-blue-400 rounded-xl p-3.5 transition-all duration-300 shadow-sm hover:shadow-xl hover:-translate-y-1 cursor-default group/card">
+                                    <!-- Accent Bar -->
+                                    <div
+                                        class="absolute inset-y-0 right-0 w-1 bg-gradient-to-b from-blue-500 to-indigo-600 rounded-r-xl">
+                                    </div>
+
+                                    <div class="font-bold text-gray-800 text-xs leading-relaxed mb-2 line-clamp-2"
+                                        title="{{ schedule.subject.name }}">
+                                        {{ schedule.subject.name|default:"—" }}
+                                    </div>
+
+                                    <div class="flex flex-col gap-1.5">
+                                        <div class="flex items-center gap-1.5 text-[10px] font-bold text-blue-600">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                            </svg>
+                                            {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                                        </div>
+                                        <div
+                                            class="flex items-center gap-1.5 text-[10px] text-gray-500 font-medium whitespace-nowrap overflow-hidden">
+                                            <svg class="w-3.5 h-3.5 shrink-0" fill="none" stroke="currentColor"
+                                                viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                            </svg>
+                                            <span class="truncate">{{ schedule.instructor.name|default:"—" }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% else %}
+                            <div class="h-full min-h-[60px] flex items-center justify-center">
+                                <div class="w-1.5 h-1.5 bg-gray-200 rounded-full"></div>
+                            </div>
+                            {% endif %}
+                            {% endwith %}
+                        </td>
+                        {% endfor %}
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="{{ days|length|add:1 }}" class="px-6 py-24 text-center">
+                            <div
+                                class="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-6 border border-gray-100 shadow-inner">
+                                <svg class="w-10 h-10 text-gray-300" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
+                                </svg>
+                            </div>
+                            <h3 class="text-xl font-bold text-gray-800">لا توجد قاعات تطابق البحث</h3>
+                            <p class="text-gray-500 mt-2 max-w-xs mx-auto text-sm">جرّب تغيير خيارات البحث أو إعادة ضبط
+                                الفلاتر لعرض مزيد من القاعات.</p>
+                            <a href="{% url 'schedules:grid' %}"
+                                class="mt-8 inline-flex items-center gap-2 bg-blue-600 text-white font-bold py-2.5 px-6 rounded-xl hover:bg-blue-700 transition-all shadow-lg hover:shadow-blue-200 active:scale-95">
+                                إعادة ضبط البحث
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Print Only Table (Academic Standard) -->
+<div class="print-only hidden print:block">
+    <table class="w-full border-collapse border border-black text-[10px]">
+        <thead>
+            <tr class="bg-gray-100 text-black border-black">
+                <th class="border border-black px-2 py-1 text-right w-32">الحصص / اليوم</th>
+                {% for day in days %}
+                <th class="border border-black px-2 py-1 text-center font-black">{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for room_data in grid_data %}
+            <tr class="border-black">
+                <td class="border border-black px-2 py-4 font-black bg-gray-50">
+                    {{ room_data.room.name }}<br>
+                    <span class="text-[8px] font-normal">{{ room_data.room.department.name }}</span>
+                </td>
+                {% for day in days %}
+                <td class="border border-black px-1 py-1 align-top">
+                    {% with room_data.days|get_item:day as day_schedules %}
+                    {% for schedule in day_schedules %}
+                    <div class="mb-1 pb-1 border-b border-gray-200 last:border-0">
+                        <div class="font-black">{{ schedule.subject.name }}</div>
+                        <div>{{ schedule.start_time|time:"H:i" }}-{{ schedule.end_time|time:"H:i" }}</div>
+                        <div class="italic">{{ schedule.instructor.name }}</div>
+                    </div>
+                    {% endfor %}
+                    {% endwith %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Signature Lines -->
+    <div class="signature-section mt-12">
+        <div class="signature-box">توقيع مسؤول الجدول</div>
+        <div class="signature-box">توقيع عميد الكلية</div>
+        <div class="signature-box">ختم الجامعة</div>
+    </div>
+</div>
+
+
+<style>
+    @keyframes fade-in-down {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    @keyframes fade-in-up {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .animate-fade-in-down {
+        animation: fade-in-down 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .animate-fade-in-up {
+        animation: fade-in-up 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    /* Custom scrollbar for horizontal scrolling table */
+    .overflow-x-auto::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    .overflow-x-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 10px;
+    }
+
+    .overflow-x-auto::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 10px;
+    }
+
+    .overflow-x-auto::-webkit-scrollbar-thumb:hover {
+        background: #94a3b8;
+    }
+
+    @media print {
+        .sticky {
+            position: static !important;
+        }
+
+        .shadow-xl,
+        .shadow-sm {
+            box-shadow: none !important;
+            border: 1px solid #e2e8f0 !important;
+        }
+
+        body {
+            background: white !important;
+            padding: 0 !important;
+        }
+    }
+</style>
+{% endblock %}

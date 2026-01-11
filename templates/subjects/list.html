@@ -1,0 +1,117 @@
+{# templates/subjects/list.html #}
+{% extends 'base.html' %}
+
+{% block title %}المواد الدراسية - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">إدارة المواد الدراسية</h1>
+            <p class="text-gray-600">إدارة المواد والمقررات الدراسية</p>
+        </div>
+        <a href="{% url 'subjects:create' %}"
+            class="inline-flex items-center gap-2 bg-gradient-to-l from-blue-600 to-blue-700 text-white px-5 py-2.5 rounded-lg hover:from-blue-700 hover:to-blue-800 transition shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            إضافة مادة
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-xl shadow-md p-5 border border-gray-100">
+        <form method="GET" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[150px]">
+                <label class="block text-sm font-medium text-gray-700 mb-2">المرحلة</label>
+                <select name="stage"
+                    class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    onchange="this.form.submit()">
+                    <option value="">جميع المراحل</option>
+                    {% for val, label in stages %}
+                    <option value="{{ val }}" {% if selected_stage == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex-1 min-w-[180px]">
+                <label class="block text-sm font-medium text-gray-700 mb-2">بحث</label>
+                <input type="text" name="q" value="{{ search_query }}" placeholder="اسم المادة..."
+                    class="form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500">
+            </div>
+            <button type="submit"
+                class="bg-blue-600 text-white px-6 py-2.5 rounded-lg hover:bg-blue-700 transition font-medium">
+                بحث
+            </button>
+        </form>
+    </div>
+
+    <!-- Subjects Table -->
+    <div class="bg-white rounded-xl shadow-md overflow-hidden border border-gray-100">
+        <div class="overflow-x-auto">
+            <table class="w-full">
+                <thead class="bg-gradient-to-l from-gray-50 to-gray-100">
+                    <tr>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase">المادة</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase">الرمز</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase">القسم</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase">المرحلة</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase">الساعات</th>
+                        <th class="px-6 py-4 text-right text-xs font-bold text-gray-600 uppercase">إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100">
+                    {% for subject in subjects %}
+                    <tr class="hover:bg-blue-50/50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div
+                                    class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5 text-green-600" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                    </svg>
+                                </div>
+                                <div class="font-bold text-gray-900">{{ subject.name }}</div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600 font-mono">{{ subject.code|default:"—" }}</td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ subject.department.name }}</td>
+                        <td class="px-6 py-4">
+                            <span class="px-3 py-1.5 text-xs font-medium rounded-full bg-green-100 text-green-700">
+                                {{ subject.get_stage_display }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-gray-600">{{ subject.hours_per_week }} ساعة</td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <a href="{% url 'subjects:edit' subject.pk %}"
+                                    class="text-amber-600 hover:text-amber-800 font-medium text-sm">تعديل</a>
+                                <a href="{% url 'subjects:delete' subject.pk %}"
+                                    class="text-red-600 hover:text-red-800 font-medium text-sm"
+                                    onclick="return confirm('هل أنت متأكد من حذف هذه المادة؟');">حذف</a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="px-6 py-16 text-center">
+                            <svg class="w-16 h-16 mx-auto text-gray-300 mb-4" fill="none" stroke="currentColor"
+                                viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                            </svg>
+                            <p class="text-gray-500 text-lg">لا توجد مواد</p>
+                            <a href="{% url 'subjects:create' %}"
+                                class="mt-4 inline-block text-blue-600 hover:text-blue-800 font-medium">
+                                إضافة مادة جديدة
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

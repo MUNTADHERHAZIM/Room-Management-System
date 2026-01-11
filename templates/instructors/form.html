@@ -1,0 +1,244 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto font-sans">
+    <!-- Breadcrumbs -->
+    <nav class="flex mb-6 text-sm font-medium text-gray-500 hover:text-gray-700 transition-colors"
+        aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-2 space-x-reverse">
+            <li><a href="{% url 'core:dashboard' %}" class="hover:text-blue-600">الرئيسية</a></li>
+            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+                </svg></li>
+            <li><a href="{% url 'instructors:list' %}" class="hover:text-blue-600">الأساتذة</a></li>
+            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+                </svg></li>
+            <li class="text-blue-600 font-bold" aria-current="page">{{ title }}</li>
+        </ol>
+    </nav>
+
+    <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+        <!-- Form Header -->
+        <div class="bg-gradient-to-l from-indigo-600 to-purple-700 px-8 py-8 md:py-10 text-center relative overflow-hidden">
+            <div class="absolute inset-0 bg-white/5 backdrop-blur-3xl"></div>
+            <div class="relative z-10">
+                <div class="inline-flex p-3 bg-white/20 rounded-2xl backdrop-blur-xl mb-4 shadow-inner">
+                    <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.768-.231-1.48-.634-2.048M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.768.231-1.48.634-2.048M12 14a4 4 0 110-8 4 4 0 010 8z" />
+                    </svg>
+                </div>
+                <h1 class="text-3xl font-extrabold text-white tracking-tight">{{ title }}</h1>
+                <p class="text-indigo-100 mt-2 font-medium opacity-90">إضافة أو تعديل بيانات أعضاء الهيئة التدريسية</p>
+            </div>
+        </div>
+
+        <form method="POST" class="p-8 md:p-12 space-y-10" novalidate>
+            {% csrf_token %}
+
+            <!-- Non-field Errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border-r-4 border-red-500 text-red-700 p-5 rounded-2xl flex items-start gap-3 animate-shake">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div class="space-y-1">
+                    {% for error in form.non_field_errors %}
+                    <p class="font-bold">{{ error }}</p>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Professional Information Section -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 border-b border-gray-100 pb-3">
+                    <div class="w-1.5 h-6 bg-indigo-600 rounded-full"></div>
+                    <h2 class="text-xl font-extrabold text-gray-800">المعلومات الأكاديمية</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Name -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.name.id_for_label }}">
+                            {{ form.name.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="text-red-500 text-xs font-bold mt-1.5 flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd"
+                                    d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                            {{ form.name.errors.0 }}
+                        </p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Academic Title -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.academic_title.id_for_label }}">
+                            {{ form.academic_title.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.academic_title }}
+                        {% if form.academic_title.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.academic_title.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <!-- Department -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.department.id_for_label }}">
+                            {{ form.department.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.department }}
+                        {% if form.department.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.department.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <!-- Specialization -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.specialization.id_for_label }}">
+                            {{ form.specialization.label }}
+                        </label>
+                        {{ form.specialization }}
+                        {% if form.specialization.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.specialization.errors.0 }}</p>{% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contact Information Section -->
+            <div class="space-y-6">
+                <div class="flex items-center gap-3 border-b border-gray-100 pb-3">
+                    <div class="w-1.5 h-6 bg-purple-600 rounded-full"></div>
+                    <h2 class="text-xl font-extrabold text-gray-800">بيانات الاتصال والحالة</h2>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <!-- Email -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.email.id_for_label }}">
+                            {{ form.email.label }}
+                        </label>
+                        {{ form.email }}
+                        {% if form.email.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.email.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <!-- Phone -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-bold text-gray-700" for="{{ form.phone.id_for_label }}">
+                            {{ form.phone.label }}
+                        </label>
+                        {{ form.phone }}
+                        {% if form.phone.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.phone.errors.0 }}</p>{% endif %}
+                    </div>
+
+                    <!-- Active Status -->
+                    <div class="bg-indigo-50/30 p-6 rounded-2xl border border-indigo-100 flex items-center justify-between col-span-1 md:col-span-2">
+                        <div>
+                            <span class="block text-sm font-bold text-gray-800">{{ form.is_active.label }}</span>
+                            <span class="text-xs text-gray-500 font-medium">الأستاذ الفعال يظهر في قوائم الجداول والبحث</span>
+                        </div>
+                        <div class="flex items-center">
+                            {{ form.is_active }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Notes Section -->
+            <div class="space-y-4">
+                <label class="block text-sm font-bold text-gray-700" for="{{ form.notes.id_for_label }}">
+                    {{ form.notes.label }}
+                </label>
+                {{ form.notes }}
+                {% if form.notes.errors %}<p class="text-red-500 text-xs font-bold mt-1.5">{{ form.notes.errors.0 }}</p>{% endif %}
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="flex flex-col sm:flex-row gap-4 pt-8 border-t border-gray-100">
+                <button type="submit"
+                    class="flex-1 bg-gradient-to-l from-indigo-600 to-purple-700 text-white py-4 rounded-2xl hover:from-indigo-700 hover:to-purple-800 transition-all font-extrabold text-lg shadow-xl shadow-indigo-200 active:scale-[0.98]">
+                    حفظ البيانات
+                </button>
+                <a href="{% url 'instructors:list' %}"
+                    class="flex-1 text-center bg-gray-50 text-gray-700 py-4 rounded-2xl hover:bg-gray-100 transition-all font-bold text-lg border border-gray-200 active:scale-[0.98]">
+                    إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    @keyframes fade-in {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .animate-fade-in {
+        animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .animate-shake {
+        animation: shake 0.4s ease-in-out;
+    }
+
+    /* بديل @apply (يعمل بدون Tailwind build) */
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    select,
+    textarea {
+        width: 100%;
+        border-radius: 0.75rem;                 /* rounded-xl */
+        border: 1px solid #e5e7eb;             /* gray-200 */
+        background: rgba(249, 250, 251, 0.5);  /* gray-50/50 */
+        padding: 0.75rem 1rem;                 /* py-3 px-4 */
+        font-weight: 500;
+        transition: all 300ms ease;
+        outline: none;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="tel"]:focus,
+    select:focus,
+    textarea:focus {
+        background: #ffffff;
+        border-color: #6366f1;                 /* indigo-500 */
+        box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.20); /* indigo-100-ish */
+    }
+
+    input[type="checkbox"] {
+        width: 1.5rem;                         /* w-6 */
+        height: 1.5rem;                        /* h-6 */
+        border-radius: 0.5rem;                 /* rounded-lg */
+        border: 1px solid #d1d5db;             /* gray-300 */
+        accent-color: #4f46e5;                 /* indigo-600 */
+        cursor: pointer;
+        transition: all 200ms ease;
+    }
+
+    select {
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: left 0.75rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-left: 2.5rem !important;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+    }
+</style>
+{% endblock %}

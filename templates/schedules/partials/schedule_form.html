@@ -1,0 +1,58 @@
+<form method="POST" hx-post="{{ request.path }}" hx-target="closest div" class="space-y-6">
+    {% csrf_token %}
+
+    {% if form.non_field_errors %}
+    <div class="bg-red-50 border-r-4 border-red-500 text-red-700 p-4 rounded-xl text-sm animate-shake">
+        {% for error in form.non_field_errors %}
+        <p class="font-bold">{{ error }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.subject.label }}</label>
+            {{ form.subject }}
+            {% if form.subject.errors %}<p class="text-red-500 text-xs font-bold mt-1">{{ form.subject.errors.0 }}</p>{%
+            endif %}
+        </div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.instructor.label }}</label>
+            {{ form.instructor }}
+            {% if form.instructor.errors %}<p class="text-red-500 text-xs font-bold mt-1">{{ form.instructor.errors.0 }}
+            </p>{% endif %}
+        </div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.room.label }}</label>
+            {{ form.room }}
+            {% if form.room.errors %}<p class="text-red-500 text-xs font-bold mt-1">{{ form.room.errors.0 }}</p>{% endif
+            %}
+        </div>
+
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.day.label }}</label>
+            {{ form.day }}
+        </div>
+    </div>
+
+    <div class="grid grid-cols-2 gap-6">
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.start_time.label }}</label>
+            {{ form.start_time }}
+        </div>
+        <div class="space-y-1">
+            <label class="block text-sm font-bold text-gray-700">{{ form.end_time.label }}</label>
+            {{ form.end_time }}
+        </div>
+    </div>
+
+    <div class="flex gap-3 pt-4 border-t">
+        <button type="submit"
+            class="flex-1 bg-blue-700 text-white py-3 rounded-xl hover:bg-blue-800 transition font-bold shadow-lg shadow-blue-100">تأكيد
+            الجدول</button>
+        <button type="button" @click="open = false"
+            class="flex-1 bg-gray-100 text-gray-700 py-3 rounded-xl hover:bg-gray-200 transition font-bold">إلغاء</button>
+    </div>
+</form>
