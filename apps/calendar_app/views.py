@@ -128,6 +128,29 @@ def holiday_create(request):
     return render(request, 'calendar_app/holiday_form.html', context)
 
 
+def holiday_edit(request, pk):
+    """تعديل عطلة"""
+    holiday = get_object_or_404(Holiday, pk=pk)
+    
+    if request.method == 'POST':
+        form = HolidayForm(request.POST, instance=holiday)
+        if form.is_valid():
+            holiday = form.save()
+            messages.success(request, f'تم تعديل العطلة "{holiday.name}" بنجاح')
+            if request.headers.get('HX-Request'):
+                return HttpResponse(status=204, headers={'HX-Trigger': 'holidaysChanged'})
+            return redirect('calendar_app:holidays')
+    else:
+        form = HolidayForm(instance=holiday)
+    
+    context = {'form': form, 'title': 'تعديل العطلة', 'holiday': holiday}
+    
+    if request.headers.get('HX-Request'):
+        return render(request, 'calendar_app/partials/holiday_form.html', context)
+    
+    return render(request, 'calendar_app/holiday_form.html', context)
+
+
 def holiday_delete(request, pk):
     """حذف عطلة"""
     holiday = get_object_or_404(Holiday, pk=pk)
