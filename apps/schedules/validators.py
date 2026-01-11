@@ -19,6 +19,10 @@ def check_room_conflict(room, day, start_time, end_time, exclude_id=None):
     Returns:
         Schedule object if conflict exists, None otherwise
     """
+    # التحقق من القيم الفارغة لتجنب أخطاء الاستعلام
+    if room is None or day is None or start_time is None or end_time is None:
+        return None
+    
     from .models import Schedule
     
     conflicts = Schedule.objects.filter(
@@ -49,6 +53,10 @@ def check_instructor_conflict(instructor, day, start_time, end_time, exclude_id=
     Returns:
         Schedule object if conflict exists, None otherwise
     """
+    # التحقق من القيم الفارغة لتجنب أخطاء الاستعلام
+    if instructor is None or day is None or start_time is None or end_time is None:
+        return None
+    
     from .models import Schedule
     
     conflicts = Schedule.objects.filter(
@@ -76,6 +84,10 @@ def check_department_off_day(department, day):
     Returns:
         True if it's an off day, False otherwise
     """
+    # التحقق من القيم الفارغة لتجنب أخطاء الاستعلام
+    if department is None or day is None:
+        return False
+    
     from apps.calendar_app.models import DepartmentOffDay
     
     return DepartmentOffDay.objects.filter(
