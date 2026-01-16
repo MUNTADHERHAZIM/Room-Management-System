@@ -4,101 +4,117 @@
 
 {% block content %}
 <div class="max-w-xl mx-auto font-sans">
-    <!-- Breadcrumbs -->
-    <nav class="flex mb-6 text-sm font-medium text-gray-500" aria-label="Breadcrumb">
-        <ol class="inline-flex items-center space-x-2 space-x-reverse">
-            <li><a href="{% url 'core:dashboard' %}" class="hover:text-blue-600">الرئيسية</a></li>
-            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
-                </svg></li>
-            <li><a href="{% url 'rooms:list' %}" class="hover:text-blue-600">القاعات</a></li>
-            <li><svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                        d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
-                </svg></li>
-            <li class="text-red-600 font-bold">تأكيد الحذف</li>
-        </ol>
-    </nav>
+  <!-- Breadcrumbs -->
+  <nav class="flex mb-6 text-sm font-medium text-gray-500" aria-label="Breadcrumb">
+    <ol class="inline-flex items-center space-x-2 space-x-reverse">
+      <li>
+        <a href="{% url 'core:dashboard' %}" class="hover:text-blue-600">الرئيسية</a>
+      </li>
 
-    <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
-        <!-- Warning Header -->
-        <div class="bg-gradient-to-l from-red-600 to-orange-600 px-8 py-10 text-center relative overflow-hidden">
-            <div class="absolute inset-0 bg-red-900/10 backdrop-blur-3xl"></div>
-            <div class="relative z-10">
-                <div class="inline-flex p-4 bg-white/20 rounded-2xl backdrop-blur-xl mb-4 shadow-inner">
-                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                </div>
-                <h1 class="text-3xl font-black text-white tracking-tight">تنبيه: حذف نهائي</h1>
-            </div>
+      <li aria-hidden="true">
+        <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+        </svg>
+      </li>
+
+      <li>
+        <a href="{% url 'rooms:list' %}" class="hover:text-blue-600">القاعات</a>
+      </li>
+
+      <li aria-hidden="true">
+        <svg class="w-4 h-4 mx-2" fill="currentColor" viewBox="0 0 20 20">
+          <path
+            d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" />
+        </svg>
+      </li>
+
+      <li class="text-red-600 font-bold">تأكيد الحذف</li>
+    </ol>
+  </nav>
+
+  <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in">
+    <!-- Warning Header -->
+    <div class="bg-gradient-to-l from-red-600 to-orange-600 px-8 py-10 text-center relative overflow-hidden">
+      <div class="absolute inset-0 bg-red-900/10 backdrop-blur-3xl"></div>
+
+      <div class="relative z-10">
+        <div class="inline-flex p-4 bg-white/20 rounded-2xl backdrop-blur-xl mb-4 shadow-inner">
+          <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+          </svg>
+        </div>
+        <h1 class="text-3xl font-black text-white tracking-tight">تنبيه: حذف نهائي</h1>
+      </div>
+    </div>
+
+    <form method="post" class="p-8 md:p-12 space-y-8 text-center" novalidate>
+      {% csrf_token %}
+
+      <div class="space-y-4">
+        <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
+          <svg class="w-10 h-10 text-red-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+          </svg>
         </div>
 
-        <form method="POST" class="p-8 md:p-12 space-y-8 text-center" novalidate>
-            {% csrf_token %}
+        <h2 class="text-2xl font-black text-gray-900">هل أنت متأكد تماماً من قرارك؟</h2>
 
-            <div class="space-y-4">
-                <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                    <svg class="w-10 h-10 text-red-600 animate-pulse" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                    </svg>
-                </div>
+        <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
+          <p class="text-gray-600 text-lg">أنت على وشك حذف القاعة:</p>
 
-                <h2 class="text-2xl font-black text-gray-900">هل أنت متأكد تماماً من قرارك؟</h2>
+          {# استخدم default لتفادي None أو اختلاف اسم الحقل (name/room_number/full_name) #}
+          <p class="text-2xl font-black text-red-700 mt-2">
+            "{{ room.name|default:room.room_number|default:room.full_name|default:"(بدون اسم)" }}"
+          </p>
 
-                <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
-                    <p class="text-gray-600 text-lg">أنت على وشك حذف القاعة:</p>
-                    <p class="text-2xl font-black text-red-700 mt-2">"{{ room.name }}"</p>
-                    <div class="mt-4 flex flex-wrap justify-center gap-2">
-                        <span
-                            class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-500">{{
-                            room.department.name }}</span>
-                        <span
-                            class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-500">{{
-                            room.get_room_type_display }}</span>
-                    </div>
-                </div>
+          <div class="mt-4 flex flex-wrap justify-center gap-2">
+            {% if room.department %}
+              <span class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-500">
+                {{ room.department.name }}
+              </span>
+            {% endif %}
 
-                <div class="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-bold border border-red-100">
-                    <p>تحذير: سيؤدي حذف القاعة إلى حذف كافة الجداول المرتبطة بها نهائياً ولا يمكن استعادة البيانات
-                        لاحقاً.</p>
-                </div>
-            </div>
+            <span class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-500">
+              {{ room.get_room_type_display|default:"—" }}
+            </span>
+          </div>
+        </div>
 
-            <!-- Action Buttons -->
-            <div class="flex flex-col sm:flex-row gap-4 pt-6">
-                <button type="submit"
-                    class="flex-1 bg-red-600 text-white py-4 rounded-2xl hover:bg-red-700 transition-all font-black text-xl shadow-lg shadow-red-200 active:scale-[0.98]">
-                    نعم، احذف القاعة الآن
-                </button>
-                <a href="{% url 'rooms:list' %}"
-                    class="flex-1 text-center bg-gray-100 text-gray-700 py-4 rounded-2xl hover:bg-gray-200 transition-all font-black text-xl border border-gray-200 active:scale-[0.98]">
-                    تراجع، لا تحذف
-                </a>
-            </div>
-        </form>
-    </div>
+        <div class="bg-red-50 text-red-700 p-4 rounded-xl text-sm font-bold border border-red-100">
+          <p>
+            تحذير: سيؤدي حذف القاعة إلى حذف كافة الجداول المرتبطة بها نهائياً ولا يمكن استعادة البيانات لاحقاً.
+          </p>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="flex flex-col sm:flex-row gap-4 pt-6">
+        <button type="submit"
+          class="flex-1 bg-red-600 text-white py-4 rounded-2xl hover:bg-red-700 transition-all font-black text-xl shadow-lg shadow-red-200 active:scale-[0.98]">
+          نعم، احذف القاعة الآن
+        </button>
+
+        <a href="{% url 'rooms:list' %}"
+          class="flex-1 text-center bg-gray-100 text-gray-700 py-4 rounded-2xl hover:bg-gray-200 transition-all font-black text-xl border border-gray-200 active:scale-[0.98]">
+          تراجع، لا تحذف
+        </a>
+      </div>
+    </form>
+  </div>
 </div>
+{% endblock %}
 
+{% block extra_css %}
 <style>
-    @keyframes fade-in {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .animate-fade-in {
-        animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
-    }
+  @keyframes fade-in {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .animate-fade-in {
+    animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
 </style>
 {% endblock %}

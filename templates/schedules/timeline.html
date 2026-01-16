@@ -30,7 +30,7 @@
                     class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     onchange="this.form.submit()">
                     {% for val, label in days %}
-                    <option value="{{ val }}" {% if selected_day == val %}selected{% endif %}>{{ label }}</option>
+                    <option value="{{ val }}" {% if selected_day==val %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -41,7 +41,7 @@
                     onchange="this.form.submit()">
                     <option value="">جميع الكليات</option>
                     {% for college in colleges %}
-                    <option value="{{ college.id }}" {% if selected_college == college.id %}selected{% endif %}>
+                    <option value="{{ college.id }}" {% if selected_college==college.id %}selected{% endif %}>
                         {{ college.name }}
                     </option>
                     {% endfor %}
@@ -89,7 +89,7 @@
                         {% for time in time_slots %}
                         <td class="px-1 py-2 text-center relative border-l border-gray-100 h-16">
                             {% for schedule in room_data.schedules %}
-                            {% if schedule.start_time|time:"H:i" == time %}
+                            {% if schedule.start_time|date:"H:i" == time %}
                             <div class="absolute inset-1 bg-gradient-to-l from-blue-500 to-blue-600 text-white rounded-lg text-xs p-2 overflow-hidden shadow-md hover:shadow-lg transition-shadow cursor-pointer"
                                 title="{{ schedule.subject.name }} - {{ schedule.instructor.name }} ({{ schedule.start_time|time:'H:i' }} - {{ schedule.end_time|time:'H:i' }})">
                                 <div class="font-semibold truncate">{{ schedule.subject.name }}</div>

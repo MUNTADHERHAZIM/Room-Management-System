@@ -88,6 +88,10 @@ room_management/
 └── static/          # الملفات الثابتة
 ```
 
-## المطور MUNTADHER HAZIM 
+## المطور
 
-   
+**MUNTADHER HAZIM**
+
+📞 للتواصل: `07724978301`
+
+📧 البريد الإلكتروني: [muntadherhazim95@gmail.com](mailto:muntadherhazim95@gmail.com)
