@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
+from apps.core.decorators import editor_required
 
 from .models import Subject
 from .forms import SubjectForm
@@ -43,6 +44,7 @@ def subject_list(request):
     return render(request, 'subjects/list.html', context)
 
 
+@editor_required
 def subject_create(request):
     """إنشاء مادة جديدة"""
     if request.method == 'POST':
@@ -64,6 +66,7 @@ def subject_create(request):
     return render(request, 'subjects/form.html', context)
 
 
+@editor_required
 def subject_edit(request, pk):
     """تعديل مادة"""
     subject = get_object_or_404(Subject, pk=pk)
@@ -87,6 +90,7 @@ def subject_edit(request, pk):
     return render(request, 'subjects/form.html', context)
 
 
+@editor_required
 def subject_delete(request, pk):
     """حذف مادة"""
     subject = get_object_or_404(Subject, pk=pk)

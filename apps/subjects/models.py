@@ -13,7 +13,7 @@ class Subject(models.Model):
         ('الخامسة', 'المرحلة الخامسة'),
     ]
     
-    name = models.CharField(max_length=200, verbose_name='اسم المادة')
+    name = models.CharField(max_length=200, unique=True, verbose_name='اسم المادة')
     code = models.CharField(max_length=20, blank=True, verbose_name='رمز المادة')
     department = models.ForeignKey(
         Department,

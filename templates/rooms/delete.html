@@ -67,14 +67,14 @@
 
           {# استخدم default لتفادي None أو اختلاف اسم الحقل (name/room_number/full_name) #}
           <p class="text-2xl font-black text-red-700 mt-2">
-            "{{ room.name|default:room.room_number|default:room.full_name|default:"(بدون اسم)" }}"
+            "{{ room.name|default:"(بدون اسم)" }}"
           </p>
 
           <div class="mt-4 flex flex-wrap justify-center gap-2">
             {% if room.department %}
-              <span class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-500">
-                {{ room.department.name }}
-              </span>
+            <span class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-500">
+              {{ room.department.name }}
+            </span>
             {% endif %}
 
             <span class="px-3 py-1 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-500">
@@ -110,9 +110,17 @@
 {% block extra_css %}
 <style>
   @keyframes fade-in {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
+
   .animate-fade-in {
     animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
   }

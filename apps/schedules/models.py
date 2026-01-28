@@ -72,18 +72,36 @@ class Schedule(models.Model):
         ]
 
     def __str__(self):
-        return f"{self.subject.name} - {self.day} ({self.start_time.strftime('%H:%M')} - {self.end_time.strftime('%H:%M')})"
+        try:
+            return f"{self.subject.name} - {self.day} ({self.start_time.strftime('%H:%M')} - {self.end_time.strftime('%H:%M')})"
+        except:
+            return f"حصة غير مكتملة ({self.id})"
     
     def clean(self):
         """التحقق من عدم وجود تعارضات"""
-        from django.core.exceptions import ValidationError
+        from django.core.exceptions import ValidationError, ObjectDoesNotExist
         from .validators import check_room_conflict, check_instructor_conflict, check_department_off_day
         
         errors = {}
         
+        # التأكد من وجود كافة الحقول المطلوبة قبل فحص التعارضات
+        # استخدام IDs لتجنب RelatedObjectDoesNotExist
+        if not all([self.room_id, self.instructor_id, self.subject_id, self.day, self.start_time, self.end_time]):
+            return
+
+        try:
+            room = self.room
+            instructor = self.instructor
+        except ObjectDoesNotExist:
+            return
+
+        # التحقق من أن وقت البداية قبل النهاية
+        if self.start_time >= self.end_time:
+            errors['end_time'] = 'وقت النهاية يجب أن يكون بعد وقت البداية'
+        
         # التحقق من تعارض القاعة
         room_conflict = check_room_conflict(
-            self.room, self.day, self.start_time, self.end_time,
+            room, self.day, self.start_time, self.end_time,
             exclude_id=self.pk
         )
         if room_conflict:
@@ -91,23 +109,21 @@ class Schedule(models.Model):
         
         # التحقق من تعارض الأستاذ
         instructor_conflict = check_instructor_conflict(
-            self.instructor, self.day, self.start_time, self.end_time,
+            instructor, self.day, self.start_time, self.end_time,
             exclude_id=self.pk
         )
         if instructor_conflict:
             errors['instructor'] = f'الأستاذ لديه حصة أخرى في هذا الوقت ({instructor_conflict.subject.name})'
         
         # التحقق من يوم الراحة للقسم
-        if check_department_off_day(self.room.department, self.day):
-            errors['day'] = f'يوم {self.day} هو يوم راحة لقسم {self.room.department.name}'
-        
-        # التحقق من أن وقت البداية قبل النهاية
-        if self.start_time and self.end_time and self.start_time >= self.end_time:
-            errors['end_time'] = 'وقت النهاية يجب أن يكون بعد وقت البداية'
+        if check_department_off_day(room.department, self.day):
+            errors['day'] = f'يوم {self.day} هو يوم راحة لقسم {room.department.name}'
         
         if errors:
             raise ValidationError(errors)
     
     def save(self, *args, **kwargs):
+        # نقوم بالتحقق فقط إذا لم يكن هناك أخطاء سابقة (مثلاً من الفورم)
+        # أو نترك الفورم يعالجها. ولكن للسلامة في الـ API أو الـ Shell:
         self.full_clean()
         super().save(*args, **kwargs)

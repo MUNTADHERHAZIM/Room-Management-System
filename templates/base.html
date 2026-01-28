@@ -31,6 +31,10 @@
     <!-- Alpine.js -->
     <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 
+    <!-- Tom Select -->
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+
     <style>
         body {
             font-family: 'Cairo', sans-serif;
@@ -104,6 +108,49 @@
         .print-only {
             display: none;
         }
+
+        /* Tom Select Premium & RTL Styling */
+        .ts-wrapper.tom-select {
+            direction: rtl !important;
+        }
+
+        .ts-wrapper.tom-select .ts-control {
+            border-radius: 1rem !important;
+            padding: 0.75rem 1.25rem !important;
+            border: 1px solid #f3f4f6 !important;
+            background: rgba(249, 250, 251, 0.7) !important;
+            font-family: 'Cairo', sans-serif !important;
+            font-weight: 700 !important;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+        }
+
+        .ts-wrapper.tom-select.focus .ts-control {
+            border-color: #3b82f6 !important;
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.10) !important;
+            background: #ffffff !important;
+        }
+
+        .ts-dropdown {
+            border-radius: 1rem !important;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
+            border: 1px solid #f3f4f6 !important;
+            margin-top: 5px !important;
+            font-family: 'Cairo', sans-serif !important;
+        }
+
+        .ts-dropdown .active {
+            background-color: #eff6ff !important;
+            color: #1d4ed8 !important;
+        }
+
+        .ts-wrapper.single .ts-control,
+        .ts-wrapper.single .ts-control input {
+            cursor: pointer;
+        }
+
+        .ts-control input::placeholder {
+            color: #9ca3af !important;
+        }
     </style>
 
     {% block extra_css %}{% endblock %}
@@ -138,6 +185,34 @@
                 <!-- Current Time, Date, and Day -->
                 <div class="flex items-center gap-4">
                     {% include 'core/partials/server_time.html' %}
+
+                    <div class="border-r border-white/20 h-6 mx-2"></div>
+
+                    {% if user.is_authenticated %}
+                    <div class="flex items-center gap-3">
+                        <span class="text-sm font-medium hidden md:block">{{ user.username }}</span>
+                        <form action="{% url 'admin:logout' %}" method="post" class="inline">
+                            {% csrf_token %}
+                            <input type="hidden" name="next" value="{{ request.path }}">
+                            <button type="submit" class="bg-red-500/20 hover:bg-red-500/40 p-2 rounded-lg transition"
+                                title="تسجيل خروج">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                                </svg>
+                            </button>
+                        </form>
+                    </div>
+                    {% else %}
+                    <a href="{% url 'admin:login' %}?next={{ request.path }}"
+                        class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                        </svg>
+                        دخول الإدارة
+                    </a>
+                    {% endif %}
                 </div>
             </div>
         </div>
@@ -232,6 +307,7 @@
             <div class="border-t my-4"></div>
 
             <!-- Management Section -->
+            {% if is_editor and system_settings.show_management_buttons %}
             <p class="text-xs text-gray-500 font-medium px-4 mb-2">الإدارة</p>
 
             <a href="{% url 'rooms:list' %}"
@@ -269,10 +345,12 @@
                 </svg>
                 الحصص
             </a>
+            {% endif %}
 
             <div class="border-t my-4"></div>
 
             <!-- Settings Section -->
+            {% if is_editor and system_settings.show_management_buttons %}
             <p class="text-xs text-gray-500 font-medium px-4 mb-2">الإعدادات</p>
 
             <a href="{% url 'calendar_app:holidays' %}"
@@ -292,6 +370,7 @@
                 </svg>
                 أيام الراحة
             </a>
+            {% endif %}
 
             <a href="/admin/" target="_blank"
                 class="flex items-center gap-3 px-4 py-3 rounded-lg transition hover:bg-gray-100">
@@ -308,6 +387,18 @@
 
     <!-- Main Content -->
     <main class="pt-16 lg:pr-64 min-h-screen transition-all duration-300" :class="sidebarOpen ? 'pr-64' : 'pr-0'">
+        <!-- Maintenance Mode Banner -->
+        {% if system_settings.is_maintenance_mode and user.is_staff %}
+        <div
+            class="bg-red-600 text-white text-center py-3 px-4 shadow-md font-bold mb-0 no-print flex items-center justify-center gap-2">
+            <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <span>تنبيه: وضع الصيانة مفعل حالياً. الموقع مغلق أمام الزوار.</span>
+        </div>
+        {% endif %}
+
         <div class="p-6">
             <!-- Messages -->
             {% if messages %}
@@ -388,6 +479,32 @@
         }
         setInterval(updateClock, 1000);
         updateClock();
+
+        // Tom Select Initialization
+        function initTomSelect() {
+            document.querySelectorAll('.tom-select').forEach(el => {
+                if (!el.tomselect) {
+                    new TomSelect(el, {
+                        create: false,
+                        sortField: {
+                            field: "text",
+                            direction: "asc"
+                        },
+                        placeholder: "ابحث هنا...",
+                        noResultsText: "لا توجد نتائج مطابقة",
+                        render: {
+                            no_results: function (data, escape) {
+                                return '<div class="no-results">لا توجد نتائج مطابقة لـ "' + escape(data.input) + '"</div>';
+                            },
+                        }
+                    });
+                }
+            });
+        }
+
+        // Run on load and HTMX swaps
+        document.addEventListener('DOMContentLoaded', initTomSelect);
+        document.body.addEventListener('htmx:afterOnLoad', initTomSelect);
     </script>
 </body>
 

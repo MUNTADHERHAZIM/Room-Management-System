@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
+from apps.core.decorators import editor_required
 from django.db.models import Count
 from django.utils import timezone
 
@@ -69,6 +70,7 @@ def instructor_detail(request, pk):
     return render(request, 'instructors/detail.html', context)
 
 
+@editor_required
 def instructor_create(request):
     """إنشاء أستاذ جديد"""
     if request.method == 'POST':
@@ -90,6 +92,7 @@ def instructor_create(request):
     return render(request, 'instructors/form.html', context)
 
 
+@editor_required
 def instructor_edit(request, pk):
     """تعديل أستاذ"""
     instructor = get_object_or_404(Instructor, pk=pk)
@@ -113,6 +116,7 @@ def instructor_edit(request, pk):
     return render(request, 'instructors/form.html', context)
 
 
+@editor_required
 def instructor_delete(request, pk):
     """حذف أستاذ"""
     instructor = get_object_or_404(Instructor, pk=pk)

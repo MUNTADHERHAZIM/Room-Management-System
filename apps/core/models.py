@@ -38,3 +38,31 @@ class Department(models.Model):
 
     def __str__(self):
         return f"{self.name} - {self.college.name}"
+
+class SystemSettings(models.Model):
+    """إعدادات النظام العامة"""
+    show_management_buttons = models.BooleanField(
+        default=True, 
+        verbose_name='إظهار أزرار الإضافة والتعديل والحذف'
+    )
+    is_maintenance_mode = models.BooleanField(
+        default=False,
+        verbose_name='وضع الصيانة'
+    )
+    updated_at = models.DateTimeField(auto_now=True, verbose_name='تاريخ التحديث')
+
+    class Meta:
+        verbose_name = 'إعدادات النظام'
+        verbose_name_plural = 'إعدادات النظام'
+
+    def __str__(self):
+        return "إعدادات النظام العامة"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1  # Singleton pattern
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def load(cls):
+        obj, created = cls.objects.get_or_create(pk=1)
+        return obj

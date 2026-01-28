@@ -12,13 +12,13 @@ class ScheduleForm(forms.ModelForm):
         fields = ['room', 'instructor', 'subject', 'day', 'start_time', 'end_time', 'schedule_type', 'notes', 'is_active']
         widgets = {
             'room': forms.Select(attrs={
-                'class': 'form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                'class': 'tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'
             }),
             'instructor': forms.Select(attrs={
-                'class': 'form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                'class': 'tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'
             }),
             'subject': forms.Select(attrs={
-                'class': 'form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+                'class': 'tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'
             }),
             'day': forms.Select(attrs={
                 'class': 'form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'

@@ -13,7 +13,7 @@ class Room(models.Model):
         ('مكتبة', 'مكتبة'),
     ]
     
-    name = models.CharField(max_length=100, verbose_name='اسم القاعة')
+    name = models.CharField(max_length=100, unique=True, verbose_name='اسم القاعة')
     room_type = models.CharField(
         max_length=50,
         choices=ROOM_TYPES,

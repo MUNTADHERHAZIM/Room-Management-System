@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
+from apps.core.decorators import editor_required
 from django.db.models import Q
 
 from .models import Schedule
@@ -63,6 +64,7 @@ def schedule_list(request):
     return render(request, 'schedules/list.html', context)
 
 
+@editor_required
 def schedule_create(request):
     """إنشاء حصة جديدة"""
     if request.method == 'POST':
@@ -90,6 +92,7 @@ def schedule_create(request):
     return render(request, 'schedules/form.html', context)
 
 
+@editor_required
 def schedule_edit(request, pk):
     """تعديل حصة"""
     schedule = get_object_or_404(Schedule, pk=pk)
@@ -120,6 +123,7 @@ def schedule_edit(request, pk):
     return render(request, 'schedules/form.html', context)
 
 
+@editor_required
 def schedule_delete(request, pk):
     """حذف حصة"""
     schedule = get_object_or_404(Schedule, pk=pk)

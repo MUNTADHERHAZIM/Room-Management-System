@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import College, Department
+from .models import College, Department, SystemSettings
 
 
 @admin.register(College)
@@ -21,3 +21,16 @@ class DepartmentAdmin(admin.ModelAdmin):
     list_filter = ['college', 'created_at']
     ordering = ['college', 'name']
     autocomplete_fields = ['college']
+
+@admin.register(SystemSettings)
+class SystemSettingsAdmin(admin.ModelAdmin):
+    list_display = ['__str__', 'show_management_buttons', 'is_maintenance_mode', 'updated_at']
+    
+    def has_add_permission(self, request):
+        # Prevent adding more than one record
+        if self.model.objects.exists():
+            return False
+        return super().has_add_permission(request)
+
+    def has_delete_permission(self, request, obj=None):
+        return False

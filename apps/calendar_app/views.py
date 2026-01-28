@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
+from apps.core.decorators import editor_required
 from django.utils import timezone
 from datetime import date, timedelta
 import calendar
@@ -107,6 +108,7 @@ def holiday_list(request):
     return render(request, 'calendar_app/holidays.html', context)
 
 
+@editor_required
 def holiday_create(request):
     """إضافة عطلة جديدة"""
     if request.method == 'POST':
@@ -128,6 +130,7 @@ def holiday_create(request):
     return render(request, 'calendar_app/holiday_form.html', context)
 
 
+@editor_required
 def holiday_edit(request, pk):
     """تعديل عطلة"""
     holiday = get_object_or_404(Holiday, pk=pk)
@@ -151,6 +154,7 @@ def holiday_edit(request, pk):
     return render(request, 'calendar_app/holiday_form.html', context)
 
 
+@editor_required
 def holiday_delete(request, pk):
     """حذف عطلة"""
     holiday = get_object_or_404(Holiday, pk=pk)
@@ -191,6 +195,7 @@ def off_day_list(request):
     return render(request, 'calendar_app/off_days.html', context)
 
 
+@editor_required
 def off_day_create(request):
     """إضافة يوم راحة"""
     if request.method == 'POST':
@@ -212,6 +217,7 @@ def off_day_create(request):
     return render(request, 'calendar_app/off_day_form.html', context)
 
 
+@editor_required
 def off_day_delete(request, pk):
     """حذف يوم راحة"""
     off_day = get_object_or_404(DepartmentOffDay, pk=pk)

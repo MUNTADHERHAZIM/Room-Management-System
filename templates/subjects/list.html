@@ -10,6 +10,7 @@
             <h1 class="text-2xl font-bold text-gray-900">إدارة المواد الدراسية</h1>
             <p class="text-gray-600">إدارة المواد والمقررات الدراسية</p>
         </div>
+        {% if is_editor and system_settings.show_management_buttons %}
         <a href="{% url 'subjects:create' %}"
             class="inline-flex items-center gap-2 bg-gradient-to-l from-blue-600 to-blue-700 text-white px-5 py-2.5 rounded-lg hover:from-blue-700 hover:to-blue-800 transition shadow-lg">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -17,6 +18,7 @@
             </svg>
             إضافة مادة
         </a>
+        {% endif %}
     </div>
 
     <!-- Filters -->
@@ -85,11 +87,17 @@
                         <td class="px-6 py-4 text-sm text-gray-600">{{ subject.hours_per_week }} ساعة</td>
                         <td class="px-6 py-4">
                             <div class="flex items-center gap-3">
+                                {% if is_editor and system_settings.show_management_buttons %}
                                 <a href="{% url 'subjects:edit' subject.pk %}"
                                     class="text-amber-600 hover:text-amber-800 font-medium text-sm">تعديل</a>
                                 <a href="{% url 'subjects:delete' subject.pk %}"
                                     class="text-red-600 hover:text-red-800 font-medium text-sm"
                                     onclick="return confirm('هل أنت متأكد من حذف هذه المادة؟');">حذف</a>
+                                {% elif is_editor %}
+                                <span class="text-gray-400 text-xs italic">للاطلاع فقط (مغلق)</span>
+                                {% else %}
+                                <span class="text-gray-400 text-xs italic">للاطلاع فقط</span>
+                                {% endif %}
                             </div>
                         </td>
                     </tr>

@@ -13,7 +13,7 @@ class Instructor(models.Model):
         ('معيد', 'معيد'),
     ]
     
-    name = models.CharField(max_length=200, verbose_name='اسم الأستاذ')
+    name = models.CharField(max_length=200, unique=True, verbose_name='اسم الأستاذ')
     academic_title = models.CharField(
         max_length=50,
         choices=ACADEMIC_TITLES,

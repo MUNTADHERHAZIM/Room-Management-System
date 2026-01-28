@@ -1,6 +1,7 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
+from apps.core.decorators import editor_required
 
 from .models import Room
 from .forms import RoomForm
@@ -67,6 +68,7 @@ def room_detail(request, pk):
     return render(request, 'rooms/detail.html', context)
 
 
+@editor_required
 def room_create(request):
     """إنشاء قاعة جديدة"""
     if request.method == 'POST':
@@ -88,6 +90,7 @@ def room_create(request):
     return render(request, 'rooms/form.html', context)
 
 
+@editor_required
 def room_edit(request, pk):
     """تعديل قاعة"""
     room = get_object_or_404(Room, pk=pk)
@@ -111,6 +114,7 @@ def room_edit(request, pk):
     return render(request, 'rooms/form.html', context)
 
 
+@editor_required
 def room_delete(request, pk):
     """حذف قاعة"""
     room = get_object_or_404(Room, pk=pk)

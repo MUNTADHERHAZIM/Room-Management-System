@@ -35,10 +35,12 @@
                 </svg>
                 طباعة الجدول
             </button>
+            {% if is_editor and system_settings.show_management_buttons %}
             <a href="{% url 'rooms:edit' room.pk %}"
                 class="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600">
                 تعديل
             </a>
+            {% endif %}
             <a href="{% url 'rooms:list' %}" class="bg-gray-100 text-gray-700 px-4 py-2 rounded-lg hover:bg-gray-200">
                 العودة
             </a>
@@ -193,10 +195,14 @@
 
 <style>
     @media print {
-        .no-print { display: none !important; }
+        .no-print {
+            display: none !important;
+        }
 
         /* Tailwind CDN قد لا يطبق print:block بشكل موثوق */
-        .print-only { display: block !important; }
+        .print-only {
+            display: block !important;
+        }
 
         .signature-section {
             display: grid;
