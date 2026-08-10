@@ -1,0 +1,94 @@
+{% extends 'base.html' %}
+
+{% block title %}تأكيد التوزيع — {{ session.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border p-8">
+        <div class="text-center mb-8">
+            <div class="bg-purple-100 w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-10 h-10 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">تأكيد توليد التوزيع الذكي</h1>
+            <p class="text-gray-500">{{ session.name }} — {{ session.date }}</p>
+        </div>
+
+        <!-- Summary -->
+        <div class="grid grid-cols-2 gap-4 mb-8">
+            <div class="bg-purple-50 rounded-xl p-5 text-center">
+                <div class="text-3xl font-black text-purple-600">{{ total_students }}</div>
+                <div class="text-sm text-purple-700 font-bold">طالب للتوزيع</div>
+            </div>
+            <div class="bg-blue-50 rounded-xl p-5 text-center">
+                <div class="text-3xl font-black text-blue-600">{{ total_capacity }}</div>
+                <div class="text-sm text-blue-700 font-bold">مقعد متاح</div>
+            </div>
+        </div>
+
+        <!-- Capacity Check -->
+        {% if total_students > total_capacity %}
+        <div class="bg-red-50 border border-red-200 rounded-xl p-5 mb-6">
+            <div class="flex items-center gap-3 text-red-700">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div>
+                    <p class="font-bold">⚠ عدد الطلاب يتجاوز السعة المتاحة!</p>
+                    <p class="text-sm">يحتاج {{ total_students }} مقعد، لكن المتاح {{ total_capacity }} فقط. أضف قاعات إضافية أو غيّر نمط التباعد.</p>
+                </div>
+            </div>
+        </div>
+        {% elif total_students == 0 %}
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-5 mb-6">
+            <p class="text-amber-700 font-bold">⚠ لا يوجد طلاب مسجلون. أضف طلاباً للمواد أولاً.</p>
+        </div>
+        {% else %}
+        <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5 mb-6">
+            <p class="text-emerald-700 font-bold">✅ السعة كافية — جاهز للتوزيع</p>
+        </div>
+        {% endif %}
+
+        <!-- Subjects -->
+        <div class="mb-6">
+            <h3 class="font-bold text-gray-700 mb-3">المواد:</h3>
+            {% for es in exam_subjects %}
+            <div class="flex items-center gap-3 py-2">
+                <div class="w-4 h-4 rounded-full" style="background-color: {{ es.color_code }}"></div>
+                <span class="font-bold">{{ es.subject.name }}</span>
+                <span class="text-gray-400 text-sm">({{ es.students.count }} طالب)</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Halls -->
+        <div class="mb-8">
+            <h3 class="font-bold text-gray-700 mb-3">القاعات:</h3>
+            {% for hs in hall_setups %}
+            <div class="flex items-center gap-3 py-2">
+                <span class="font-bold">{{ hs.room.name }}</span>
+                <span class="text-gray-400 text-sm">({{ hs.effective_capacity }} مقعد — {{ hs.get_spacing_mode_display }})</span>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Actions -->
+        <div class="flex items-center gap-4 pt-6 border-t">
+            {% if total_students > 0 %}
+            <form method="POST" class="flex-1">
+                {% csrf_token %}
+                <button type="submit" class="w-full bg-gradient-to-l from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white py-4 rounded-xl font-bold text-lg transition-all shadow-lg flex items-center justify-center gap-3"
+                        onclick="this.disabled=true; this.innerHTML='<svg class=\'w-6 h-6 animate-spin\' fill=\'none\' viewBox=\'0 0 24 24\'><circle class=\'opacity-25\' cx=\'12\' cy=\'12\' r=\'10\' stroke=\'currentColor\' stroke-width=\'4\'></circle><path class=\'opacity-75\' fill=\'currentColor\' d=\'M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z\'></path></svg> جاري التوزيع...'; this.form.submit();">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    🚀 تشغيل الخوارزمية الذكية
+                </button>
+            </form>
+            {% endif %}
+            <a href="{% url 'exams:session_detail' session.pk %}" class="text-gray-500 hover:text-gray-700 font-bold">رجوع</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

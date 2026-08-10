@@ -1,97 +1,102 @@
-# نظام إدارة القاعات والمختبرات
-# Room Management System
+# 🏛️ نظام إدارة القاعات والمختبرات الذكي
+### Smart Room & Lab Management System
 
-نظام ويب احترافي لإدارة القاعات والمختبرات مبني على Django.
+[![Django](https://img.shields.io/badge/Framework-Django%205.1-092e20?style=for-the-badge&logo=django)](https://www.djangoproject.com/)
+[![TailwindCSS](https://img.shields.io/badge/UI-Tailwind%20CSS-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)
+[![Python](https://img.shields.io/badge/Python-3.10+-3776ab?style=for-the-badge&logo=python)](https://www.python.org/)
 
-## المتطلبات
+نظام ويب متطور واحترافي مصمم خصيصاً للمؤسسات الأكاديمية لإدارة القاعات الدراسية، المختبرات، وجداول الحصص بكفاءة عالية ومنع تعارض المواعيد. يتميز النظام بواجهة عصرية (Glassmorphism) وتجربة مستخدم سلسة تدعم اللغة العربية بالكامل.
 
-- Python 3.10+
-- pip
+---
 
-## التثبيت المحلي
+## 🚀 المميزات الرئيسية (Features)
 
+### 📊 لوحة التحكم والإحصائيات
+*   **داشبورد تفاعلي:** يعرض نظرة شاملة على إشغال القاعات في الوقت الفعلي.
+*   **إحصائيات تحليلية:** رسوم بيانية وتوزيعات للأنشطة الأكاديمية حسب الكليات والأقسام.
+*   **حالة القاعات:** مراقبة لحظية للقاعات (مشغولة/متاحة) مع تفاصيل الحصة الحالية.
+
+### 📅 الجدولة والذكاء الاصطناعي البرمجي
+*   **منع التعارض:** خوارزميات ذكية تمنع حجز قاعة لمرتين في نفس الوقت أو تكليف أستاذ بحصتين متزامنتين.
+*   **البحث الذكي:** محرك بحث متقدم للعثور على أقرب قاعة متاحة بناءً على السعة، التوقيت، والتجهيزات.
+*   **عروض متعددة:** عرض الجدول الزمني (Timeline)، العرض الشبكي (Grid)، والتقويم الشهري.
+
+### 🔒 الأمن والإدارة
+*   **نظام دخول آمن:** واجهة دخول احترافية خاصة بالعمداء ورؤساء الأقسام.
+*   **صلاحيات مرنة:** تقسيم المستخدمين إلى أدوار (مدراء، مدخلي بيانات، مشاهدين).
+*   **إدارة متكاملة:** لوحة تحكم لإدارة الكليات، الأقسام، الأساتذة، المواد الدراسية، والعطل الرسمية.
+
+### 🖨️ التقارير والطباعة
+*   **الجدول اليومي الشامل:** تقرير يومي لكافة القاعات جاهز للطباعة الفورية.
+*   **جداول الأساتذة والقاعات:** تصدير جداول فردية منسقة بلمسة واحدة.
+*   **دعم الطباعة:** تصميم مخصص للطباعة (Print-friendly) يخفي العناصر غير الضرورية ويحافظ على الهوية الرسمية.
+
+---
+
+## 🛠️ التقنيات المستخدمة (Tech Stack)
+
+| المجال | التقنية |
+| :--- | :--- |
+| **Backend** | Django 5.1 (Python) |
+| **Frontend** | Tailwind CSS, Alpine.js, HTMX |
+| **Database** | SQLite (Default) / PostgreSQL (Optional) |
+| **Aesthetics** | CSS Glassmorphism, Google Fonts (Outfit, Cairo) |
+
+---
+
+## 💻 التثبيت والتشغيل (Setup)
+
+### 1. إعداد البيئة
 ```bash
-# إنشاء بيئة افتراضية
+# استنساخ المستودع
+git clone https://github.com/your-repo/room-management.git
+cd room-management
+
+# إنشاء وتفعيل البيئة الافتراضية
 python -m venv venv
+venv\Scripts\activate  # Windows
+source venv/bin/activate  # Linux/Mac
+```
 
-# تفعيل البيئة (Windows)
-venv\Scripts\activate
-
-# تفعيل البيئة (Linux/Mac)
-source venv/bin/activate
-
-# تثبيت المتطلبات
+### 2. تثبيت المكتبات وتجهيز قاعدة البيانات
+```bash
 pip install -r requirements.txt
-
-# إنشاء قاعدة البيانات
 python manage.py migrate
-
-# إنشاء مستخدم مدير
-python manage.py createsuperuser
-
-# تحميل البيانات الأولية
-python manage.py loaddata initial_data
-
-# تشغيل الخادم
-python manage.py runserver
 ```
 
-## نشر على PythonAnywhere
+### 3. إنشاء البيانات التجريبية (Demo)
+لقد قمنا بتوفير أوامر خاصة لتجهيز النظام بالبيانات والحسابات فوراً:
+```bash
+# إنشاء حسابات تجريبية (المدير، العميد، رئيس القسم)
+python manage.py create_demo_users
 
-1. إنشاء حساب على PythonAnywhere
-2. رفع الملفات (Git أو ZIP)
-3. إنشاء Web App جديد → Manual Configuration → Python 3.10
-4. إعداد Virtual Environment:
-   ```bash
-   mkvirtualenv --python=/usr/bin/python3.10 roomenv
-   pip install -r requirements.txt
-   ```
-5. إعداد WSGI في `/var/www/username_pythonanywhere_com_wsgi.py`
-6. إضافة Static files في Web tab:
-   - URL: `/static/`
-   - Directory: `/home/username/room_management/staticfiles/`
-7. تشغيل:
-   ```bash
-   python manage.py collectstatic
-   python manage.py migrate
-   ```
-
-## الميزات
-
-- ✅ إدارة القاعات والمختبرات
-- ✅ إدارة الأساتذة والمواد
-- ✅ جدولة الحصص مع منع التعارضات
-- ✅ لوحة تحكم لحظية
-- ✅ البحث عن قاعات متاحة
-- ✅ عرض الجدول الزمني
-- ✅ عرض شبكي أسبوعي
-- ✅ تقويم شهري
-- ✅ خريطة القاعات
-- ✅ إدارة العطل الرسمية
-- ✅ أيام الراحة للأقسام
-- ✅ تصدير PDF
-- ✅ واجهة عربية RTL
-
-## الهيكل
-
-```
-room_management/
-├── config/          # إعدادات Django
-├── apps/
-│   ├── core/        # الكليات والأقسام
-│   ├── rooms/       # القاعات
-│   ├── instructors/ # الأساتذة
-│   ├── subjects/    # المواد
-│   ├── schedules/   # الجداول
-│   └── calendar_app/ # التقويم والعطل
-├── templates/       # القوالب
-└── static/          # الملفات الثابتة
+# تحميل بيانات الكليات والقاعات والجداول الوهمية
+python manage.py load_demo_data
 ```
 
-## المطور
+---
 
-**MUNTADHER HAZIM**
+## 📂 هيكلية المشروع (Project Structure)
 
-📞 للتواصل: `07724978301`
+*   `apps/core/`: النواة، الكليات، الأقسام، والإحصائيات.
+*   `apps/rooms/`: إدارة وتتبع حالات القاعات والمختبرات.
+*   `apps/instructors/`: سجلات الأساتذة وجداولهم الخاصة.
+*   `apps/subjects/`: إدارة المواد الدراسية والمناهج.
+*   `apps/schedules/`: محرك الجدولة والتحقق من التعارضات.
+*   `apps/calendar_app/`: العطل الرسمية وأيام الراحة والتقويم.
 
-📧 البريد الإلكتروني: [muntadherhazim95@gmail.com](mailto:muntadherhazim95@gmail.com)
+---
+
+## 👨‍💻 المطور (Developer)
+
+<div align="center">
+  <h3>MUNTADHER HAZIM</h3>
+  <p>Software Developer & UI/UX Design Enthusiast</p>
+
+  <p>
+    <a href="tel:07724978301">📞 07724978301</a> | 
+    <a href="mailto:muntadherhazim95@gmail.com">📧 muntadherhazim95@gmail.com</a>
+  </p>
+  
+  <p>حقوق النشر © 2026 - كافة الحقوق محفوظة</p>
+</div>

@@ -1,0 +1,127 @@
+{% extends 'base.html' %}
+
+{% block title %}إدارة طلاب — {{ exam_subject.subject.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">إدارة طلاب: {{ exam_subject.subject.name }}</h1>
+            <p class="text-gray-500 mt-1">{{ session.name }} | مسجل حالياً: <span class="font-bold text-purple-600">{{ current_student_ids|length }}</span> طالب</p>
+        </div>
+        <a href="{% url 'exams:session_detail' session.pk %}" class="text-blue-600 hover:text-blue-800 font-bold flex items-center gap-1">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 17l-5-5m0 0l5-5m-5 5h12"/></svg>
+            رجوع للجلسة
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-2xl shadow-sm border p-5 mb-6">
+        <form method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">القسم</label>
+                <select name="department" onchange="this.form.submit()" class="tom-select w-full rounded-lg border-gray-300">
+                    <option value="">جميع الأقسام</option>
+                    {% for dept in departments %}
+                    <option value="{{ dept.id }}" {% if selected_department == dept.id|stringformat:"d" %}selected{% endif %}>{{ dept.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">المرحلة</label>
+                <select name="stage" onchange="this.form.submit()" class="form-select w-full rounded-lg border-gray-300">
+                    <option value="">جميع المراحل</option>
+                    {% for val, label in stages %}
+                    <option value="{{ val }}" {% if selected_stage == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-bold text-gray-700 mb-1">العدد المطلوب</label>
+                <input type="number" name="limit" value="{{ limit|default:'' }}" min="1" placeholder="مثال: 30" class="form-input w-full rounded-lg border-gray-300">
+            </div>
+            <div class="flex flex-col gap-2 md:col-span-3">
+                <div class="flex gap-2 w-full">
+                    <button type="submit" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-bold transition">
+                        فلترة الطلاب
+                    </button>
+                <form method="POST" class="w-1/2">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="add_all_filtered">
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-bold transition">
+                        إضافة جميع المفلترين
+                    </button>
+                </form>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Students Table -->
+    <form method="POST">
+        {% csrf_token %}
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+            <div class="overflow-x-auto">
+                <table class="w-full">
+                    <thead class="bg-gradient-to-l from-purple-600 to-purple-800 text-white">
+                        <tr>
+                            <th class="px-4 py-3 text-center w-12">
+                                <input type="checkbox" id="select-all" class="form-checkbox rounded text-white" onclick="toggleAll(this)">
+                            </th>
+                            <th class="px-4 py-3 text-right text-sm font-bold">الاسم</th>
+                            <th class="px-4 py-3 text-right text-sm font-bold">الرقم الجامعي</th>
+                            <th class="px-4 py-3 text-right text-sm font-bold">القسم</th>
+                            <th class="px-4 py-3 text-right text-sm font-bold">المرحلة</th>
+                            <th class="px-4 py-3 text-center text-sm font-bold">الحالة</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100">
+                        {% for student in students %}
+                        <tr class="hover:bg-purple-50/50 transition {% if student.id in current_student_ids %}bg-emerald-50{% endif %}">
+                            <td class="px-4 py-3 text-center">
+                                <input type="checkbox" name="student_ids" value="{{ student.id }}" class="form-checkbox rounded text-purple-600 student-checkbox"
+                                       {% if student.id in current_student_ids %}checked{% endif %}>
+                            </td>
+                            <td class="px-4 py-3 font-bold text-gray-900">{{ student.name }}</td>
+                            <td class="px-4 py-3">
+                                <span class="bg-gray-100 text-gray-700 px-2 py-1 rounded text-sm font-mono">{{ student.university_id }}</span>
+                            </td>
+                            <td class="px-4 py-3 text-sm text-gray-600">{{ student.department.name }}</td>
+                            <td class="px-4 py-3 text-sm">{{ student.get_stage_display }}</td>
+                            <td class="px-4 py-3 text-center">
+                                {% if student.id in current_student_ids %}
+                                <span class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">مسجل ✓</span>
+                                {% else %}
+                                <span class="text-gray-400 text-xs">غير مسجل</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="6" class="px-6 py-8 text-center text-gray-400">لا يوجد طلاب</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Actions -->
+            <div class="p-4 bg-gray-50 flex gap-3">
+                <button type="submit" name="action" value="add_selected" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-bold transition">
+                    ✓ إضافة المحددين
+                </button>
+                <button type="submit" name="action" value="remove_selected" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-bold transition">
+                    ✗ إزالة المحددين
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+function toggleAll(master) {
+    document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = master.checked);
+}
+</script>
+{% endblock %}

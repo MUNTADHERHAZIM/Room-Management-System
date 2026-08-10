@@ -1,0 +1,265 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}دليل الاتصال بدون إنترنت - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center gap-3">
+        <a href="{% url 'attendance:session_list' %}" class="text-gray-500 hover:text-gray-700 transition">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+        </a>
+        <div>
+            <h1 class="text-2xl font-black text-gray-900">دليل الاتصال وتسجيل الحضور بدون إنترنت</h1>
+            <p class="text-sm text-gray-600 font-semibold mt-1">شرح خطوات إعداد الشبكة المحلية اللاسلكية داخل القاعة بنجاح</p>
+        </div>
+    </div>
+
+    <!-- How it works -->
+    <div class="bg-indigo-900 text-white rounded-2xl p-6 shadow-xl border border-indigo-700">
+        <h2 class="text-xl font-black mb-3 flex items-center gap-2 text-indigo-100">
+            <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+            </svg>
+            كيف يعمل تسجيل الحضور بدون إنترنت؟
+        </h2>
+        <p class="text-sm text-indigo-100 font-medium leading-relaxed">
+            يعمل هذا الحاسوب كـ <strong class="text-yellow-300">خادم محلي (Local Host Server)</strong>. عند قيامك بتفعيل نقطة اتصال (Wi-Fi Hotspot) من هاتفك أو تشغيل راوتر محلي في القاعة، يتم ربط حاسوبك وهواتف الطلاب في شبكة محلية واحدة (<strong class="text-yellow-300">LAN</strong>). هذا يتيح للطلاب فتح موقع النظام وتسجيل حضورهم من هواتفهم <strong class="text-green-300">بسرعة فائقة ودون استهلاك أي رصيد إنترنت أو باقة بيانات نهائياً!</strong>
+        </p>
+    </div>
+
+    <!-- 📶 Wi-Fi Hotspot Connection QR Code Generator -->
+    <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100" x-data="wifiQrGenerator()">
+        <div class="border-b border-gray-200 pb-3 mb-4">
+            <h2 class="font-black text-gray-900 text-lg flex items-center gap-2">
+                📶 توليد رمز QR للاتصال التلقائي بالـ Wi-Fi (للطلاب)
+            </h2>
+            <p class="text-xs text-gray-600 font-semibold mt-1">
+                اكتب تفاصيل نقطة الاتصال (Hotspot) الخاصة بك لتوليد رمز QR يتيح للطلاب الاتصال بشبكتك اللاسلكية تلقائياً دون الحاجة لكتابة كلمة المرور!
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-12 gap-6 items-center">
+            <!-- Inputs (7 cols) -->
+            <div class="md:col-span-7 space-y-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black text-gray-800 mb-1">اسم الشبكة (SSID)</label>
+                        <input type="text" x-model="ssid" @input="updateWifiQr()" placeholder="مثال: MyPhoneHotspot"
+                               class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-800 mb-1">نوع الأمان</label>
+                        <select x-model="security" @change="updateWifiQr()"
+                                class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-bold text-gray-900 bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                            <option value="WPA">WPA / WPA2 (الافتراضي للهاتف)</option>
+                            <option value="WEP">WEP</option>
+                            <option value="nopass">بدون كلمة مرور (شبكة مفتوحة)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div x-show="security !== 'nopass'">
+                    <label class="block text-xs font-black text-gray-800 mb-1">كلمة مرور الشبكة (Password)</label>
+                    <input type="text" x-model="password" @input="updateWifiQr()" placeholder="مثال: 12345678"
+                           class="w-full rounded-xl border border-gray-300 px-4 py-2.5 text-sm font-bold text-gray-900 bg-white font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                </div>
+                
+                <div class="text-xs font-bold text-gray-900 bg-yellow-50 p-4 rounded-xl border border-yellow-200 leading-relaxed">
+                    💡 <strong class="text-yellow-900">كيف يستخدمه الطلاب؟</strong> يفتح الطالب كاميرا هاتفه العادية ويوجهها نحو هذا الرمز، وسيظهر له تنبيه فوري: <strong>"الاتصال بالشبكة"</strong>. بنقرة واحدة سيتصل هاتفه بنقطة اتصالك فوراً ودون تعقيد!
+                </div>
+            </div>
+
+            <!-- QR Code Presentation (5 cols) -->
+            <div class="md:col-span-5 flex flex-col items-center justify-center p-5 bg-gray-900 text-white rounded-2xl border border-gray-800 text-center relative overflow-hidden shadow-lg">
+                <span class="bg-indigo-700 text-white font-black text-xs uppercase px-3 py-1 rounded-full border border-indigo-500">رمز الاتصال اللاسلكي السريع</span>
+                
+                <div class="bg-white p-4 rounded-xl shadow-md my-4" id="wifi-qr-container">
+                    <div id="wifi-qrcode" class="w-40 h-40 flex items-center justify-center text-gray-800">
+                        <!-- Will render dynamically -->
+                    </div>
+                </div>
+                
+                <div class="text-xs text-yellow-300 font-bold" x-text="ssid ? 'شبكة: ' + ssid : 'يرجى كتابة اسم الشبكة...'"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <!-- Steps for Professor -->
+        <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100 space-y-4">
+            <h2 class="font-black text-gray-900 text-lg border-b border-gray-200 pb-2">🛠️ خطوات إعداد الأستاذ (الخادم)</h2>
+            
+            <div class="space-y-4">
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-sm">1</span>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-sm">تفعيل نقطة الاتصال اللاسلكية (Hotspot)</h3>
+                        <p class="text-xs text-gray-600 font-medium mt-0.5">قم بتفعيل نقطة الاتصال (Hotspot) من هاتفك الشخصي، أو تأكد من اتصال الحاسوب براوتر القاعة المحلي.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-sm">2</span>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-sm">اتصال الحاسوب</h3>
+                        <p class="text-xs text-gray-600 font-medium mt-0.5">تأكد أن هذا الحاسوب متصل بنفس شبكة الـ Hotspot أو الراوتر المحلي.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-7 h-7 rounded-full bg-blue-600 text-white font-black text-sm flex items-center justify-center shadow-sm">3</span>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-sm">تشغيل خادم النظام (Django)</h3>
+                        <p class="text-xs text-gray-600 font-medium mt-0.5">تأكد من تشغيل خادم Django ليسمح باتصال الأجهزة الأخرى في القاعة.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Steps for Students -->
+        <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100 space-y-4">
+            <h2 class="font-black text-gray-900 text-lg border-b border-gray-200 pb-2">📱 خطوات اتصال الطلاب والتحضير</h2>
+            
+            <div class="space-y-4">
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-sm">1</span>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-sm">الاتصال بالـ Wi-Fi</h3>
+                        <p class="text-xs text-gray-600 font-medium mt-0.5">يطلب الأستاذ من الطلاب فتح الـ Wi-Fi في هواتفهم والاتصال بنقطة اتصال الأستاذ (Hotspot) أو راوتر القاعة.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-sm">2</span>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-sm">مسح الـ QR أو كتابة الرابط</h3>
+                        <p class="text-xs text-gray-600 font-medium mt-0.5">يفتح الطلاب كاميرا الهاتف لمسح الـ QR المعروض، أو كتابة الرابط المحلي مباشرة في متصفح كروم أو سفاري.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <span class="flex-shrink-0 w-7 h-7 rounded-full bg-indigo-600 text-white font-black text-sm flex items-center justify-center shadow-sm">3</span>
+                    <div>
+                        <h3 class="font-bold text-gray-900 text-sm">تأكيد الحضور بنجاح</h3>
+                        <p class="text-xs text-gray-600 font-medium mt-0.5">يكتب الطالب رقمه الجامعي في الصفحة المفتوحة لتأكيد حضوره وحفظ بصمة جهازه لمنع الغش.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active IP Addresses Discovered -->
+    <div class="bg-white rounded-2xl shadow-md p-6 border border-gray-100">
+        <h2 class="font-black text-gray-900 text-lg mb-2 flex items-center gap-2">
+            <span class="h-3 w-3 rounded-full bg-indigo-600"></span>
+            عناوين الاتصال المحلية النشطة حالياً (رابط التحضير للطلاب)
+        </h2>
+
+        <p class="text-sm text-gray-700 font-medium mb-4">
+            لقد قام النظام باكتشاف العناوين المحلية لجهازك تلقائياً. اطلب من الطلاب كتابة أحد الروابط التالية في هواتفهم بعد اتصالهم بشبكتك اللاسلكية:
+        </p>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            {% for url in guide_urls %}
+            <div class="bg-indigo-50 border border-indigo-200 rounded-xl p-4 flex flex-col justify-between hover:shadow-md transition">
+                <div class="flex justify-between items-start gap-4">
+                    <div>
+                        <span class="text-xs font-black text-indigo-700 uppercase tracking-wider">رابط النظام المحلي</span>
+                        <div class="text-xl font-black text-indigo-900 select-all font-mono mt-1">{{ url }}</div>
+                        <p class="text-xs text-indigo-800 font-bold mt-1">اجعل الطلاب يمسحون هذا الرمز لفتح النظام دون كتابة الرابط يدويًا</p>
+                    </div>
+                    <div class="bg-white p-2 rounded-xl border border-indigo-200 shadow-sm flex-shrink-0">
+                        <div id="url-qrcode-{{ forloop.counter }}" class="w-24 h-24" data-url="{{ url }}"></div>
+                    </div>
+                </div>
+                <div class="mt-3 flex justify-between items-center text-xs text-indigo-900 font-bold border-t border-indigo-200 pt-2">
+                    <span>المنفذ: {{ host_port }}</span>
+                    <span>(اضغط لنسخه بالكامل)</span>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-6 text-center text-red-600 bg-red-50 border border-red-200 rounded-xl font-bold">
+                لم يتم كشف أي آي بي لاسلكي مفعل! يرجى التأكد من تشغيل الـ Hotspot أو الاتصال بالراوتر وإعادة تحميل الصفحة.
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="bg-yellow-50 border border-yellow-300 text-gray-900 text-xs font-bold rounded-xl p-4 mt-6 leading-relaxed flex gap-2">
+            <svg class="w-5 h-5 text-yellow-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+            </svg>
+            <div>
+                <strong class="text-yellow-900">نصيحة أمنية للأستاذ:</strong> يفضل تشغيل نقطة الاتصال اللاسلكية (Hotspot) <strong>بدون كلمة مرور</strong> أو بكلمة مرور سهلة (مثلاً: 12345678) داخل القاعة لتسهيل وسرعة اتصال هواتف الطلاب بالشبكة وتفادي أي ضياع لوقت المحاضرة.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Load David Shim QRCode JS library -->
+<script src="{% static 'vendor/qrcode.min.js' %}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const qrContainers = document.querySelectorAll('[id^="url-qrcode-"]');
+        qrContainers.forEach(container => {
+            const url = container.getAttribute('data-url');
+            if (url) {
+                new QRCode(container, {
+                    text: url,
+                    width: 96,
+                    height: 96,
+                    colorDark : "#312e81",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.L
+                });
+            }
+        });
+    });
+
+    function wifiQrGenerator() {
+        return {
+            ssid: localStorage.getItem('wifi_ssid') || '',
+            password: localStorage.getItem('wifi_password') || '',
+            security: localStorage.getItem('wifi_security') || 'WPA',
+            qrcodeObj: null,
+
+            init() {
+                this.qrcodeObj = new QRCode(document.getElementById("wifi-qrcode"), {
+                    text: "WIFI:S:Example;T:nopass;;",
+                    width: 160,
+                    height: 160,
+                    colorDark : "#0A0F1D",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+                
+                this.updateWifiQr();
+            },
+
+            updateWifiQr() {
+                localStorage.setItem('wifi_ssid', this.ssid);
+                localStorage.setItem('wifi_password', this.password);
+                localStorage.setItem('wifi_security', this.security);
+
+                if (!this.ssid) {
+                    this.qrcodeObj.clear();
+                    return;
+                }
+
+                let wifiString = `WIFI:S:${this.ssid};T:${this.security};`;
+                if (this.security !== 'nopass' && this.password) {
+                    wifiString += `P:${this.password};`;
+                }
+                wifiString += ';';
+
+                this.qrcodeObj.clear();
+                this.qrcodeObj.makeCode(wifiString);
+            }
+        }
+    }
+</script>
+{% endblock %}

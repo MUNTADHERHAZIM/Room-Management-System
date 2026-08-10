@@ -28,7 +28,7 @@
             <div class="flex-1 min-w-[180px]">
                 <label class="block text-sm font-medium text-gray-700 mb-2">الكلية</label>
                 <select name="college"
-                    class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    class="tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     onchange="this.form.submit()">
                     <option value="">جميع الكليات</option>
                     {% for college in colleges %}
@@ -41,7 +41,7 @@
             <div class="flex-1 min-w-[180px]">
                 <label class="block text-sm font-medium text-gray-700 mb-2">القسم</label>
                 <select name="department"
-                    class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    class="tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     onchange="this.form.submit()">
                     <option value="">جميع الأقسام</option>
                     {% for dept in departments %}
@@ -54,7 +54,7 @@
             <div class="flex-1 min-w-[180px]">
                 <label class="block text-sm font-medium text-gray-700 mb-2">النوع</label>
                 <select name="room_type"
-                    class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    class="tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     onchange="this.form.submit()">
                     <option value="">جميع الأنواع</option>
                     {% for val, label in room_types %}

@@ -96,20 +96,38 @@
                     <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">بروجكتر</span>
                     {% endif %}
                     {% if room.has_computers %}
-                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">حاسبات</span>
+                    <span class="bg-indigo-100 text-indigo-800 px-3 py-1 rounded-full text-sm">حاسبات</span>
                     {% endif %}
                     {% if room.has_whiteboard %}
-                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">سبورة</span>
+                    <span class="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">سبورة</span>
                     {% endif %}
                     {% if room.has_air_conditioning %}
-                    <span class="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">تكييف</span>
+                    <span class="bg-cyan-100 text-cyan-800 px-3 py-1 rounded-full text-sm">تكييف</span>
+                    {% endif %}
+                    {% if room.has_audio_system %}
+                    <span class="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-sm">صوتيات</span>
                     {% endif %}
 
-                    {% if not room.has_projector and not room.has_computers and not room.has_whiteboard and not room.has_air_conditioning %}
-                    <span class="text-gray-400 text-sm">—</span>
+                    {% if not room.has_projector and not room.has_computers and not room.has_whiteboard and not room.has_air_conditioning and not room.has_audio_system %}
+                    <span class="text-gray-400 text-sm">لا توجد تجهيزات مسجلة</span>
                     {% endif %}
                 </div>
             </div>
+
+            {% if room.notes %}
+            <div class="mt-6 pt-4 border-t">
+                <h3 class="font-medium mb-3 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    ملاحظات
+                </h3>
+                <div class="bg-gray-50 rounded-lg p-4 text-gray-700 text-sm leading-relaxed">
+                    {{ room.notes|linebreaks }}
+                </div>
+            </div>
+            {% endif %}
         </div>
 
         <!-- Schedules -->

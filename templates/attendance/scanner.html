@@ -1,0 +1,269 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}ماسح حضور الطلاب بالـ QR - {{ session.get_subject_name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto space-y-6" x-data="professorScanner()">
+    <!-- Top Action bar -->
+    <div class="flex items-center justify-between bg-white/70 backdrop-blur-md p-4 rounded-2xl border border-gray-100 shadow-sm">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'attendance:session_detail' session.pk %}" class="text-gray-500 hover:text-gray-700 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-lg font-bold text-gray-900">ماسح حضور الطلاب بالكاميرا</h1>
+                <p class="text-xs text-gray-500">حصة: <span class="font-bold text-indigo-700">{{ session.get_subject_name }}</span> | القاعة: {{ session.get_room_name }}</p>
+            </div>
+        </div>
+        <span class="inline-flex items-center gap-1.5 text-xs text-emerald-700 bg-emerald-50 font-bold px-3 py-1 rounded-full border border-emerald-100">
+            <span class="h-2 w-2 rounded-full bg-emerald-600 animate-pulse"></span>
+            الخادم محلي ونشط
+        </span>
+    </div>
+
+    <!-- Scanner Viewport (Camera Box) -->
+    <div class="bg-slate-900 text-white rounded-3xl p-6 shadow-xl border border-slate-800 text-center relative overflow-hidden flex flex-col items-center">
+        <!-- Pulse BG decoration -->
+        <div class="absolute -top-12 -left-12 w-32 h-32 bg-indigo-500/10 rounded-full blur-2xl"></div>
+        
+        <div class="w-full flex items-center justify-between text-xs text-slate-400 mb-4 border-b border-slate-800 pb-3">
+            <span class="font-bold">أظهر كارت الحضور (QR) لكاميرا الجهاز</span>
+            <div class="flex items-center gap-2">
+                <label class="font-bold">الكاميرا:</label>
+                <select id="camera-select" @change="changeCamera($event.target.value)" 
+                        class="bg-slate-800 border border-slate-700 rounded-lg px-2.5 py-1 text-xs text-slate-200 focus:outline-none">
+                    <option value="">جاري البحث...</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- HTML5 QR Scanner target box -->
+        <div class="w-full max-w-sm bg-slate-950 p-2 rounded-2xl border border-indigo-900/40 relative">
+            <div id="camera-scanner" class="w-full overflow-hidden rounded-xl bg-black min-h-[250px] flex items-center justify-center">
+                <!-- Camera view renders here -->
+            </div>
+            
+            <!-- Scanning HUD overlay (Border frame) -->
+            <div class="absolute inset-4 pointer-events-none border-2 border-dashed border-indigo-500/30 rounded-xl flex items-center justify-center">
+                <div class="w-48 h-48 border-2 border-indigo-500 rounded-xl animate-pulse relative">
+                    <!-- Scanner glowing bar -->
+                    <div class="absolute left-0 right-0 h-0.5 bg-indigo-400 shadow-md shadow-indigo-500/50 animate-bounce" style="top: 20%"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Scanner Stats / Toast Alert inside card -->
+        <div class="w-full max-w-sm mt-4">
+            <div x-show="toastMessage" 
+                 :class="toastType === 'success' ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-300' : 'bg-rose-500/10 border-rose-500/20 text-rose-300'"
+                 class="border rounded-xl p-3 text-xs font-bold text-center leading-relaxed transition"
+                 style="display: none;"
+                 x-text="toastMessage">
+            </div>
+        </div>
+    </div>
+
+    <!-- Recently Scanned Students List -->
+    <div class="bg-white rounded-3xl shadow-sm border border-gray-100 p-6">
+        <h2 class="font-bold text-gray-900 text-base mb-3 flex items-center gap-1.5">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+            </svg>
+            الطلاب الممسوحين مؤخراً (في هذه الجلسة)
+        </h2>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-right text-xs">
+                <thead class="bg-gray-50 text-gray-500">
+                    <tr>
+                        <th class="px-4 py-2 font-bold uppercase">الرقم الجامعي</th>
+                        <th class="px-4 py-2 font-bold uppercase">اسم الطالب الكامل</th>
+                        <th class="px-4 py-2 font-bold uppercase">القسم الدراسي</th>
+                        <th class="px-4 py-2 font-bold uppercase">وقت التحضير</th>
+                        <th class="px-4 py-2 font-bold uppercase text-center">الحالة</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100 text-gray-600">
+                    <template x-for="r in scannedStudents" :key="r.id">
+                        <tr class="hover:bg-slate-50 transition">
+                            <td class="px-4 py-3 font-mono font-bold text-gray-800" x-text="r.universityId"></td>
+                            <td class="px-4 py-3 font-bold text-gray-900" x-text="r.name"></td>
+                            <td class="px-4 py-3" x-text="r.department"></td>
+                            <td class="px-4 py-3 font-mono text-gray-400" x-text="r.scannedTime"></td>
+                            <td class="px-4 py-3 text-center">
+                                <span class="bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-md font-bold text-[10px]" x-text="r.status"></span>
+                            </td>
+                        </tr>
+                    </template>
+                    <tr x-show="scannedStudents.length === 0">
+                        <td colspan="5" class="px-4 py-8 text-center text-gray-400">
+                            لا توجد عمليات مسح نشطة في هذه الجلسة بعد.
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Load html5-qrcode scanner JS library -->
+<script src="{% static 'vendor/html5-qrcode.min.js' %}"></script>
+
+<script>
+    function professorScanner() {
+        return {
+            html5Qrcode: null,
+            cameraDevices: [],
+            activeCameraId: '',
+            toastMessage: '',
+            toastType: 'success',
+            scannedStudents: [],
+            isPaused: false,
+            audioCtx: null,
+
+            init() {
+                // تهيئة سياق الصوت المحلي لتأثير الـ Beep بدون ملفات صوت خارجية (أوفلاين بالكامل)
+                try {
+                    this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {
+                    console.warn("Web Audio API not supported", e);
+                }
+
+                // كشف الكاميرات المتاحة
+                Html5Qrcode.getCameras().then(devices => {
+                    if (devices && devices.length > 0) {
+                        this.cameraDevices = devices;
+                        const selectEl = document.getElementById("camera-select");
+                        selectEl.innerHTML = '';
+                        
+                        devices.forEach(device => {
+                            const option = document.createElement("option");
+                            option.value = device.id;
+                            option.text = device.label || `كاميرا ${selectEl.options.length + 1}`;
+                            selectEl.appendChild(option);
+                        });
+
+                        this.activeCameraId = devices[0].id;
+                        this.startScanning();
+                    } else {
+                        alert("لم يتم العثور على أي كاميرا متصلة بالجهاز!");
+                    }
+                }).catch(err => {
+                    console.error("Error getting cameras", err);
+                    alert("خطأ في صلاحية الكاميرا: يرجى إعطاء الصلاحية للمتصفح!");
+                });
+            },
+
+            startScanning() {
+                if (this.html5Qrcode) {
+                    this.html5Qrcode.stop().then(() => this.initScanner()).catch(() => this.initScanner());
+                } else {
+                    this.initScanner();
+                }
+            },
+
+            initScanner() {
+                this.html5Qrcode = new Html5Qrcode("camera-scanner");
+                const config = { fps: 15, qrbox: 200 };
+
+                this.html5Qrcode.start(
+                    this.activeCameraId, 
+                    config, 
+                    (decodedText, decodedResult) => this.onScanSuccess(decodedText)
+                ).catch(err => {
+                    console.error("Error starting scanner", err);
+                });
+            },
+
+            changeCamera(cameraId) {
+                if (cameraId) {
+                    this.activeCameraId = cameraId;
+                    this.startScanning();
+                }
+            },
+
+            onScanSuccess(universityId) {
+                // منع التكرار الفوري أثناء المسح
+                if (this.isPaused) return;
+                this.isPaused = true;
+
+                // إرسال طلب تأكيد الحضور المباشر
+                const formData = new FormData();
+                formData.append('university_id', universityId);
+                formData.append('bypass_otp', 'true');
+
+                fetch("{% url 'attendance:submit_attendance' session.pk %}", {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                .then(res => {
+                    if (res.status === 200) {
+                        // نجاح المسح
+                        this.playBeep(800, 100); // صوت النجاح (تردد عالي وصوت سريع)
+                        this.showToast(res.body.message || res.body.info, 'success');
+                        
+                        // إضافة الطالب لقائمة الممسوحين مؤخراً
+                        const now = new Date();
+                        const timeStr = String(now.getHours()).padStart(2, '0') + ':' + String(now.getMinutes()).padStart(2, '0') + ':' + String(now.getSeconds()).padStart(2, '0');
+                        
+                        this.scannedStudents.unshift({
+                            id: Math.random().toString(36).substring(2),
+                            universityId: universityId,
+                            name: res.body.student_name,
+                            department: 'جاري تحديث البيانات',
+                            scannedTime: timeStr,
+                            status: 'حاضر'
+                        });
+
+                        // كابح تكرار المسح لنفس الكارت (نصف ثانية)
+                        setTimeout(() => { this.isPaused = false; }, 1500);
+                    } else {
+                        // فشل التحضير
+                        this.playBeep(300, 250); // صوت الفشل (تردد منخفض وصوت أطول)
+                        this.showToast(res.body.error || 'فشل في قراءة بيانات الهوية!', 'error');
+                        setTimeout(() => { this.isPaused = false; }, 2000);
+                    }
+                })
+                .catch(err => {
+                    this.playBeep(300, 250);
+                    this.showToast('خطأ في الاتصال المحلي بالخادم!', 'error');
+                    console.error("Scanner submit error:", err);
+                    setTimeout(() => { this.isPaused = false; }, 2000);
+                });
+            },
+
+            showToast(message, type) {
+                this.toastMessage = message;
+                this.toastType = type;
+            },
+
+            playBeep(frequency, duration) {
+                if (!this.audioCtx) return;
+                try {
+                    // توليد وتوليف نغمة Beep نقية برمجياً بالكامل
+                    const osc = this.audioCtx.createOscillator();
+                    const gain = this.audioCtx.createGain();
+                    
+                    osc.connect(gain);
+                    gain.connect(this.audioCtx.destination);
+                    
+                    osc.frequency.setValueAtTime(frequency, this.audioCtx.currentTime);
+                    osc.type = 'sine';
+                    
+                    gain.gain.setValueAtTime(0.1, this.audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.01, this.audioCtx.currentTime + duration/1000);
+                    
+                    osc.start();
+                    osc.stop(this.audioCtx.currentTime + duration/1000);
+                } catch(e) {
+                    console.error("Audio error", e);
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

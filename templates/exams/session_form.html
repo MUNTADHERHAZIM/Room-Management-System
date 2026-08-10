@@ -1,0 +1,150 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} — نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto pb-12">
+    
+    <!-- Header Section -->
+    <div class="mb-10 text-center relative z-10">
+        <div class="inline-flex items-center justify-center w-20 h-20 rounded-3xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-2xl shadow-purple-500/40 mb-6 transform -rotate-3 hover:rotate-0 transition-transform duration-300">
+            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+        </div>
+        <h1 class="text-4xl font-black text-gray-900 tracking-tight">{{ title }}</h1>
+        <p class="text-gray-500 mt-3 text-lg font-medium">قم بإعداد تفاصيل الجلسة الامتحانية بدقة لضمان توزيع مثالي</p>
+    </div>
+
+    <!-- Main Form Container -->
+    <div class="relative">
+        <!-- Decorative Background Gradients -->
+        <div class="absolute -top-10 -right-10 w-48 h-48 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div class="absolute -bottom-10 -left-10 w-48 h-48 bg-indigo-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+
+        <!-- Glassmorphism Card -->
+        <div class="bg-white/80 backdrop-blur-2xl rounded-[2rem] shadow-xl border border-white/50 p-8 sm:p-12 relative z-10">
+            
+            <form method="POST" class="space-y-8">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="bg-red-50/50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl mb-8 flex items-center gap-3">
+                    <svg class="w-6 h-6 text-red-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    <div>{{ form.non_field_errors }}</div>
+                </div>
+                {% endif %}
+
+                <!-- General Info Box -->
+                <div class="bg-gray-50/50 rounded-3xl p-6 sm:p-8 border border-gray-100/50">
+                    <h3 class="text-sm font-bold text-gray-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        المعلومات الأساسية
+                    </h3>
+                    
+                    <div class="space-y-6">
+                        <!-- Name Field -->
+                        <div>
+                            <label for="{{ form.name.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                اسم الجلسة {% if form.name.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            {{ form.name }}
+                            {% if form.name.errors %}
+                            <p class="text-sm text-red-500 mt-2 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ form.name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Semester Field -->
+                        <div>
+                            <label for="{{ form.semester.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                الفصل الدراسي {% if form.semester.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            {{ form.semester }}
+                            {% if form.semester.errors %}
+                            <p class="text-sm text-red-500 mt-2 flex items-center gap-1"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> {{ form.semester.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timing Info Box -->
+                <div class="bg-purple-50/30 rounded-3xl p-6 sm:p-8 border border-purple-100/50">
+                    <h3 class="text-sm font-bold text-purple-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+                        <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        الزمان والتوقيت
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Date Field -->
+                        <div>
+                            <label for="{{ form.date.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                تاريخ الامتحان {% if form.date.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            {{ form.date }}
+                            {% if form.date.errors %}
+                            <p class="text-sm text-red-500 mt-2">{{ form.date.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Start Time Field -->
+                        <div>
+                            <label for="{{ form.start_time.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                وقت البدء {% if form.start_time.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            {{ form.start_time }}
+                            {% if form.start_time.errors %}
+                            <p class="text-sm text-red-500 mt-2">{{ form.start_time.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- End Time Field -->
+                        <div>
+                            <label for="{{ form.end_time.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                                وقت الانتهاء {% if form.end_time.field.required %}<span class="text-red-500">*</span>{% endif %}
+                            </label>
+                            {{ form.end_time }}
+                            {% if form.end_time.errors %}
+                            <p class="text-sm text-red-500 mt-2">{{ form.end_time.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes Field -->
+                <div>
+                    <label for="{{ form.notes.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2 pl-2">
+                        ملاحظات إضافية
+                    </label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                    <p class="text-sm text-red-500 mt-2">{{ form.notes.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex items-center justify-end gap-4 pt-8 mt-8 border-t border-gray-100">
+                    <a href="{% url 'exams:session_list' %}" class="px-6 py-3.5 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all">
+                        إلغاء والعودة
+                    </a>
+                    <button type="submit" class="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white px-10 py-3.5 rounded-2xl font-bold transition-all shadow-xl shadow-purple-500/30 flex items-center gap-2 transform hover:-translate-y-1">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        {% if session %}حفظ التعديلات{% else %}إنشاء الجلسة{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling injected form classes for enhanced glassy look */
+    .form-input, .form-select, .form-textarea, .tom-select {
+        @apply bg-white/60 border-gray-200/80 backdrop-blur-sm shadow-inner transition-all duration-300;
+        border-width: 2px !important;
+    }
+    .form-input:focus, .form-select:focus, .form-textarea:focus {
+        @apply bg-white border-purple-400 ring-4 ring-purple-500/10;
+        outline: none !important;
+    }
+</style>
+{% endblock %}

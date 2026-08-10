@@ -4,120 +4,290 @@
 {% block title %}بحث عن قاعة متاحة - نظام إدارة القاعات{% endblock %}
 
 {% block content %}
-<div class="max-w-5xl mx-auto space-y-8">
+<div class="max-w-7xl mx-auto space-y-8">
     <!-- Header -->
     <div class="text-center">
         <div
-            class="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl shadow-lg mb-4">
-            <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            class="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-3xl shadow-2xl shadow-blue-200 mb-6">
+            <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
             </svg>
         </div>
-        <h1 class="text-3xl font-bold text-gray-900 mb-2">بحث عن قاعة متاحة</h1>
-        <p class="text-gray-600">ابحث عن القاعات المتاحة في وقت معين للدروس أو الاجتماعات</p>
+        <h1 class="text-4xl font-black text-gray-900 mb-3">بحث عن قاعة متاحة</h1>
+        <p class="text-gray-500 text-lg">ابحث عن القاعات المتاحة في وقت معين مع فلاتر متقدمة</p>
     </div>
 
     <!-- Search Form -->
-    <div class="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-        <form method="POST" class="space-y-6" novalidate>
+    <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden">
+        <form method="POST" class="space-y-0" novalidate>
             {% csrf_token %}
 
             {% if form.non_field_errors %}
-            <div class="bg-red-50 border border-red-200 text-red-700 rounded-xl p-4 flex items-center gap-3">
-                <svg class="w-5 h-5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <div class="bg-red-50 border-b border-red-200 text-red-700 p-6 flex items-center gap-3">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                 </svg>
-                {{ form.non_field_errors }}
+                <span class="font-bold">{{ form.non_field_errors }}</span>
             </div>
             {% endif %}
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Day Field -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2" for="{{ form.day.id_for_label }}">
-                        <span class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
+            <!-- الحقول الأساسية -->
+            <div class="bg-gradient-to-l from-blue-600 to-indigo-700 p-8">
+                <h2 class="text-white text-xl font-black mb-6 flex items-center gap-3">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    تحديد الوقت والتاريخ
+                </h2>
+
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
+                    <!-- Day Field -->
+                    <div>
+                        <label class="block text-sm font-bold text-blue-100 mb-2">
                             {{ form.day.label }}
-                        </span>
-                    </label>
-                    {{ form.day }}
-                    {% if form.day.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.day.errors.0 }}</p>
-                    {% endif %}
-                </div>
+                        </label>
+                        <div class="relative">
+                            <select name="day" id="id_day"
+                                class="tom-select w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 text-white rounded-xl py-3 px-4 focus:border-white focus:ring-4 focus:ring-white/20 font-bold appearance-none">
+                                {% for value, label in form.day.field.choices %}
+                                <option value="{{ value }}" {% if form.day.value == value %}selected{% endif %}
+                                    class="text-gray-900">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-white/70">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                        {% if form.day.errors %}
+                        <p class="text-red-200 text-sm mt-2 bg-red-500/30 px-3 py-1 rounded-lg">{{ form.day.errors.0 }}
+                        </p>
+                        {% endif %}
+                    </div>
 
-                <!-- Start Time Field -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2"
-                        for="{{ form.start_time.id_for_label }}">
-                        <span class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                    <!-- Semester Field -->
+                    <div>
+                        <label class="block text-sm font-bold text-blue-100 mb-2">
+                            {{ form.semester.label }}
+                        </label>
+                        <div class="relative">
+                            <select name="semester" id="id_semester"
+                                class="tom-select w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 text-white rounded-xl py-3 px-4 focus:border-white focus:ring-4 focus:ring-white/20 font-bold appearance-none">
+                                {% for value, label in form.semester.field.choices %}
+                                <option value="{{ value }}" {% if form.semester.value == value %}selected{% endif %}
+                                    class="text-gray-900">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-white/70">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Start Time Field -->
+                    <div>
+                        <label class="block text-sm font-bold text-blue-100 mb-2">
                             {{ form.start_time.label }}
-                        </span>
-                    </label>
-                    {{ form.start_time }}
-                    {% if form.start_time.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.start_time.errors.0 }}</p>
-                    {% endif %}
-                </div>
+                        </label>
+                        <input type="time" name="start_time" id="id_start_time_search"
+                            value="{{ form.start_time.value|default:'' }}"
+                            class="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 text-white rounded-xl py-3 px-4 focus:border-white focus:ring-4 focus:ring-white/20 font-bold">
+                        {% if form.start_time.errors %}
+                        <p class="text-red-200 text-sm mt-2 bg-red-500/30 px-3 py-1 rounded-lg">
+                            {{ form.start_time.errors.0 }}</p>
+                        {% endif %}
+                    </div>
 
-                <!-- End Time Field -->
-                <div>
-                    <label class="block text-sm font-semibold text-gray-700 mb-2"
-                        for="{{ form.end_time.id_for_label }}">
-                        <span class="flex items-center gap-2">
-                            <svg class="w-4 h-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                            </svg>
+                    <!-- Duration Field -->
+                    <div>
+                        <label class="block text-sm font-bold text-blue-100 mb-2">
+                            {{ form.duration.label }}
+                        </label>
+                        <div class="relative">
+                            <select name="duration" id="id_duration_search"
+                                class="tom-select w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 text-white rounded-xl py-3 px-4 focus:border-white focus:ring-4 focus:ring-white/20 font-bold appearance-none">
+                                {% for value, label in form.duration.field.choices %}
+                                <option value="{{ value }}" {% if form.duration.value == value %}selected{% endif %}
+                                    class="text-gray-900">{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                            <div
+                                class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none text-white/70">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- End Time Field -->
+                    <div>
+                        <label class="block text-sm font-bold text-blue-100 mb-2">
                             {{ form.end_time.label }}
-                        </span>
-                    </label>
-                    {{ form.end_time }}
-                    {% if form.end_time.errors %}
-                    <p class="text-red-500 text-sm mt-1">{{ form.end_time.errors.0 }}</p>
-                    {% endif %}
+                        </label>
+                        <input type="time" name="end_time" id="id_end_time_search"
+                            value="{{ form.end_time.value|default:'' }}"
+                            class="w-full bg-white/10 backdrop-blur-xl border-2 border-white/20 text-white rounded-xl py-3 px-4 focus:border-white focus:ring-4 focus:ring-white/20 font-bold">
+                        {% if form.end_time.errors %}
+                        <p class="text-red-200 text-sm mt-2 bg-red-500/30 px-3 py-1 rounded-lg">
+                            {{ form.end_time.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- الفلاتر المتقدمة -->
+            <div class="p-8 bg-gray-50 border-b border-gray-100">
+                <button type="button" onclick="toggleAdvancedFilters()"
+                    class="flex items-center gap-3 text-gray-700 font-bold text-lg hover:text-blue-600 transition-colors mb-6">
+                    <svg id="filter-icon" class="w-6 h-6 transition-transform" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+                    </svg>
+                    فلاتر البحث المتقدم
+                    <span class="text-blue-500 text-sm bg-blue-100 px-3 py-1 rounded-full">اختياري</span>
+                    <svg id="filter-chevron" class="w-5 h-5 transition-transform" fill="none" stroke="currentColor"
+                        viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                    </svg>
+                </button>
+
+                <div id="advanced-filters" class="hidden">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
+                        <!-- Floor -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-gray-700">{{ form.floor.label }}</label>
+                            {{ form.floor }}
+                        </div>
+
+                        <!-- Room Type -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-gray-700">{{ form.room_type.label }}</label>
+                            {{ form.room_type }}
+                        </div>
+
+                        <!-- Min Capacity -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-gray-700">{{ form.min_capacity.label }}</label>
+                            {{ form.min_capacity }}
+                        </div>
+
+                        <!-- Max Capacity -->
+                        <div class="space-y-2">
+                            <label class="block text-sm font-bold text-gray-700">{{ form.max_capacity.label }}</label>
+                            {{ form.max_capacity }}
+                        </div>
+                    </div>
+
+                    <!-- المرافق -->
+                    <div class="bg-white rounded-2xl p-6 border border-gray-200">
+                        <h3 class="font-bold text-gray-700 mb-4 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                            </svg>
+                            المرافق المطلوبة
+                        </h3>
+                        <div class="flex flex-wrap gap-6">
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                {{ form.has_projector }}
+                                <span
+                                    class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-blue-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    بروجكتر
+                                </span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                {{ form.has_computers }}
+                                <span
+                                    class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                    </svg>
+                                    حاسبات
+                                </span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                {{ form.has_air_conditioning }}
+                                <span
+                                    class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-cyan-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707" />
+                                    </svg>
+                                    تكييف
+                                </span>
+                            </label>
+                            <label class="flex items-center gap-3 cursor-pointer group">
+                                {{ form.has_audio_system }}
+                                <span
+                                    class="font-medium text-gray-700 group-hover:text-blue-600 transition-colors flex items-center gap-2">
+                                    <svg class="w-5 h-5 text-purple-500" fill="none" stroke="currentColor"
+                                        viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                    </svg>
+                                    صوتيات
+                                </span>
+                            </label>
+                        </div>
+                    </div>
                 </div>
             </div>
 
             <!-- Submit Button -->
-            <button type="submit"
-                class="w-full bg-gradient-to-l from-blue-600 to-indigo-700 text-white py-4 rounded-xl hover:from-blue-700 hover:to-indigo-800 transition-all font-bold text-lg shadow-lg hover:shadow-xl active:scale-95 transform">
-                <span class="flex items-center justify-center gap-3">
-                    <svg class="w-6 h-6 border-2 border-white/30 rounded-full" fill="none" stroke="currentColor"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                    </svg>
-                    بحث عن القاعات المتاحة الآن
-                </span>
-            </button>
+            <div class="p-8 bg-white">
+                <button type="submit"
+                    class="w-full bg-gradient-to-l from-blue-600 to-indigo-700 text-white py-5 rounded-2xl hover:from-blue-700 hover:to-indigo-800 transition-all font-black text-xl shadow-2xl shadow-blue-200 hover:shadow-blue-300 active:scale-[0.98] transform">
+                    <span class="flex items-center justify-center gap-4">
+                        <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                        بحث عن القاعات المتاحة الآن
+                    </span>
+                </button>
+            </div>
         </form>
     </div>
 
     <!-- Results Section -->
     {% if searched %}
-    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden border border-gray-100 animate-fade-in">
-        <div class="bg-gradient-to-l from-emerald-500 to-teal-600 px-8 py-5 flex items-center justify-between">
-            <div class="flex items-center gap-3 text-white">
-                <div class="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden border border-gray-100 animate-fade-in">
+        <div class="bg-gradient-to-l from-emerald-500 to-teal-600 px-8 py-6 flex items-center justify-between">
+            <div class="flex items-center gap-4 text-white">
+                <div class="w-14 h-14 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-xl">
+                    <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <h2 class="text-xl font-bold">القاعات المتاحة ({{ room_count }})</h2>
+                <div>
+                    <h2 class="text-2xl font-black">القاعات المتاحة</h2>
+                    <p class="text-emerald-100 text-sm">تم العثور على {{ room_count }} قاعة</p>
+                </div>
             </div>
-            <div class="text-white/80 text-sm font-medium">
-                {{ selected_day }} | {{ start_time }} - {{ end_time }}
+            <div class="text-white/90 text-base font-bold bg-white/20 px-5 py-2 rounded-xl backdrop-blur-xl">
+                {{ selected_day }} | {{ start_time|time:"H:i" }} - {{ end_time|time:"H:i" }}
             </div>
         </div>
 
@@ -126,18 +296,18 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {% for room in available_rooms %}
                 <div
-                    class="group bg-white border border-gray-100 rounded-2xl p-6 hover:border-blue-300 hover:shadow-2xl transition-all duration-300 relative overflow-hidden">
+                    class="group bg-white border-2 border-gray-100 rounded-3xl p-6 hover:border-blue-300 hover:shadow-2xl hover:shadow-blue-100 transition-all duration-300 relative overflow-hidden">
                     <!-- Background Pattern -->
                     <div
-                        class="absolute -right-4 -top-4 w-20 h-20 bg-blue-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
+                        class="absolute -right-8 -top-8 w-32 h-32 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-500">
                     </div>
 
                     <div class="relative">
-                        <div class="flex items-start justify-between mb-4">
-                            <div class="flex items-center gap-3">
+                        <div class="flex items-start justify-between mb-5">
+                            <div class="flex items-center gap-4">
                                 <div
-                                    class="w-12 h-12 bg-blue-50 group-hover:bg-blue-100 rounded-xl flex items-center justify-center transition-colors">
-                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor"
+                                    class="w-14 h-14 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg shadow-blue-200 group-hover:scale-110 transition-transform">
+                                    <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor"
                                         viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
@@ -145,27 +315,46 @@
                                 </div>
                                 <div>
                                     <h3
-                                        class="font-bold text-gray-900 text-lg group-hover:text-blue-700 transition-colors">
+                                        class="font-black text-gray-900 text-xl group-hover:text-blue-700 transition-colors">
                                         {{ room.name }}</h3>
-                                    <span class="text-sm text-gray-500">{{ room.get_room_type_display }}</span>
+                                    <span class="text-sm text-gray-500 font-medium">{{ room.get_room_type_display
+                                        }}</span>
                                 </div>
                             </div>
                         </div>
 
                         <div class="space-y-3 mb-6">
-                            <p class="flex items-center gap-2 text-sm text-gray-600">
-                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor"
+                            <p class="flex items-center gap-3 text-gray-600">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
                                     viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
                                 </svg>
-                                {{ room.department.college.name }} - {{ room.department.name }}
+                                <span class="font-medium">{{ room.department.college.name }}</span>
                             </p>
+                            <p class="flex items-center gap-3 text-gray-600">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z" />
+                                </svg>
+                                <span class="font-medium">{{ room.department.name }}</span>
+                            </p>
+                            {% if room.floor %}
+                            <p class="flex items-center gap-3 text-gray-600">
+                                <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 10h18M3 6h18m-9 8h9m-9 4h9" />
+                                </svg>
+                                <span class="font-medium">{{ room.floor }}</span>
+                            </p>
+                            {% endif %}
 
-                            <div class="flex flex-wrap gap-2">
+                            <div class="flex flex-wrap gap-2 pt-2">
                                 <span
-                                    class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-medium">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-100 text-blue-700 text-sm font-bold">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
                                     </svg>
@@ -173,18 +362,26 @@
                                 </span>
                                 {% if room.has_projector %}
                                 <span
-                                    class="px-3 py-1 rounded-full bg-emerald-100 text-emerald-700 text-xs font-medium">✓
+                                    class="px-3 py-1.5 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold">✓
                                     بروجكتر</span>
                                 {% endif %}
                                 {% if room.has_computers %}
-                                <span class="px-3 py-1 rounded-full bg-indigo-100 text-indigo-700 text-xs font-medium">✓
+                                <span class="px-3 py-1.5 rounded-full bg-indigo-100 text-indigo-700 text-xs font-bold">✓
                                     حاسبات</span>
+                                {% endif %}
+                                {% if room.has_air_conditioning %}
+                                <span class="px-3 py-1.5 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold">✓
+                                    تكييف</span>
+                                {% endif %}
+                                {% if room.has_audio_system %}
+                                <span class="px-3 py-1.5 rounded-full bg-purple-100 text-purple-700 text-xs font-bold">✓
+                                    صوتيات</span>
                                 {% endif %}
                             </div>
                         </div>
 
                         <a href="{% url 'rooms:detail' room.pk %}"
-                            class="block w-full text-center py-3 px-4 bg-gray-50 group-hover:bg-blue-600 group-hover:text-white rounded-xl text-gray-700 font-bold transition-all duration-300">
+                            class="block w-full text-center py-4 px-4 bg-gradient-to-l from-blue-500 to-indigo-600 group-hover:from-blue-600 group-hover:to-indigo-700 text-white rounded-2xl font-bold transition-all duration-300 shadow-lg shadow-blue-200 hover:shadow-blue-300">
                             عرض جدول القاعة
                         </a>
                     </div>
@@ -193,18 +390,24 @@
             </div>
             {% else %}
             <div class="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed border-gray-200">
-                <div class="w-24 h-24 bg-white rounded-full flex items-center justify-center mx-auto mb-6 shadow-sm">
-                    <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="w-28 h-28 bg-white rounded-full flex items-center justify-center mx-auto mb-8 shadow-lg">
+                    <svg class="w-14 h-14 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
-                <h3 class="text-2xl font-bold text-gray-800 mb-3">لا توجد قاعات متاحة!</h3>
-                <p class="text-gray-500 max-w-md mx-auto">عذراً، جميع القاعات مشغولة في هذا الوقت. يرجى محاولة تغيير
-                    الوقت أو اليوم.</p>
-                <div class="mt-8">
-                    <a href="{% url 'schedules:timeline' %}" class="text-blue-600 font-bold hover:underline">مشاهدة
-                        الجدول الزمني العام ←</a>
+                <h3 class="text-3xl font-black text-gray-800 mb-4">لا توجد قاعات متاحة!</h3>
+                <p class="text-gray-500 max-w-lg mx-auto text-lg mb-8">عذراً، جميع القاعات مشغولة في هذا الوقت. يرجى
+                    محاولة تغيير الوقت أو اليوم أو تعديل الفلاتر.</p>
+                <div class="flex flex-wrap justify-center gap-4">
+                    <a href="{% url 'schedules:timeline' %}"
+                        class="inline-flex items-center gap-2 text-blue-600 font-bold hover:underline text-lg">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                        مشاهدة الجدول الزمني العام
+                    </a>
                 </div>
             </div>
             {% endif %}
@@ -229,5 +432,56 @@
     .animate-fade-in {
         animation: fade-in 0.6s cubic-bezier(0.16, 1, 0.3, 1);
     }
+
+    /* تحسين مظهر الحقول */
+    input[type="time"],
+    select,
+    input[type="number"] {
+        font-weight: 700;
+    }
 </style>
+
+<script>
+    // تبديل عرض الفلاتر المتقدمة
+    function toggleAdvancedFilters() {
+        const filters = document.getElementById('advanced-filters');
+        const chevron = document.getElementById('filter-chevron');
+        filters.classList.toggle('hidden');
+        chevron.classList.toggle('rotate-180');
+    }
+
+    // حساب وقت النهاية تلقائياً بناءً على مدة المحاضرة
+    document.addEventListener('DOMContentLoaded', function () {
+        const startTimeInput = document.getElementById('id_start_time_search');
+        const durationSelect = document.getElementById('id_duration_search');
+        const endTimeInput = document.getElementById('id_end_time_search');
+
+        function calculateEndTime() {
+            const startTime = startTimeInput.value;
+            const duration = durationSelect.value;
+
+            if (startTime && duration) {
+                // تحويل وقت البداية إلى دقائق
+                const [hours, minutes] = startTime.split(':').map(Number);
+                const startMinutes = hours * 60 + minutes;
+
+                // إضافة المدة
+                const endMinutes = startMinutes + parseInt(duration);
+
+                // تحويل إلى ساعات:دقائق
+                const endHours = Math.floor(endMinutes / 60);
+                const endMins = endMinutes % 60;
+
+                // تنسيق الوقت
+                const formattedTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+                endTimeInput.value = formattedTime;
+            }
+        }
+
+        if (startTimeInput && durationSelect && endTimeInput) {
+            startTimeInput.addEventListener('change', calculateEndTime);
+            durationSelect.addEventListener('change', calculateEndTime);
+        }
+    });
+</script>
 {% endblock %}

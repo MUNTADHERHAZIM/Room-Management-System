@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}استيراد طلاب — نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border p-8">
+        <h1 class="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <div class="bg-emerald-100 p-3 rounded-xl">
+                <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                </svg>
+            </div>
+            استيراد طلاب من Excel
+        </h1>
+
+        <!-- Instructions -->
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-5 mb-6">
+            <h3 class="font-bold text-blue-800 mb-3 flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                تنسيق الملف المطلوب
+            </h3>
+            <div class="overflow-x-auto">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="text-blue-700">
+                            <th class="text-right py-2 px-3 bg-blue-100 rounded-r-lg">العمود A</th>
+                            <th class="text-right py-2 px-3 bg-blue-100">العمود B</th>
+                            <th class="text-right py-2 px-3 bg-blue-100">العمود C</th>
+                            <th class="text-right py-2 px-3 bg-blue-100">العمود D</th>
+                            <th class="text-right py-2 px-3 bg-blue-100 rounded-l-lg">العمود E</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="text-blue-600 font-bold">
+                            <td class="py-2 px-3">الاسم الكامل</td>
+                            <td class="py-2 px-3">الرقم الجامعي</td>
+                            <td class="py-2 px-3">القسم (اختياري)</td>
+                            <td class="py-2 px-3">المرحلة (اختياري)</td>
+                            <td class="py-2 px-3">اللقب العائلي (اختياري)</td>
+                        </tr>
+                        <tr class="text-gray-500">
+                            <td class="py-2 px-3">أحمد محمد علي</td>
+                            <td class="py-2 px-3">2024001</td>
+                            <td class="py-2 px-3">هندسة البرمجيات</td>
+                            <td class="py-2 px-3">الأولى</td>
+                            <td class="py-2 px-3">علي</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <p class="text-xs text-blue-500 mt-3">
+                * السطر الأول يعتبر عنوان الأعمدة ولا يُستورد
+            </p>
+        </div>
+
+        <form method="POST" enctype="multipart/form-data" class="space-y-6">
+            {% csrf_token %}
+
+            {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}" class="block text-sm font-bold text-gray-700 mb-2">
+                    {{ field.label }}
+                    {% if field.field.required %}<span class="text-red-500">*</span>{% endif %}
+                </label>
+                {{ field }}
+                {% if field.help_text %}
+                <p class="text-xs text-gray-400 mt-1">{{ field.help_text }}</p>
+                {% endif %}
+                {% if field.errors %}
+                <p class="text-sm text-red-500 mt-1">{{ field.errors.0 }}</p>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="flex items-center gap-4 pt-4 border-t">
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white px-8 py-3 rounded-xl font-bold transition-all shadow-lg flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    بدء الاستيراد
+                </button>
+                <a href="{% url 'exams:student_list' %}" class="text-gray-500 hover:text-gray-700 font-bold">إلغاء</a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,288 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}بوابة الحضور والانصراف الذكية - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+        <div>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span style="background-color: #e0e7ff; color: #3730a3;" class="p-2 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </span>
+                بوابة الحضور والانصراف الذكية
+            </h1>
+            <p class="text-sm font-bold text-gray-600 mt-1">إدارة تفاعلية فائقة المرونة لجلسات الحضور، الـ QR المشفر، رموز PIN، وسجلات غياب الطلاب</p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'attendance:attendance_history' %}"
+               style="background-color: #4f46e5; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                سجل الحضور والتقارير
+            </a>
+
+            <a href="{% url 'attendance:join_by_pin' %}"
+               style="background-color: #059669; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                تحضير الـ PIN للطالب
+            </a>
+
+            <a href="{% url 'attendance:digital_id' %}"
+               style="background-color: #9333ea; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.333 0 4 .667 4 2v1H5v-1c0-1.333 2.667-2 4-2z" />
+                </svg>
+                الهوية الرقمية
+            </a>
+
+            <a href="{% url 'attendance:offline_setup_guide' %}"
+               class="bg-gray-200 hover:bg-gray-300 text-gray-900 font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 border border-gray-300">
+                <svg class="w-4 h-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                دليل الـ IP
+            </a>
+        </div>
+    </div>
+
+    <!-- KPIs Row -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <!-- Present Rate -->
+        <div style="background-color: #059669; color: #ffffff;" class="rounded-2xl p-5 shadow-lg border border-emerald-700 relative overflow-hidden">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs font-black text-emerald-100 uppercase tracking-wider">نسبة حضور اليوم</span>
+                    <h3 class="text-3xl font-black mt-1">%{{ attendance_rate }}</h3>
+                    <p class="text-xs text-emerald-100 font-bold mt-1">من إجمالي التسجيلات لليوم</p>
+                </div>
+                <div class="p-3 bg-white/20 rounded-xl">
+                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Sessions -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs font-bold text-gray-700">الجلسات المفتوحة الآن</span>
+                    <h3 class="text-3xl font-black text-indigo-700 mt-1">{{ active_sessions.count }}</h3>
+                    <p class="text-xs text-gray-600 font-bold mt-1">جلسات تسجيل نشطة حالياً</p>
+                </div>
+                <div style="background-color: #e0e7ff; color: #4338ca;" class="p-3 rounded-xl">
+                    <span class="relative flex h-3 w-3">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-indigo-600"></span>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Present Today -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs font-bold text-gray-700">الطلاب الحاضرين اليوم</span>
+                    <h3 class="text-3xl font-black text-green-700 mt-1">{{ today_present_count }}</h3>
+                    <p class="text-xs text-gray-600 font-bold mt-1">تسجيل حضور مؤكد</p>
+                </div>
+                <div style="background-color: #dcfce7; color: #15803d;" class="p-3 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.768-.231-1.48-.634-2.048M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.768.231-1.48.634-2.048M12 14a4 4 0 110-8 4 4 0 010 8z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Absences Today -->
+        <div class="bg-white rounded-2xl p-5 border border-gray-200 shadow-sm">
+            <div class="flex justify-between items-start">
+                <div>
+                    <span class="text-xs font-bold text-gray-700">الغياب والتأخير</span>
+                    <h3 class="text-3xl font-black text-red-700 mt-1">{{ today_absent_count|add:today_late_count }}</h3>
+                    <p class="text-xs text-gray-600 font-bold mt-1">غائب: {{ today_absent_count }} | متأخر: {{ today_late_count }}</p>
+                </div>
+                <div style="background-color: #fee2e2; color: #b91c1c;" class="p-3 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Sessions Highlight Section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-green-200 p-6 border-r-4 border-r-green-600">
+        <h2 class="text-lg font-black text-gray-900 mb-4 flex items-center gap-2">
+            <span class="relative flex h-3 w-3">
+                <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+                <span class="relative inline-flex rounded-full h-3 w-3 bg-green-600"></span>
+            </span>
+            جلسات التحضير المفتوحة للتسجيل حالياً
+        </h2>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {% for session in active_sessions %}
+            <div class="border border-green-200 bg-green-50/50 rounded-2xl p-5 flex flex-col justify-between hover:shadow-md transition">
+                <div>
+                    <div class="flex justify-between items-center mb-2">
+                        <span style="background-color: #dcfce7; color: #166534;" class="text-xs font-black px-2.5 py-1 rounded-full border border-green-300">
+                            {% if session.session_type == 'استثنائية' %}جلسة سريعة (Ad-hoc){% else %}مجدولة اليوم{% endif %}
+                        </span>
+                        <span style="background-color: #e0e7ff; color: #3730a3;" class="text-xs font-mono font-black px-2.5 py-0.5 rounded border border-indigo-200">
+                            PIN: {{ session.session_pin }}
+                        </span>
+                    </div>
+
+                    <h3 class="font-black text-gray-900 text-lg">{{ session.get_subject_name }}</h3>
+                    <p class="text-sm font-bold text-gray-700 mt-1">الأستاذ: {{ session.get_instructor_name }}</p>
+                    <p class="text-xs font-bold text-gray-600 mt-2 flex items-center gap-2">
+                        <span>القاعة: <strong class="text-gray-900">{{ session.get_room_name }}</strong></span> | 
+                        <span>التاريخ: {{ session.date|date:"Y-m-d" }}</span>
+                    </p>
+                </div>
+
+                <div class="mt-5 pt-3 border-t border-green-200 flex justify-between items-center">
+                    <span class="text-xs text-gray-800 font-bold">الحاضرين: <strong class="text-green-800 text-base font-black">{{ session.records.count }}</strong> طالب</span>
+                    <a href="{% url 'attendance:session_detail' session.pk %}"
+                       style="background-color: #059669; color: #ffffff;"
+                       class="px-4 py-2 rounded-xl text-xs font-black hover:bg-green-700 transition shadow-sm">
+                       فتح الشاشة والـ QR 🚀
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="col-span-full py-8 text-center text-gray-600 font-bold bg-gray-50 rounded-2xl border border-dashed border-gray-300">
+                لا توجد جلسات تحضير مفتوحة حالياً. يمكنك بدء جلسة حضور جديدة من قائمة الجدول أو إنشاء تحضير سريع أدناه.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Ad-hoc Session Quick Creator (High Contrast Dark Indigo Card with explicit Inline Styles) -->
+    <div style="background-color: #1e1b4b; color: #ffffff;" class="rounded-2xl shadow-xl p-6 border border-indigo-900">
+        <div class="mb-5">
+            <h2 class="text-xl font-black text-white flex items-center gap-2">
+                <svg class="w-6 h-6 text-yellow-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                فتح جلسة حضور سريعة (بدون جدول مسبق)
+            </h2>
+            <p class="text-xs text-indigo-100 font-bold mt-1">اختر المادة والأستاذ والقاعة لفتح جلسة تحضير فورية بـ QR ورمز PIN مؤقت</p>
+        </div>
+
+        <form method="POST" action="{% url 'attendance:create_adhoc_session' %}" class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
+            {% csrf_token %}
+
+            <div>
+                <label class="block text-xs font-black text-indigo-100 mb-1">المادة الدراسية *</label>
+                <select name="subject_id" class="tom-select w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-3 focus:ring-2 focus:ring-indigo-500 shadow-sm" required placeholder="اختر المادة...">
+                    <option value="" class="text-gray-500 font-bold">-- اختر المادة --</option>
+                    {% for sub in subjects %}
+                    <option value="{{ sub.id }}" class="text-gray-900 font-bold">{{ sub.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-black text-indigo-100 mb-1">الأستاذ المحاضر *</label>
+                <select name="instructor_id" class="tom-select w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-3 focus:ring-2 focus:ring-indigo-500 shadow-sm" required placeholder="اختر الأستاذ...">
+                    <option value="" class="text-gray-500 font-bold">-- اختر الأستاذ --</option>
+                    {% for inst in instructors %}
+                    <option value="{{ inst.id }}" class="text-gray-900 font-bold">{{ inst.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs font-black text-indigo-100 mb-1">القاعة الدراسية *</label>
+                <select name="room_id" class="tom-select w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-3 focus:ring-2 focus:ring-indigo-500 shadow-sm" required placeholder="اختر القاعة...">
+                    <option value="" class="text-gray-500 font-bold">-- اختر القاعة --</option>
+                    {% for r in rooms %}
+                    <option value="{{ r.id }}" class="text-gray-900 font-bold">{{ r.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <button type="submit" style="background-color: #4f46e5; color: #ffffff;" class="w-full font-black py-3 px-6 rounded-xl shadow-lg transition text-sm flex items-center justify-center gap-2">
+                    <span>🚀 بدء التحضير الفوري</span>
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Container for HTMX Modal -->
+    <div id="modal-container"></div>
+
+    <!-- Schedules Table for Starting Scheduled Session -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-black text-gray-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                </svg>
+                جدول الحصص المتاحة للتحضير اليوم
+            </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead class="bg-gray-100 text-gray-800 text-xs font-black uppercase border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-3.5">المادة الدراسية</th>
+                        <th class="px-6 py-3.5">الأستاذ</th>
+                        <th class="px-6 py-3.5">القاعة الدراسية</th>
+                        <th class="px-6 py-3.5">اليوم والتوقيت</th>
+                        <th class="px-6 py-3.5 text-center">إجراءات الجلسة</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm font-bold text-gray-800">
+                    {% for schedule in schedules %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-black text-gray-900">
+                            {{ schedule.subject.name }}
+                            <span class="block text-xs font-bold text-gray-500 mt-0.5">{{ schedule.schedule_type }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-900">{{ schedule.instructor.name }}</td>
+                        <td class="px-6 py-4 font-bold text-gray-900">{{ schedule.room.name }}</td>
+                        <td class="px-6 py-4">
+                            <span style="background-color: #e0e7ff; color: #3730a3;" class="border border-indigo-200 px-2 py-0.5 rounded text-xs font-black">{{ schedule.day }}</span>
+                            <span class="block text-xs font-mono text-gray-600 mt-1">{{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'attendance:create_session' schedule.pk %}"
+                               style="background-color: #2563eb; color: #ffffff;"
+                               class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl text-xs font-black transition shadow-sm">
+                                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                                </svg>
+                                فتح الجلسة الآن
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500 font-bold">لا توجد حصص مضافة في جدول الحصص اليوم.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

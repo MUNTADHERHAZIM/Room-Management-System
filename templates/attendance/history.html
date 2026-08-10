@@ -1,0 +1,243 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}سجل الحضور والتقارير الشاملة - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+        <div>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-2">
+                <span style="background-color: #e0e7ff; color: #3730a3;" class="p-2 rounded-xl">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </span>
+                سجل الحضور والتقارير الشاملة
+            </h1>
+            <p class="text-sm font-bold text-gray-600 mt-1">عرض وتصفية كافة سجلات حضور وغياب الطلاب عبر الأقسام والمواد والتاريخ</p>
+        </div>
+
+        <div class="flex flex-wrap gap-2">
+            <a href="{% url 'attendance:export_history_excel' %}?department={{ selected_dept }}&stage={{ selected_stage }}&subject={{ selected_subject }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}&search={{ search_query }}"
+               style="background-color: #059669; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                تصدير إكسل Excel
+            </a>
+
+            <a href="{% url 'attendance:export_history_pdf' %}?department={{ selected_dept }}&stage={{ selected_stage }}&subject={{ selected_subject }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}&search={{ search_query }}"
+               style="background-color: #b91c1c; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-2 shadow-md">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" />
+                </svg>
+                تصدير PDF
+            </a>
+        </div>
+    </div>
+
+    <!-- Analytics Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-gray-700">إجمالي السجلات</span>
+            <h3 class="text-2xl font-black text-gray-900 mt-1">{{ total_records }}</h3>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-green-800">نسبة الحضور</span>
+            <h3 class="text-2xl font-black text-green-700 mt-1">%{{ attendance_rate }}</h3>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-green-800">الحاضرين</span>
+            <h3 class="text-2xl font-black text-green-700 mt-1">{{ present_count }}</h3>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-red-800">الغياب</span>
+            <h3 class="text-2xl font-black text-red-700 mt-1">{{ absent_count }}</h3>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-yellow-900">المتأخرين</span>
+            <h3 class="text-2xl font-black text-yellow-700 mt-1">{{ late_count }}</h3>
+        </div>
+        <div class="bg-white p-4 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-blue-900">المستأذنين</span>
+            <h3 class="text-2xl font-black text-blue-700 mt-1">{{ excused_count }}</h3>
+        </div>
+    </div>
+
+    <!-- Advanced Filter Bar -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5">
+        <form method="GET" action="{% url 'attendance:attendance_history' %}" class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                <!-- Search -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">اسم الطالب أو الرقم الجامعي</label>
+                    <input type="text" name="search" value="{{ search_query }}" placeholder="بحث عن طالب..."
+                           class="w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-2.5 focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Department -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">القسم الدراسي</label>
+                    <select name="department" class="tom-select w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-2.5 focus:ring-2 focus:ring-indigo-500" placeholder=" جميع الأقسام">
+                        <option value="">جميع الأقسام</option>
+                        {% for dept in departments %}
+                        <option value="{{ dept.id }}" {% if selected_dept == dept.id|stringformat:"i" %}selected{% endif %}>{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Stage -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">المرحلة الدراسية</label>
+                    <select name="stage" class="tom-select w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-2.5 focus:ring-2 focus:ring-indigo-500" placeholder="جميع المراحل">
+                        <option value="">جميع المراحل</option>
+                        <option value="الأولى" {% if selected_stage == "الأولى" %}selected{% endif %}>المرحلة الأولى</option>
+                        <option value="الثانية" {% if selected_stage == "الثانية" %}selected{% endif %}>المرحلة الثانية</option>
+                        <option value="الثالثة" {% if selected_stage == "الثالثة" %}selected{% endif %}>المرحلة الثالثة</option>
+                        <option value="الرابعة" {% if selected_stage == "الرابعة" %}selected{% endif %}>المرحلة الرابعة</option>
+                    </select>
+                </div>
+
+                <!-- Subject -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">المادة الدراسية</label>
+                    <select name="subject" class="tom-select w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-2.5 focus:ring-2 focus:ring-indigo-500" placeholder="جميع المواد">
+                        <option value="">جميع المواد</option>
+                        {% for sub in subjects %}
+                        <option value="{{ sub.id }}" {% if selected_subject == sub.id|stringformat:"i" %}selected{% endif %}>{{ sub.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">حالة الحضور</label>
+                    <select name="status" class="tom-select w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-2.5 focus:ring-2 focus:ring-indigo-500" placeholder="جميع الحالات">
+                        <option value="">جميع الحالات</option>
+                        <option value="حاضر" {% if selected_status == "حاضر" %}selected{% endif %}>حاضر</option>
+                        <option value="غائب" {% if selected_status == "غائب" %}selected{% endif %}>غائب</option>
+                        <option value="متأخر" {% if selected_status == "متأخر" %}selected{% endif %}>متأخر</option>
+                        <option value="مستأذن" {% if selected_status == "مستأذن" %}selected{% endif %}>مستأذن</option>
+                    </select>
+                </div>
+
+                <!-- Date From -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">من تاريخ</label>
+                    <input type="date" name="date_from" value="{{ date_from }}"
+                           class="w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-2.5 focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Date To -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">إلى تاريخ</label>
+                    <input type="date" name="date_to" value="{{ date_to }}"
+                           class="w-full text-sm font-bold text-gray-900 bg-white rounded-xl border border-gray-300 p-2.5 focus:ring-2 focus:ring-indigo-500">
+                </div>
+
+                <!-- Submit & Clear buttons -->
+                <div class="flex items-end gap-2">
+                    <button type="submit" style="background-color: #4f46e5; color: #ffffff;" class="w-full font-black py-2.5 px-4 rounded-xl text-sm transition shadow-sm hover:bg-indigo-700">
+                        تطبيق الفلترة
+                    </button>
+                    <a href="{% url 'attendance:attendance_history' %}" class="bg-gray-200 hover:bg-gray-300 text-gray-900 font-black py-2.5 px-4 rounded-xl text-sm transition border border-gray-300">
+                        إعادة ضبط
+                    </a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead class="bg-gray-100 text-gray-800 text-xs font-black uppercase border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4">التاريخ</th>
+                        <th class="px-6 py-4">اسم الطالب</th>
+                        <th class="px-6 py-4">الرقم الجامعي</th>
+                        <th class="px-6 py-4">القسم / المرحلة</th>
+                        <th class="px-6 py-4">المادة والقاعة</th>
+                        <th class="px-6 py-4">الحالة</th>
+                        <th class="px-6 py-4">ملاحظات / عذر</th>
+                        <th class="px-6 py-4 text-center">سجل الطالب</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm font-bold text-gray-900">
+                    {% for record in page_obj %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+                            {{ record.session.date|date:"Y-m-d" }}
+                        </td>
+                        <td class="px-6 py-4 font-black text-gray-900 whitespace-nowrap">
+                            {{ record.student.name }}
+                        </td>
+                        <td class="px-6 py-4 font-mono text-gray-900 whitespace-nowrap">
+                            {{ record.student.university_id }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-800 whitespace-nowrap">
+                            {{ record.student.department.name }} - <span class="text-xs bg-gray-200 text-gray-900 px-2 py-0.5 rounded font-black border border-gray-300">{{ record.student.stage }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-900 whitespace-nowrap">
+                            <span class="font-black text-indigo-900">{{ record.session.get_subject_name }}</span>
+                            <span class="text-xs text-gray-600 font-bold block">قاعة: {{ record.session.get_room_name }}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if record.status == 'حاضر' %}
+                            <span style="background-color: #dcfce7; color: #166534;" class="px-3 py-1 rounded-full text-xs font-black border border-green-300">حاضر</span>
+                            {% elif record.status == 'غائب' %}
+                            <span style="background-color: #fee2e2; color: #991b1b;" class="px-3 py-1 rounded-full text-xs font-black border border-red-300">غائب</span>
+                            {% elif record.status == 'متأخر' %}
+                            <span style="background-color: #fef3c7; color: #92400e;" class="px-3 py-1 rounded-full text-xs font-black border border-yellow-300">متأخر</span>
+                            {% else %}
+                            <span style="background-color: #dbeafe; color: #1e40af;" class="px-3 py-1 rounded-full text-xs font-black border border-blue-300">مستأذن</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-gray-800 text-xs font-bold">
+                            {{ record.notes|default:"-" }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{% url 'attendance:student_attendance_detail' record.student.pk %}"
+                               style="background-color: #e0e7ff; color: #3730a3;"
+                               class="inline-flex items-center gap-1 text-xs border border-indigo-200 hover:bg-indigo-200 px-3 py-1.5 rounded-lg font-black transition">
+                                📊 السجل الكلي
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="8" class="text-center py-12 text-gray-500 font-bold">
+                            لا توجد سجلات حضور تطابق معايير الفلترة المحددة.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        {% if page_obj.has_other_pages %}
+        <div class="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center text-sm font-bold">
+            <span class="text-gray-700 text-xs">
+                عرض الصفحة {{ page_obj.number }} من إجمالي {{ page_obj.paginator.num_pages }}
+            </span>
+            <div class="flex gap-2">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}&search={{ search_query }}&department={{ selected_dept }}&stage={{ selected_stage }}&subject={{ selected_subject }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}"
+                   class="px-3 py-1 bg-white border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 text-xs font-black">السابق</a>
+                {% endif %}
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}&search={{ search_query }}&department={{ selected_dept }}&stage={{ selected_stage }}&subject={{ selected_subject }}&status={{ selected_status }}&date_from={{ date_from }}&date_to={{ date_to }}"
+                   class="px-3 py-1 bg-white border border-gray-300 rounded-lg text-gray-900 hover:bg-gray-100 text-xs font-black">التالي</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}سجل حضور الطالب - {{ student.name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Top Bar -->
+    <div class="flex items-center justify-between bg-white p-4 rounded-2xl border border-gray-200 shadow-sm">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'attendance:attendance_history' %}" class="text-gray-600 hover:text-gray-900 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-xl font-black text-gray-900">سجل حضور الطالب التفصيلي</h1>
+                <p class="text-sm font-bold text-gray-600">متابعة دقيقة لنسبة التزام الطالب بالدروس والحصص</p>
+            </div>
+        </div>
+
+        <button onclick="window.print()" style="background-color: #111827; color: #ffffff;" class="font-black px-5 py-2.5 rounded-xl text-sm transition shadow-md">
+            🖨️ طباعة تقرير الطالب
+        </button>
+    </div>
+
+    <!-- Student Profile Header Card (High Contrast Dark Indigo Card) -->
+    <div style="background-color: #1e1b4b; color: #ffffff;" class="rounded-2xl shadow-xl p-6 border border-indigo-900 relative overflow-hidden">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative z-10">
+            <div class="flex items-center gap-4">
+                <div style="background-color: #312e81; color: #facc15;" class="w-16 h-16 rounded-2xl border-2 border-indigo-400 flex items-center justify-center text-3xl font-black shadow-inner">
+                    {{ student.name|slice:":1" }}
+                </div>
+                <div>
+                    <h2 class="text-2xl font-black text-white tracking-wide">{{ student.name }}</h2>
+                    <div class="flex flex-wrap items-center gap-3 mt-2 text-sm text-indigo-100 font-bold">
+                        <span>الرقم الجامعي: <strong style="color: #facc15;" class="font-mono text-base">{{ student.university_id }}</strong></span> | 
+                        <span>القسم: <strong class="text-white">{{ student.department.name }}</strong></span> | 
+                        <span>المرحلة: <strong class="text-white">{{ student.stage }}</strong></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning Status Badge -->
+            <div style="background-color: #0f172a; border: 1px solid #3730a3;" class="p-4 rounded-xl text-left md:text-right w-full md:w-auto shadow-sm">
+                <span class="text-xs text-indigo-200 font-bold block mb-1">حالة الإنذار الأكاديمي</span>
+                <span class="inline-block px-4 py-1.5 rounded-full text-sm font-black {{ warning_info.badge_class }} shadow-sm">
+                    {{ warning_info.status }}
+                </span>
+                <p class="text-xs text-indigo-100 font-bold mt-1 max-w-xs">{{ warning_info.desc }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Student Attendance Stats Grid -->
+    <div class="grid grid-cols-2 sm:grid-cols-5 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-gray-700">إجمالي المحاضرات</span>
+            <h3 class="text-2xl font-black text-gray-900 mt-1">{{ total }}</h3>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-emerald-800">نسبة الحضور</span>
+            <h3 class="text-2xl font-black text-emerald-700 mt-1">%{{ attendance_rate }}</h3>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-emerald-800">مرات الحضور</span>
+            <h3 class="text-2xl font-black text-emerald-700 mt-1">{{ present }}</h3>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-red-800">مرات الغياب</span>
+            <h3 class="text-2xl font-black text-red-700 mt-1">{{ absent }}</h3>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm text-center">
+            <span class="text-xs font-bold text-yellow-900">التأخير والاستئذان</span>
+            <h3 class="text-2xl font-black text-yellow-700 mt-1">{{ late|add:excused }}</h3>
+        </div>
+    </div>
+
+    <!-- Attendance Log History Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 bg-gray-50">
+            <h3 class="font-black text-gray-900 text-lg">سجل تفاصيل جلسات حضور الطالب</h3>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead class="bg-gray-100 text-gray-800 text-xs font-black uppercase border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4">التاريخ</th>
+                        <th class="px-6 py-4">المادة الدراسية</th>
+                        <th class="px-6 py-4">الأستاذ</th>
+                        <th class="px-6 py-4">القاعة</th>
+                        <th class="px-6 py-4">حالة الحضور</th>
+                        <th class="px-6 py-4">توقيت المسح / الملاحظات</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm font-bold text-gray-800">
+                    {% for rec in records %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <td class="px-6 py-4 font-semibold text-gray-900 whitespace-nowrap">
+                            {{ rec.session.date|date:"Y-m-d" }}
+                        </td>
+                        <td class="px-6 py-4 font-black text-indigo-900 whitespace-nowrap">
+                            {{ rec.session.get_subject_name }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-900 whitespace-nowrap">
+                            {{ rec.session.get_instructor_name }}
+                        </td>
+                        <td class="px-6 py-4 text-gray-800 whitespace-nowrap">
+                            {{ rec.session.get_room_name }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if rec.status == 'حاضر' %}
+                            <span style="background-color: #dcfce7; color: #166534;" class="px-3 py-1 rounded-full text-xs font-black border border-green-300">حاضر</span>
+                            {% elif rec.status == 'غائب' %}
+                            <span style="background-color: #fee2e2; color: #991b1b;" class="px-3 py-1 rounded-full text-xs font-black border border-red-300">غائب</span>
+                            {% elif rec.status == 'متأخر' %}
+                            <span style="background-color: #fef3c7; color: #92400e;" class="px-3 py-1 rounded-full text-xs font-black border border-yellow-300">متأخر</span>
+                            {% else %}
+                            <span style="background-color: #dbeafe; color: #1e40af;" class="px-3 py-1 rounded-full text-xs font-black border border-blue-300">مستأذن</span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 text-gray-700 text-xs whitespace-nowrap">
+                            {% if rec.scanned_at %}
+                            <span class="font-mono text-gray-900 font-bold">{{ rec.scanned_at|date:"h:i:s A" }}</span>
+                            {% endif %}
+                            {% if rec.notes %}
+                            <span class="block text-xs text-gray-700 font-bold mt-0.5">📝 {{ rec.notes }}</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-12 text-gray-500 font-bold">
+                            لا توجد جلسات حضور مسجلة لهذا الطالب حتى الآن.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

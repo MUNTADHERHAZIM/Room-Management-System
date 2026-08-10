@@ -11,7 +11,7 @@ class RoomForm(forms.ModelForm):
         fields = [
             'name', 'room_type', 'department', 'capacity', 'floor',
             'has_projector', 'has_computers', 'has_whiteboard', 'has_air_conditioning',
-            'notes', 'is_active'
+            'has_audio_system', 'notes', 'is_active'
         ]
         widgets = {
             'name': forms.TextInput(attrs={
@@ -47,6 +47,9 @@ class RoomForm(forms.ModelForm):
                 'class': 'form-checkbox rounded text-blue-600 focus:ring-blue-500'
             }),
             'has_air_conditioning': forms.CheckboxInput(attrs={
+                'class': 'form-checkbox rounded text-blue-600 focus:ring-blue-500'
+            }),
+            'has_audio_system': forms.CheckboxInput(attrs={
                 'class': 'form-checkbox rounded text-blue-600 focus:ring-blue-500'
             }),
             'is_active': forms.CheckboxInput(attrs={

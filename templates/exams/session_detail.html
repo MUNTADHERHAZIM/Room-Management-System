@@ -1,0 +1,227 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ session.name }} — نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">{{ session.name }}</h1>
+            <div class="flex items-center gap-4 mt-2 text-gray-500">
+                <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    {{ session.date }}
+                </span>
+                <span class="flex items-center gap-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                    {{ session.start_time|time:"H:i" }} — {{ session.end_time|time:"H:i" }}
+                </span>
+                {% if session.is_distributed %}
+                <span class="bg-emerald-100 text-emerald-700 px-3 py-1 rounded-lg text-xs font-bold">✅ تم التوزيع</span>
+                {% endif %}
+            </div>
+        </div>
+        <div class="flex gap-3 flex-wrap">
+            {% if session.is_distributed %}
+            <a href="{% url 'exams:seating_map' session.pk %}" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/></svg>
+                عرض الخريطة
+            </a>
+            <a href="{% url 'exams:hall_student_lists' session.pk %}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                قوائم الجلوس
+            </a>
+            <a href="{% url 'exams:seat_cards' session.pk %}" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                بطاقات المقاعد
+            </a>
+            <a href="{% url 'exams:department_attendance_lists' session.pk %}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                قوائم حضور الأقسام
+            </a>
+            {% endif %}
+            <a href="{% url 'exams:generate_seating' session.pk %}" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                {% if session.is_distributed %}إعادة التوزيع{% else %}توليد التوزيع{% endif %}
+            </a>
+            <a href="{% url 'exams:session_edit' session.pk %}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                تعديل
+            </a>
+            <a href="{% url 'exams:session_delete' session.pk %}" class="bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 px-4 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                حذف
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+        <div class="bg-white rounded-2xl shadow-sm border p-5 text-center">
+            <div class="text-3xl font-black text-purple-600">{{ total_students }}</div>
+            <div class="text-sm text-gray-500 font-bold mt-1">طالب مسجل</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border p-5 text-center">
+            <div class="text-3xl font-black text-blue-600">{{ total_capacity }}</div>
+            <div class="text-sm text-gray-500 font-bold mt-1">مقعد متاح (بعد التباعد)</div>
+        </div>
+        <div class="bg-white rounded-2xl shadow-sm border p-5 text-center">
+            {% if total_capacity > 0 %}
+            <div class="text-3xl font-black {% if total_students > total_capacity %}text-red-600{% else %}text-emerald-600{% endif %}">
+                {{ total_students|floatformat:0 }}/{{ total_capacity }}
+            </div>
+            {% else %}
+            <div class="text-3xl font-black text-gray-400">—</div>
+            {% endif %}
+            <div class="text-sm text-gray-500 font-bold mt-1">نسبة الإشغال</div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- المواد -->
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+            <div class="bg-gradient-to-l from-blue-600 to-blue-800 text-white p-5">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"/></svg>
+                    المواد الامتحانية
+                </h2>
+            </div>
+            <div class="p-5">
+                {% for es in exam_subjects %}
+                <div class="flex items-center justify-between p-3 rounded-xl hover:bg-gray-50 transition border mb-2 last:mb-0">
+                    <div class="flex items-center gap-3">
+                        <div class="w-4 h-4 rounded-full" style="background-color: {{ es.color_code }}"></div>
+                        <div>
+                            <span class="font-bold text-gray-900">{{ es.subject.name }}</span>
+                            <span class="text-xs text-gray-400 block">{{ es.students.count }} طالب</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <a href="{% url 'exams:manage_subject_students' session_pk=session.pk es_pk=es.pk %}"
+                           class="text-blue-600 hover:text-blue-800 text-xs font-bold bg-blue-50 px-3 py-1 rounded-lg">
+                            إدارة الطلاب
+                        </a>
+                        <form method="POST" action="{% url 'exams:remove_subject' session_pk=session.pk es_pk=es.pk %}" class="inline">
+                            {% csrf_token %}
+                            <button type="submit" class="text-red-500 hover:text-red-700 p-1" onclick="return confirm('هل تريد إزالة هذه المادة؟')">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-gray-400 py-4">لم يتم إضافة مواد بعد</p>
+                {% endfor %}
+
+                <!-- Add Subject Form -->
+                <form method="POST" action="{% url 'exams:add_subject' session_pk=session.pk %}" class="mt-4 pt-4 border-t flex items-end gap-3">
+                    {% csrf_token %}
+                    <div class="flex-1">
+                        <label class="block text-xs font-bold text-gray-500 mb-1">إضافة مادة</label>
+                        {{ subject_form.subject }}
+                    </div>
+                    <div>
+                        {{ subject_form.color_code }}
+                    </div>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition">
+                        إضافة
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- القاعات -->
+        <div class="bg-white rounded-2xl shadow-sm border overflow-hidden">
+            <div class="bg-gradient-to-l from-emerald-600 to-emerald-800 text-white p-5">
+                <h2 class="text-lg font-bold flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+                    القاعات الامتحانية
+                </h2>
+            </div>
+            <div class="p-5">
+                {% for hs in hall_setups %}
+                <div class="p-3 rounded-xl hover:bg-gray-50 transition border mb-2 last:mb-0">
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-bold text-gray-900">{{ hs.room.name }}</span>
+                        <div class="flex items-center gap-1">
+                            <!-- زر تعديل -->
+                            <a href="{% url 'exams:edit_hall' session_pk=session.pk hall_pk=hs.pk %}"
+                               class="text-blue-500 hover:text-blue-700 p-1 rounded-lg hover:bg-blue-50 transition"
+                               title="تعديل إعدادات القاعة">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                            <!-- زر حذف -->
+                            <form method="POST" action="{% url 'exams:remove_hall' session_pk=session.pk hall_pk=hs.pk %}" class="inline">
+                                {% csrf_token %}
+                                <button type="submit" class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50 transition"
+                                        onclick="return confirm('هل تريد إزالة هذه القاعة؟')"
+                                        title="حذف القاعة">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                    <div class="flex flex-wrap gap-2 text-xs text-gray-500">
+                        <span class="bg-gray-100 px-2 py-1 rounded">{{ hs.rows }}×{{ hs.columns }} = {{ hs.total_seats }} مقعد</span>
+                        <span class="bg-blue-50 text-blue-600 px-2 py-1 rounded">فعلي: {{ hs.effective_capacity }}</span>
+                        <span class="bg-purple-50 text-purple-600 px-2 py-1 rounded">{{ hs.get_spacing_mode_display }}</span>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-center text-gray-400 py-4">لم يتم إضافة قاعات بعد</p>
+                {% endfor %}
+
+                <!-- Add Hall Form -->
+                <form method="POST" action="{% url 'exams:add_hall' session_pk=session.pk %}" class="mt-4 pt-4 border-t space-y-3">
+                    {% csrf_token %}
+                    <p class="text-xs font-bold text-gray-500">إضافة قاعة</p>
+                    <div class="grid grid-cols-2 gap-3">
+                        <div class="col-span-2">
+                            {{ hall_form.room }}
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">الصفوف</label>
+                            {{ hall_form.rows }}
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">الأعمدة</label>
+                            {{ hall_form.columns }}
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">نمط التباعد</label>
+                            {{ hall_form.spacing_mode }}
+                        </div>
+                        <div>
+                            <label class="text-xs text-gray-500">نوع المقاعد</label>
+                            {{ hall_form.seat_type }}
+                        </div>
+                    </div>
+                    <div class="space-y-2">
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            {{ hall_form.prevent_same_subject_adjacent }}
+                            منع تجاور طلاب نفس المادة
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            {{ hall_form.prevent_same_department_adjacent }}
+                            منع تجاور طلاب نفس القسم
+                        </label>
+                        <label class="flex items-center gap-2 text-sm text-gray-700">
+                            {{ hall_form.prevent_same_family_adjacent }}
+                            منع تجاور الأقارب (نفس اللقب)
+                        </label>
+                    </div>
+                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-bold transition">
+                        إضافة القاعة
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

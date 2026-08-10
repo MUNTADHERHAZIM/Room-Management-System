@@ -15,7 +15,7 @@ class SubjectForm(forms.ModelForm):
             }),
             'code': forms.TextInput(attrs={
                 'class': 'form-input w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500',
-                'placeholder': 'CS101'
+                'placeholder': 'اتركه فارغاً لتوليد رمز تلقائي'
             }),
             'department': forms.Select(attrs={
                 'class': 'form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500'

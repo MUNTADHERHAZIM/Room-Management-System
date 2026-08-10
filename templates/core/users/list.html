@@ -1,0 +1,515 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}بوابة إدارة الحسابات والصلاحيات - نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="{ addModalOpen: false, editPermModal: false, activeEditUser: null, resetPassModal: false, activeResetUser: null }">
+
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-6 rounded-2xl border border-gray-200 shadow-sm">
+        <div>
+            <h1 class="text-2xl font-black text-gray-900 flex items-center gap-3">
+                <span class="p-2.5 bg-blue-100 text-blue-700 rounded-2xl">
+                    <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                    </svg>
+                </span>
+                بوابة إدارة الحسابات والصلاحيات
+            </h1>
+            <p class="text-sm font-bold text-gray-600 mt-1">التحكم الكلي والمباشر بحسابات المستخدمين وتحديد الصلاحيات الدقيقة لكل بوابة في النظام</p>
+        </div>
+
+        <button @click="addModalOpen = true" class="bg-blue-600 hover:bg-blue-700 text-white font-black px-5 py-3 rounded-xl text-sm transition shadow-lg shadow-blue-500/20 flex items-center gap-2 transform active:scale-95">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+            </svg>
+            إضافة حساب جديد
+        </button>
+    </div>
+
+    <!-- Analytics Stats -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-gray-500 block">إجمالي الحسابات</span>
+                <h3 class="text-3xl font-black text-gray-900 mt-1">{{ total_users }}</h3>
+            </div>
+            <div class="p-3 bg-gray-100 text-gray-600 rounded-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.768-.231-1.48-.634-2.048M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.768.231-1.48.634-2.048M12 14a4 4 0 110-8 4 4 0 010 8z" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-green-600 block">الحسابات النشطة</span>
+                <h3 class="text-3xl font-black text-green-700 mt-1">{{ active_users }}</h3>
+            </div>
+            <div class="p-3 bg-green-50 text-green-600 rounded-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-red-600 block">الحسابات المحظورة</span>
+                <h3 class="text-3xl font-black text-red-700 mt-1">{{ blocked_users }}</h3>
+            </div>
+            <div class="p-3 bg-red-50 text-red-600 rounded-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex items-center justify-between">
+            <div>
+                <span class="text-xs font-bold text-indigo-600 block">مديرو النظام</span>
+                <h3 class="text-3xl font-black text-indigo-700 mt-1">{{ admin_users }}</h3>
+            </div>
+            <div class="p-3 bg-indigo-50 text-indigo-600 rounded-xl">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden">
+        <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+            <h2 class="font-black text-gray-900 text-base flex items-center gap-2">
+                <span>📋</span> قائمة المستخدمين الحاليين والصلاحيات
+            </h2>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-right border-collapse">
+                <thead class="bg-gray-100 text-gray-800 text-xs font-black uppercase border-b border-gray-200">
+                    <tr>
+                        <th class="px-6 py-4">اسم الحساب والبيانات</th>
+                        <th class="px-6 py-4">الدور / الرتبة</th>
+                        <th class="px-6 py-4">حالة الحساب</th>
+                        <th class="px-6 py-4">أبرز الصلاحيات المفعلة</th>
+                        <th class="px-6 py-4">تاريخ الإنشاء / آخر دخول</th>
+                        <th class="px-6 py-4 text-center">الإجراءات والتحكم</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200 text-sm font-bold text-gray-900">
+                    {% for u in users_list %}
+                    <tr class="hover:bg-gray-50 transition">
+                        <!-- User Info -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-600 to-indigo-700 text-white font-black text-base flex items-center justify-center shadow-md">
+                                    {{ u.username|slice:":1"|upper }}
+                                </div>
+                                <div>
+                                    <div class="font-black text-gray-900 flex items-center gap-2">
+                                        {{ u.username }}
+                                        {% if u.is_superuser %}
+                                        <span class="bg-amber-100 text-amber-800 text-[10px] font-black px-2 py-0.5 rounded-full border border-amber-300">Super Admin</span>
+                                        {% endif %}
+                                    </div>
+                                    <span class="text-xs text-gray-500 font-medium block">
+                                        {{ u.get_full_name|default:u.email|default:"لا يوجد اسم كامل" }}
+                                    </span>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Role -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if u.profile.role == 'admin' or u.is_superuser %}
+                            <span class="bg-indigo-100 text-indigo-900 border border-indigo-200 px-3 py-1 rounded-full text-xs font-black">👑 مدير نظام</span>
+                            {% elif u.profile.role == 'supervisor' %}
+                            <span class="bg-purple-100 text-purple-900 border border-purple-200 px-3 py-1 rounded-full text-xs font-black">👔 مشرف</span>
+                            {% elif u.profile.role == 'data_entry' %}
+                            <span class="bg-blue-100 text-blue-900 border border-blue-200 px-3 py-1 rounded-full text-xs font-black">📝 مدخل بيانات</span>
+                            {% elif u.profile.role == 'viewer' %}
+                            <span class="bg-gray-100 text-gray-800 border border-gray-300 px-3 py-1 rounded-full text-xs font-black">👁️ مطلع فقط</span>
+                            {% else %}
+                            <span class="bg-teal-100 text-teal-900 border border-teal-200 px-3 py-1 rounded-full text-xs font-black">⚙️ صلاحيات مخصصة</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Status -->
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if u.is_active %}
+                            <span class="bg-green-100 text-green-800 border border-green-300 px-3 py-1 rounded-full text-xs font-black flex items-center w-fit gap-1">
+                                <span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                                نشط
+                            </span>
+                            {% else %}
+                            <span class="bg-red-100 text-red-800 border border-red-300 px-3 py-1 rounded-full text-xs font-black flex items-center w-fit gap-1">
+                                <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                                محظور
+                            </span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Permissions Badges -->
+                        <td class="px-6 py-4">
+                            <div class="flex flex-wrap gap-1 max-w-xs">
+                                {% if u.profile.can_access_attendance or u.is_superuser %}
+                                <span class="bg-green-50 text-green-700 text-[11px] font-black px-2 py-0.5 rounded border border-green-200">بوابة الحضور</span>
+                                {% else %}
+                                <span class="bg-red-50 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-200 line-through">بوابة الحضور</span>
+                                {% endif %}
+
+                                {% if u.profile.can_access_exams or u.is_superuser %}
+                                <span class="bg-purple-50 text-purple-700 text-[11px] font-black px-2 py-0.5 rounded border border-purple-200">الامتحانات</span>
+                                {% else %}
+                                <span class="bg-red-50 text-red-600 text-[11px] font-black px-2 py-0.5 rounded border border-red-200 line-through">الامتحانات</span>
+                                {% endif %}
+
+                                {% if u.profile.can_manage_schedules or u.is_superuser %}
+                                <span class="bg-blue-50 text-blue-700 text-[11px] font-black px-2 py-0.5 rounded border border-blue-200">إدارة الجداول</span>
+                                {% endif %}
+                            </div>
+                        </td>
+
+                        <!-- Created / Last login -->
+                        <td class="px-6 py-4 whitespace-nowrap text-xs font-semibold text-gray-600">
+                            <div>الإنشاء: {{ u.date_joined|date:"Y-m-d" }}</div>
+                            <div class="text-gray-400 mt-0.5">الدخول: {{ u.last_login|date:"Y-m-d H:i"|default:"لم يدخل بعد" }}</div>
+                        </td>
+
+                        <!-- Actions -->
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <div class="flex justify-center gap-1.5">
+                                <!-- Edit Permissions Button -->
+                                <button @click="activeEditUser = {
+                                    id: {{ u.id }},
+                                    username: '{{ u.username|escapejs }}',
+                                    first_name: '{{ u.first_name|escapejs }}',
+                                    last_name: '{{ u.last_name|escapejs }}',
+                                    email: '{{ u.email|escapejs }}',
+                                    role: '{{ u.profile.role }}',
+                                    notes: '{{ u.profile.notes|escapejs }}',
+                                    can_view_schedules: {{ u.profile.can_view_schedules|yesno:'true,false' }},
+                                    can_manage_schedules: {{ u.profile.can_manage_schedules|yesno:'true,false' }},
+                                    can_access_attendance: {{ u.profile.can_access_attendance|yesno:'true,false' }},
+                                    can_manage_attendance: {{ u.profile.can_manage_attendance|yesno:'true,false' }},
+                                    can_access_exams: {{ u.profile.can_access_exams|yesno:'true,false' }},
+                                    can_manage_rooms: {{ u.profile.can_manage_rooms|yesno:'true,false' }},
+                                    can_manage_instructors: {{ u.profile.can_manage_instructors|yesno:'true,false' }},
+                                    can_manage_subjects: {{ u.profile.can_manage_subjects|yesno:'true,false' }},
+                                    can_manage_users: {{ u.profile.can_manage_users|yesno:'true,false' }}
+                                }; editPermModal = true"
+                                class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 p-2 rounded-xl text-xs font-black transition"
+                                title="تعديل الصلاحيات والحساب">
+                                    ⚙️ تعديل الصلاحيات
+                                </button>
+
+                                <!-- Reset Password Button -->
+                                <button @click="activeResetUser = { id: {{ u.id }}, username: '{{ u.username|escapejs }}' }; resetPassModal = true"
+                                        class="bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 p-2 rounded-xl text-xs font-black transition"
+                                        title="إعادة تعيين كلمة المرور">
+                                    🔑 كلمة المرور
+                                </button>
+
+                                <!-- Toggle Active / Block -->
+                                {% if u != request.user %}
+                                <form action="{% url 'core:user_toggle_status' u.id %}" method="POST" class="inline">
+                                    {% csrf_token %}
+                                    {% if u.is_active %}
+                                    <button type="submit" onclick="return confirm('هل أنت تأكد من حظر هذا الحساب؟ لن يتمكن المستخدم من الدخول للموقع.')" class="bg-red-50 hover:bg-red-100 text-red-700 border border-red-200 p-2 rounded-xl text-xs font-black transition" title="حظر الحساب">
+                                        🚫 حظر
+                                    </button>
+                                    {% else %}
+                                    <button type="submit" class="bg-green-50 hover:bg-green-100 text-green-700 border border-green-200 p-2 rounded-xl text-xs font-black transition" title="تفعيل الحساب">
+                                        ✅ تفعيل
+                                    </button>
+                                    {% endif %}
+                                </form>
+
+                                <!-- Delete User -->
+                                <form action="{% url 'core:user_delete' u.id %}" method="POST" class="inline">
+                                    {% csrf_token %}
+                                    <button type="submit" onclick="return confirm('هل أنت متأكد من حذف حساب ({{ u.username }}) نهائياً؟')" class="bg-gray-100 hover:bg-red-600 hover:text-white text-gray-700 border border-gray-300 p-2 rounded-xl text-xs font-black transition" title="حذف الحساب">
+                                        🗑️
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center py-12 text-gray-500 font-bold">
+                            لا يوجد مستخدمون حالياً.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- MODAL 1: Add New User -->
+    <div x-show="addModalOpen" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="addModalOpen = false">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto" @click.away="addModalOpen = false">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h3 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                    <span>✨</span> إضافة حساب جديد وتعيين الصلاحيات
+                </h3>
+                <button @click="addModalOpen = false" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+
+            <form action="{% url 'core:user_create' %}" method="POST" class="space-y-4" x-data="{ selectedRole: 'data_entry', newPass: '', showNewPass: true }">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black text-gray-900 mb-1">اسم المستخدم (Username) *</label>
+                        <input type="text" name="username" required placeholder="مثال: ahmed_user" class="w-full text-sm font-bold bg-gray-50 border border-gray-300 rounded-xl p-2.5 focus:ring-2 focus:ring-blue-500">
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-black text-gray-900">كلمة المرور الأولية *</label>
+                            <button type="button" @click="newPass = generateRandomPassword(); showNewPass = true" class="text-[11px] text-blue-700 hover:text-blue-900 font-black flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2 py-0.5 rounded border border-blue-200">
+                                <span>🎲</span> توليد تلقائي
+                            </button>
+                        </div>
+                        <div class="relative">
+                            <input :type="showNewPass ? 'text' : 'password'" name="password" x-model="newPass" required placeholder="••••••••" class="w-full text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl p-2.5 pl-12 focus:ring-2 focus:ring-blue-500">
+                            <button type="button" @click="showNewPass = !showNewPass" class="absolute left-2.5 top-2 text-gray-600 hover:text-gray-900 text-xs font-bold bg-gray-200 px-2 py-0.5 rounded">
+                                <span x-text="showNewPass ? 'إخفاء' : 'إظهار'"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-900 mb-1">الاسم الأول</label>
+                        <input type="text" name="first_name" placeholder="أحمد" class="w-full text-sm font-bold bg-gray-50 border border-gray-300 rounded-xl p-2.5">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-black text-gray-900 mb-1">اسم العائلة</label>
+                        <input type="text" name="last_name" placeholder="علي" class="w-full text-sm font-bold bg-gray-50 border border-gray-300 rounded-xl p-2.5">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">البريد الإلكتروني</label>
+                    <input type="email" name="email" placeholder="user@example.com" class="w-full text-sm font-bold bg-gray-50 border border-gray-300 rounded-xl p-2.5">
+                </div>
+
+                <!-- Role Selector -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">الرتبة والدور (Role)</label>
+                    <select name="role" x-model="selectedRole" class="tom-select w-full text-sm font-bold bg-white border border-gray-300 rounded-xl p-2.5">
+                        <option value="admin">👑 مدير النظام (صلاحيات كاملة شاملة)</option>
+                        <option value="supervisor">👔 مشرف (صلاحيات واسعة على الجداول والتقارير)</option>
+                        <option value="data_entry" selected>📝 مدخل بيانات (إضافة وتعديل بيانات المواد والقاعات)</option>
+                        <option value="viewer">👁️ مشاهد / مطلع (رؤية فقط بدون تعديل أو دخول للحضور)</option>
+                        <option value="custom">⚙️ صلاحيات مخصصة (تحديد الخيارات يدوياً)</option>
+                    </select>
+                </div>
+
+                <!-- Granular Permissions Grid (Shown when Custom) -->
+                <div x-show="selectedRole === 'custom'" class="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-3">
+                    <h4 class="text-xs font-black text-gray-900 border-b pb-2">مصفوفة الصلاحيات المخصصة:</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-bold text-gray-800">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_access_attendance" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>دخول بوابة الحضور والانصراف</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_attendance" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>إدارة وتعديل سجلات الحضور</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_access_exams" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>إدارة وتوزيع الامتحانات والطلاب</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_view_schedules" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>رؤية الجداول والتقويم والبحث</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_schedules" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>إضافة وتعديل الجداول والحصص</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_rooms" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>إضافة وتعديل القاعات والكليات</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_instructors" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>إضافة وتعديل الأساتذة</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_subjects" class="rounded text-blue-600 w-4 h-4" checked>
+                            <span>إضافة وتعديل المواد</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" @click="addModalOpen = false" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-200 text-gray-800">إلغاء</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-black bg-blue-600 hover:bg-blue-700 text-white shadow-md">حفظ الحساب</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: Edit Permissions -->
+    <div x-show="editPermModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="editPermModal = false">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-2xl w-full p-6 space-y-5 max-h-[90vh] overflow-y-auto" @click.away="editPermModal = false" x-if="activeEditUser">
+            <div class="flex justify-between items-center border-b pb-4">
+                <h3 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                    <span>⚙️</span> تعديل صلاحيات الحساب: <span class="text-blue-600" x-text="activeEditUser?.username"></span>
+                </h3>
+                <button @click="editPermModal = false" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+
+            <form :action="`/users/${activeEditUser?.id}/permissions/`" method="POST" class="space-y-4">
+                {% csrf_token %}
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-black text-gray-900 mb-1">الاسم الأول</label>
+                        <input type="text" name="first_name" :value="activeEditUser?.first_name" class="w-full text-sm font-bold bg-gray-50 border border-gray-300 rounded-xl p-2.5">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-black text-gray-900 mb-1">اسم العائلة</label>
+                        <input type="text" name="last_name" :value="activeEditUser?.last_name" class="w-full text-sm font-bold bg-gray-50 border border-gray-300 rounded-xl p-2.5">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">البريد الإلكتروني</label>
+                    <input type="email" name="email" :value="activeEditUser?.email" class="w-full text-sm font-bold bg-gray-50 border border-gray-300 rounded-xl p-2.5">
+                </div>
+
+                <!-- Role Selector -->
+                <div>
+                    <label class="block text-xs font-black text-gray-900 mb-1">الرتبة والدور</label>
+                    <select name="role" x-model="activeEditUser.role" class="w-full text-sm font-bold bg-white border border-gray-300 rounded-xl p-2.5">
+                        <option value="admin">👑 مدير النظام (صلاحيات كاملة شاملة)</option>
+                        <option value="supervisor">👔 مشرف (صلاحيات واسعة على الجداول والتقارير)</option>
+                        <option value="data_entry">📝 مدخل بيانات (إضافة وتعديل بيانات المواد والقاعات)</option>
+                        <option value="viewer">👁️ مشاهد / مطلع (رؤية فقط بدون تعديل أو دخول للحضور)</option>
+                        <option value="custom">⚙️ صلاحيات مخصصة (تحديد الخيارات يدوياً)</option>
+                    </select>
+                </div>
+
+                <!-- Granular Checkboxes -->
+                <div x-show="activeEditUser.role === 'custom'" class="p-4 bg-gray-50 rounded-2xl border border-gray-200 space-y-3">
+                    <h4 class="text-xs font-black text-gray-900 border-b pb-2">تأكيد الصلاحيات المخصصة:</h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-bold text-gray-800">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_access_attendance" x-model="activeEditUser.can_access_attendance" class="rounded text-blue-600 w-4 h-4">
+                            <span>دخول بوابة الحضور والانصراف</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_attendance" x-model="activeEditUser.can_manage_attendance" class="rounded text-blue-600 w-4 h-4">
+                            <span>إدارة وتعديل سجلات الحضور</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_access_exams" x-model="activeEditUser.can_access_exams" class="rounded text-blue-600 w-4 h-4">
+                            <span>إدارة وتوزيع الامتحانات والطلاب</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_view_schedules" x-model="activeEditUser.can_view_schedules" class="rounded text-blue-600 w-4 h-4">
+                            <span>رؤية الجداول والتقويم والبحث</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_schedules" x-model="activeEditUser.can_manage_schedules" class="rounded text-blue-600 w-4 h-4">
+                            <span>إضافة وتعديل الجداول والحصص</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_rooms" x-model="activeEditUser.can_manage_rooms" class="rounded text-blue-600 w-4 h-4">
+                            <span>إضافة وتعديل القاعات والكليات</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_instructors" x-model="activeEditUser.can_manage_instructors" class="rounded text-blue-600 w-4 h-4">
+                            <span>إضافة وتعديل الأساتذة</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" name="can_manage_subjects" x-model="activeEditUser.can_manage_subjects" class="rounded text-blue-600 w-4 h-4">
+                            <span>إضافة وتعديل المواد</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" @click="editPermModal = false" class="px-5 py-2.5 rounded-xl text-sm font-bold bg-gray-200 text-gray-800">إلغاء</button>
+                    <button type="submit" class="px-6 py-2.5 rounded-xl text-sm font-black bg-indigo-600 hover:bg-indigo-700 text-white shadow-md">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Reset Password -->
+    <div x-show="resetPassModal" class="fixed inset-0 bg-black/60 z-50 flex items-center justify-center p-4" style="display: none;" @keydown.escape.window="resetPassModal = false">
+        <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 space-y-4" @click.away="resetPassModal = false" x-data="{ genPassword: '', showPassword: true }">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-lg font-black text-gray-900 flex items-center gap-2">
+                    <span>🔑</span> تغيير / توليد كلمة المرور
+                </h3>
+                <button @click="resetPassModal = false" class="text-gray-400 hover:text-gray-600 text-2xl font-bold">&times;</button>
+            </div>
+
+            <form :action="`/users/${activeResetUser?.id}/reset-password/`" method="POST" class="space-y-4">
+                {% csrf_token %}
+                <p class="text-xs font-bold text-gray-600">
+                    أنت تقوم بتغيير كلمة المرور للحساب: <strong class="text-blue-700 font-black text-sm" x-text="activeResetUser?.username"></strong>
+                </p>
+
+                <div>
+                    <div class="flex justify-between items-center mb-1.5">
+                        <label class="block text-xs font-black text-gray-900">كلمة المرور الجديدة *</label>
+                        <button type="button" @click="genPassword = generateRandomPassword(); showPassword = true" class="text-xs text-blue-700 hover:text-blue-900 font-black flex items-center gap-1 bg-blue-50 hover:bg-blue-100 px-2.5 py-1 rounded-lg border border-blue-200 transition">
+                            <span>🎲</span> توليد كلمة تلقائياً
+                        </button>
+                    </div>
+
+                    <div class="relative">
+                        <input :type="showPassword ? 'text' : 'password'" name="new_password" x-model="genPassword" required placeholder="أدخل كلمة مرور جديدة أو انقر على توليد..." class="w-full text-sm font-bold text-gray-900 bg-gray-50 border border-gray-300 rounded-xl p-3 pr-3 pl-14 focus:ring-2 focus:ring-blue-500">
+                        <button type="button" @click="showPassword = !showPassword" class="absolute left-2.5 top-2.5 text-gray-600 hover:text-gray-900 text-xs font-bold bg-gray-200 hover:bg-gray-300 px-2 py-1 rounded-lg">
+                            <span x-text="showPassword ? 'إخفاء' : 'إظهار'"></span>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <button type="button" @click="resetPassModal = false" class="px-4 py-2.5 rounded-xl text-xs font-bold bg-gray-200 hover:bg-gray-300 text-gray-800 border border-gray-300">إلغاء</button>
+                    <button type="submit" style="background-color: #2563eb; color: #ffffff;" class="px-5 py-2.5 rounded-xl text-xs font-black transition shadow-md hover:bg-blue-700">
+                        تحديث كلمة المرور
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function generateRandomPassword() {
+    const uppercase = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+    const lowercase = "abcdefghijkmnopqrstuvwxyz";
+    const numbers = "23456789";
+    const special = "@#$!";
+    const all = uppercase + lowercase + numbers + special;
+    
+    let password = "";
+    password += uppercase.charAt(Math.floor(Math.random() * uppercase.length));
+    password += lowercase.charAt(Math.floor(Math.random() * lowercase.length));
+    password += numbers.charAt(Math.floor(Math.random() * numbers.length));
+    password += special.charAt(Math.floor(Math.random() * special.length));
+    
+    for (let i = 0; i < 6; i++) {
+        password += all.charAt(Math.floor(Math.random() * all.length));
+    }
+    return password.split('').sort(() => 0.5 - Math.random()).join('');
+}
+</script>
+{% endblock %}

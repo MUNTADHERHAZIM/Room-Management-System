@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from apps.core.decorators import editor_required
+from apps.core.decorators import editor_required, permission_required
+from django.contrib.auth.decorators import login_required
 from django.db.models import Count
 from django.utils import timezone
 
@@ -14,6 +15,7 @@ from apps.schedules.models import Schedule
 DAY_ORDER = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس']
 
 
+@login_required
 def instructor_list(request):
     """عرض قائمة الأساتذة"""
     instructors = Instructor.objects.select_related(
@@ -54,6 +56,7 @@ def instructor_list(request):
     return render(request, 'instructors/list.html', context)
 
 
+@login_required
 def instructor_detail(request, pk):
     """عرض تفاصيل أستاذ"""
     instructor = get_object_or_404(
@@ -70,7 +73,7 @@ def instructor_detail(request, pk):
     return render(request, 'instructors/detail.html', context)
 
 
-@editor_required
+@permission_required('can_manage_instructors')
 def instructor_create(request):
     """إنشاء أستاذ جديد"""
     if request.method == 'POST':
@@ -92,7 +95,7 @@ def instructor_create(request):
     return render(request, 'instructors/form.html', context)
 
 
-@editor_required
+@permission_required('can_manage_instructors')
 def instructor_edit(request, pk):
     """تعديل أستاذ"""
     instructor = get_object_or_404(Instructor, pk=pk)
@@ -116,7 +119,7 @@ def instructor_edit(request, pk):
     return render(request, 'instructors/form.html', context)
 
 
-@editor_required
+@permission_required('can_manage_instructors')
 def instructor_delete(request, pk):
     """حذف أستاذ"""
     instructor = get_object_or_404(Instructor, pk=pk)
@@ -137,6 +140,7 @@ def instructor_delete(request, pk):
     return render(request, 'instructors/delete.html', context)
 
 
+@login_required
 def instructor_schedule(request, pk):
     """عرض جدول الأستاذ الأسبوعي"""
     instructor = get_object_or_404(

@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+
+{% block title %}تأكيد حذف الجلسة — {{ session.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto pt-8">
+    <div class="bg-white rounded-3xl shadow-xl border overflow-hidden">
+        
+        <!-- Danger Header -->
+        <div class="bg-gradient-to-l from-red-600 to-red-700 p-6 text-center">
+            <div class="bg-white/20 backdrop-blur-sm w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </div>
+            <h2 class="text-2xl font-black text-white mb-1">تأكيد حذف الجلسة</h2>
+            <p class="text-red-100 text-sm font-medium">هذا الإجراء لا يمكن التراجع عنه</p>
+        </div>
+
+        <!-- Content -->
+        <div class="p-8">
+            <!-- Session Info Card -->
+            <div class="bg-red-50 border border-red-100 rounded-2xl p-5 mb-6">
+                <div class="text-center mb-4">
+                    <span class="text-lg font-black text-red-900">{{ session.name }}</span>
+                </div>
+                <div class="grid grid-cols-2 gap-3 text-sm">
+                    <div class="flex items-center gap-2 text-red-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                        <span class="font-bold">{{ session.date }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 text-red-700">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                        <span class="font-bold">{{ session.start_time|time:"H:i" }} — {{ session.end_time|time:"H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning -->
+            <div class="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-2xl p-4 mb-8">
+                <svg class="w-6 h-6 text-amber-500 shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <div class="text-sm text-amber-800">
+                    <p class="font-bold mb-1">سيتم حذف جميع البيانات المرتبطة:</p>
+                    <ul class="list-disc list-inside text-amber-700 space-y-1">
+                        <li>جميع توزيعات المقاعد</li>
+                        <li>جميع إعدادات القاعات</li>
+                        <li>جميع المواد المرتبطة بالجلسة</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex items-center justify-center gap-4">
+                <a href="{% url 'exams:session_list' %}" class="px-8 py-3 rounded-2xl text-sm font-bold text-gray-600 hover:bg-gray-100 transition-all border border-gray-200">
+                    إلغاء والعودة
+                </a>
+                <form method="POST">
+                    {% csrf_token %}
+                    <button type="submit" class="bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white px-8 py-3 rounded-2xl font-bold transition-all shadow-xl shadow-red-500/30 flex items-center gap-2 transform hover:-translate-y-0.5">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        نعم، احذف الجلسة
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,26 @@
+{
+    "name": "room-management-system",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build:css": "tailwindcss -i ./static/css/tailwind-input.css -o ./static/css/tailwind.min.css --minify",
+        "watch:css": "tailwindcss -i ./static/css/tailwind-input.css -o ./static/css/tailwind.min.css --watch"
+    },
+    "description": "[![Django](https://img.shields.io/badge/Framework-Django%205.1-092e20?style=for-the-badge&logo=django)](https://www.djangoproject.com/)\r [![TailwindCSS](https://img.shields.io/badge/UI-Tailwind%20CSS-38bdf8?style=for-the-badge&logo=tailwind-css)](https://tailwindcss.com/)\r [![Python](https://img.shields.io/badge/Python-3.10+-3776ab?style=for-the-badge&logo=python)](https://www.python.org/)",
+    "main": "index.js",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/MUNTADHERHAZIM/Room-Management-System.git"
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "type": "commonjs",
+    "bugs": {
+        "url": "https://github.com/MUNTADHERHAZIM/Room-Management-System/issues"
+    },
+    "homepage": "https://github.com/MUNTADHERHAZIM/Room-Management-System#readme",
+    "devDependencies": {
+        "tailwindcss": "^3.4.19"
+    }
+}

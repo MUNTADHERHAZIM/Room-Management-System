@@ -1,13 +1,15 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from apps.core.decorators import editor_required
+from apps.core.decorators import editor_required, permission_required
+from django.contrib.auth.decorators import login_required
 
 from .models import Subject
 from .forms import SubjectForm
 from apps.core.models import College, Department
 
 
+@login_required
 def subject_list(request):
     """عرض قائمة المواد"""
     subjects = Subject.objects.select_related('department', 'department__college').filter(is_active=True)
@@ -44,7 +46,7 @@ def subject_list(request):
     return render(request, 'subjects/list.html', context)
 
 
-@editor_required
+@permission_required('can_manage_subjects')
 def subject_create(request):
     """إنشاء مادة جديدة"""
     if request.method == 'POST':
@@ -66,7 +68,7 @@ def subject_create(request):
     return render(request, 'subjects/form.html', context)
 
 
-@editor_required
+@permission_required('can_manage_subjects')
 def subject_edit(request, pk):
     """تعديل مادة"""
     subject = get_object_or_404(Subject, pk=pk)
@@ -90,7 +92,7 @@ def subject_edit(request, pk):
     return render(request, 'subjects/form.html', context)
 
 
-@editor_required
+@permission_required('can_manage_subjects')
 def subject_delete(request, pk):
     """حذف مادة"""
     subject = get_object_or_404(Subject, pk=pk)

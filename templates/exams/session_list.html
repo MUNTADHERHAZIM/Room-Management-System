@@ -1,0 +1,109 @@
+{% extends 'base.html' %}
+
+{% block title %}الجلسات الامتحانية — نظام إدارة القاعات{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto">
+    <!-- Header -->
+    <div class="flex flex-wrap items-center justify-between gap-4 mb-8">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">
+                <svg class="w-8 h-8 inline-block ml-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                </svg>
+                الجلسات الامتحانية
+            </h1>
+            <p class="text-gray-500 mt-1">إدارة توزيع الطلاب على القاعات بالخوارزمية الذكية</p>
+        </div>
+        <a href="{% url 'exams:session_create' %}"
+           class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            إنشاء جلسة جديدة
+        </a>
+    </div>
+
+    <!-- Sessions Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for session in sessions %}
+        <div class="bg-white rounded-2xl shadow-sm border hover:shadow-lg transition-all group relative overflow-hidden">
+            <!-- Status Ribbon -->
+            {% if session.is_distributed %}
+            <div class="absolute top-4 left-4 bg-emerald-500 text-white px-3 py-1 rounded-lg text-xs font-bold flex items-center gap-1">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                تم التوزيع
+            </div>
+            {% else %}
+            <div class="absolute top-4 left-4 bg-amber-500 text-white px-3 py-1 rounded-lg text-xs font-bold">
+                بانتظار التوزيع
+            </div>
+            {% endif %}
+
+            <div class="p-6">
+                <h3 class="text-lg font-bold text-gray-900 mb-2 group-hover:text-purple-700 transition">{{ session.name }}</h3>
+
+                <div class="space-y-2 text-sm text-gray-500 mb-4">
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>{{ session.date }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>{{ session.start_time|time:"H:i" }} — {{ session.end_time|time:"H:i" }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253"/>
+                        </svg>
+                        <span>{{ session.subjects_count }} مادة</span>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex items-center gap-2 pt-4 border-t">
+                    <a href="{% url 'exams:session_detail' session.pk %}"
+                       class="flex-1 text-center bg-purple-50 hover:bg-purple-100 text-purple-700 py-2 rounded-lg text-sm font-bold transition">
+                        التفاصيل
+                    </a>
+                    {% if session.is_distributed %}
+                    <a href="{% url 'exams:seating_map' session.pk %}"
+                       class="flex-1 text-center bg-emerald-50 hover:bg-emerald-100 text-emerald-700 py-2 rounded-lg text-sm font-bold transition">
+                        الخريطة
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'exams:session_delete' session.pk %}"
+                       class="bg-red-50 hover:bg-red-100 text-red-600 p-2 rounded-lg transition flex items-center justify-center" title="حذف الجلسة">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="bg-white rounded-2xl shadow-sm border p-12 text-center">
+                <svg class="w-20 h-20 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                <h3 class="text-xl font-bold text-gray-400 mb-2">لا توجد جلسات امتحانية</h3>
+                <p class="text-gray-400 mb-6">ابدأ بإنشاء جلسة امتحانية جديدة</p>
+                <a href="{% url 'exams:session_create' %}" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-xl font-bold transition-all inline-flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    إنشاء أول جلسة
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

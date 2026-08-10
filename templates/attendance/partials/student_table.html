@@ -1,0 +1,94 @@
+<table class="w-full text-right divide-y divide-gray-200 border-collapse">
+    <thead class="bg-gray-100 text-gray-800 text-xs font-black uppercase border-b border-gray-200">
+        <tr>
+            <th class="px-4 py-3">الرقم الجامعي</th>
+            <th class="px-4 py-3">اسم الطالب</th>
+            <th class="px-4 py-3">القسم والمرحلة</th>
+            <th class="px-4 py-3">توقيت التسجيل</th>
+            <th class="px-4 py-3 text-center">حالة الحضور (تعديل يدوياً)</th>
+            <th class="px-4 py-3 text-center">الأمان والملاحظات</th>
+        </tr>
+    </thead>
+    <tbody class="divide-y divide-gray-200 text-sm font-bold text-gray-900">
+        {% for r in records %}
+        <tr class="hover:bg-gray-50 transition">
+            <td class="px-4 py-3.5 font-mono font-bold text-gray-900">{{ r.student.university_id }}</td>
+            <td class="px-4 py-3.5 font-black text-gray-900">
+                <a href="{% url 'attendance:student_attendance_detail' r.student.pk %}" class="hover:text-indigo-700 transition" title="عرض السجل الكامل للطالب">
+                    {{ r.student.name }}
+                </a>
+            </td>
+            <td class="px-4 py-3.5 text-xs text-gray-800 font-bold">
+                {{ r.student.department.name }}
+                <span class="inline-block px-2 py-0.5 rounded text-[10px] font-black bg-gray-200 text-gray-900 mr-1 border border-gray-300">
+                    {{ r.student.stage }}
+                </span>
+            </td>
+            <td class="px-4 py-3.5 font-mono text-xs font-bold text-gray-700">
+                {{ r.scanned_at|date:"h:i:s a" }}
+            </td>
+            <td class="px-4 py-3.5 text-center">
+                <!-- Direct Interactive Status Switcher -->
+                <form hx-post="{% url 'attendance:toggle_record_status' session.pk %}"
+                      hx-target="#student-table-container"
+                      hx-swap="innerHTML"
+                      class="inline-flex gap-1 justify-center bg-gray-200 p-1 rounded-xl border border-gray-300">
+                    {% csrf_token %}
+                    <input type="hidden" name="student_id" value="{{ r.student.id }}">
+                    
+                    <button type="submit" name="status" value="حاضر" 
+                            class="px-3 py-1 rounded-lg text-xs font-black transition {% if r.status == 'حاضر' %}bg-green-600 text-white shadow-sm{% else %}text-gray-800 hover:bg-white{% endif %}">
+                        حاضر
+                    </button>
+                    <button type="submit" name="status" value="متأخر" 
+                            class="px-3 py-1 rounded-lg text-xs font-black transition {% if r.status == 'متأخر' %}bg-yellow-500 text-gray-900 shadow-sm{% else %}text-gray-800 hover:bg-white{% endif %}">
+                        متأخر
+                    </button>
+                    <button type="submit" name="status" value="مستأذن" 
+                            class="px-3 py-1 rounded-lg text-xs font-black transition {% if r.status == 'مستأذن' %}bg-blue-600 text-white shadow-sm{% else %}text-gray-800 hover:bg-white{% endif %}">
+                        مستأذن
+                    </button>
+                    <button type="submit" name="status" value="غائب" 
+                            class="px-3 py-1 rounded-lg text-xs font-black transition {% if r.status == 'غائب' %}bg-red-600 text-white shadow-sm{% else %}text-gray-800 hover:bg-white{% endif %}">
+                        غائب
+                    </button>
+                </form>
+            </td>
+            <td class="px-4 py-3.5 text-center">
+                <div class="flex flex-col items-center gap-1">
+                    {% if r.has_fp_conflict %}
+                    <span class="inline-flex items-center gap-1 bg-yellow-100 text-yellow-900 border border-yellow-300 px-2 py-0.5 rounded text-[10px] font-black" 
+                          title="تم تسجيل أكثر من طالب عبر هذا الهاتف">
+                        ⚠️ تكرار جهاز
+                    </span>
+                    {% else %}
+                    <span class="inline-flex items-center gap-1 text-green-700 text-[11px] font-black">
+                        ✓ آمن
+                    </span>
+                    {% endif %}
+
+                    {% if r.notes %}
+                    <span class="text-xs text-gray-800 font-bold bg-yellow-50 border border-yellow-200 px-2 py-0.5 rounded max-w-[170px] truncate" title="{{ r.notes }}">
+                        📝 {{ r.notes }}
+                    </span>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="6" class="px-6 py-12 text-center text-gray-500 font-bold bg-gray-50 rounded-xl">
+                في انتظار مسح الطلاب للرمز أو تسجيل الحضور يدوياً...
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- Dynamic Stats JS Auto-sync -->
+<script>
+    if (document.getElementById("stats-present")) document.getElementById("stats-present").innerText = "{{ total_present }}";
+    if (document.getElementById("stats-late")) document.getElementById("stats-late").innerText = "{{ total_late }}";
+    if (document.getElementById("stats-excused")) document.getElementById("stats-excused").innerText = "{{ total_excused }}";
+    if (document.getElementById("stats-duplicates")) document.getElementById("stats-duplicates").innerText = "{{ duplicate_count }}";
+</script>

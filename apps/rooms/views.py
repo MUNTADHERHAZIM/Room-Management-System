@@ -1,7 +1,8 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
-from apps.core.decorators import editor_required
+from apps.core.decorators import editor_required, permission_required
+from django.contrib.auth.decorators import login_required
 
 from .models import Room
 from .forms import RoomForm
@@ -11,6 +12,7 @@ from apps.core.views import get_room_status
 from django.utils import timezone
 
 
+@login_required
 def room_list(request):
     """عرض قائمة القاعات"""
     rooms = Room.objects.select_related('department', 'department__college').filter(is_active=True)
@@ -47,6 +49,7 @@ def room_list(request):
     return render(request, 'rooms/list.html', context)
 
 
+@login_required
 def room_detail(request, pk):
     """عرض تفاصيل قاعة"""
     room = get_object_or_404(Room.objects.select_related('department', 'department__college'), pk=pk)
@@ -68,7 +71,7 @@ def room_detail(request, pk):
     return render(request, 'rooms/detail.html', context)
 
 
-@editor_required
+@permission_required('can_manage_rooms')
 def room_create(request):
     """إنشاء قاعة جديدة"""
     if request.method == 'POST':
@@ -90,7 +93,7 @@ def room_create(request):
     return render(request, 'rooms/form.html', context)
 
 
-@editor_required
+@permission_required('can_manage_rooms')
 def room_edit(request, pk):
     """تعديل قاعة"""
     room = get_object_or_404(Room, pk=pk)
@@ -114,7 +117,7 @@ def room_edit(request, pk):
     return render(request, 'rooms/form.html', context)
 
 
-@editor_required
+@permission_required('can_manage_rooms')
 def room_delete(request, pk):
     """حذف قاعة"""
     room = get_object_or_404(Room, pk=pk)
@@ -135,6 +138,7 @@ def room_delete(request, pk):
     return render(request, 'rooms/delete.html', context)
 
 
+@login_required
 def room_map(request):
     """عرض خريطة القاعات حسب الكليات والأقسام"""
     colleges = College.objects.prefetch_related(

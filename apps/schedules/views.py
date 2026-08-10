@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
 from apps.core.decorators import editor_required
+from django.contrib.auth.decorators import login_required
 from django.db.models import Q
 
 from .models import Schedule
@@ -17,6 +18,7 @@ DAY_ORDER = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', '
 TIME_SLOTS = [f"{h:02d}:00" for h in range(7, 20)]  # 7:00 to 19:00
 
 
+@login_required
 def schedule_list(request):
     """عرض قائمة الحصص"""
     schedules = Schedule.objects.select_related(
@@ -28,6 +30,7 @@ def schedule_list(request):
     department_id = request.GET.get('department')
     day = request.GET.get('day')
     instructor_id = request.GET.get('instructor')
+    semester = request.GET.get('semester')
     search = request.GET.get('q', '')
     
     if college_id:
@@ -38,6 +41,8 @@ def schedule_list(request):
         schedules = schedules.filter(day=day)
     if instructor_id:
         schedules = schedules.filter(instructor_id=instructor_id)
+    if semester:
+        schedules = schedules.filter(semester=semester)
     if search:
         schedules = schedules.filter(
             Q(subject__name__icontains=search) |
@@ -51,10 +56,12 @@ def schedule_list(request):
         'departments': Department.objects.all(),
         'instructors': Instructor.objects.filter(is_active=True),
         'days': Schedule.DAYS,
+        'semesters': Schedule.SEMESTERS,
         'selected_college': college_id,
         'selected_department': department_id,
         'selected_day': day,
         'selected_instructor': instructor_id,
+        'selected_semester': semester,
         'search_query': search,
     }
     
@@ -143,20 +150,61 @@ def schedule_delete(request, pk):
     return render(request, 'schedules/delete.html', context)
 
 
+@login_required
 def find_available_room(request):
     """البحث عن قاعات متاحة"""
     available_rooms = []
     searched = False
+    selected_day = ''
+    start_time = ''
+    end_time = ''
     
     if request.method == 'POST' or request.GET.get('day'):
         form = FindRoomForm(request.POST or request.GET)
         if form.is_valid():
             day = form.cleaned_data['day']
+            semester = form.cleaned_data.get('semester', '1')
             start_time = form.cleaned_data['start_time']
             end_time = form.cleaned_data['end_time']
             
-            available_rooms = get_available_rooms(day, start_time, end_time)
+            # فلاتر متقدمة
+            floor = form.cleaned_data.get('floor')
+            min_capacity = form.cleaned_data.get('min_capacity')
+            max_capacity = form.cleaned_data.get('max_capacity')
+            room_type = form.cleaned_data.get('room_type')
+            has_projector = form.cleaned_data.get('has_projector')
+            has_computers = form.cleaned_data.get('has_computers')
+            has_air_conditioning = form.cleaned_data.get('has_air_conditioning')
+            
+            # الحصول على القاعات المتاحة
+            available_rooms = get_available_rooms(day, start_time, end_time, semester=semester)
+            
+            # تطبيق الفلاتر المتقدمة
+            if floor:
+                available_rooms = available_rooms.filter(floor=floor)
+            if min_capacity:
+                available_rooms = available_rooms.filter(capacity__gte=min_capacity)
+            if max_capacity:
+                available_rooms = available_rooms.filter(capacity__lte=max_capacity)
+            if room_type:
+                available_rooms = available_rooms.filter(room_type=room_type)
+            if has_projector:
+                available_rooms = available_rooms.filter(has_projector=True)
+            if has_computers:
+                available_rooms = available_rooms.filter(has_computers=True)
+            if has_air_conditioning:
+                available_rooms = available_rooms.filter(has_air_conditioning=True)
+            
+            # فلتر الصوتيات
+            has_audio_system = form.cleaned_data.get('has_audio_system')
+            if has_audio_system:
+                available_rooms = available_rooms.filter(has_audio_system=True)
+            
+            # ترتيب حسب السعة
+            available_rooms = available_rooms.order_by('capacity')
+            
             searched = True
+            selected_day = day
     else:
         form = FindRoomForm()
     
@@ -164,7 +212,10 @@ def find_available_room(request):
         'form': form,
         'available_rooms': available_rooms,
         'searched': searched,
-        'room_count': len(available_rooms) if searched else 0,
+        'room_count': available_rooms.count() if searched else 0,
+        'selected_day': selected_day,
+        'start_time': start_time,
+        'end_time': end_time,
     }
     
     if request.headers.get('HX-Request'):
@@ -173,6 +224,7 @@ def find_available_room(request):
     return render(request, 'schedules/find_room.html', context)
 
 
+@login_required
 def timeline_view(request):
     """عرض الجدول الزمني (Timeline)"""
     rooms = Room.objects.filter(is_active=True).select_related('department')
@@ -184,6 +236,7 @@ def timeline_view(request):
     day = request.GET.get('day', 'السبت')
     college_id = request.GET.get('college')
     department_id = request.GET.get('department')
+    semester = request.GET.get('semester')
     
     if college_id:
         rooms = rooms.filter(department__college_id=college_id)
@@ -191,6 +244,8 @@ def timeline_view(request):
     if department_id:
         rooms = rooms.filter(department_id=department_id)
         schedules = schedules.filter(room__department_id=department_id)
+    if semester:
+        schedules = schedules.filter(semester=semester)
     
     schedules = schedules.filter(day=day)
     
@@ -210,16 +265,19 @@ def timeline_view(request):
         'room_schedules': room_schedules.values(),
         'time_slots': TIME_SLOTS,
         'days': Schedule.DAYS,
+        'semesters': Schedule.SEMESTERS,
         'selected_day': day,
         'colleges': College.objects.all(),
         'departments': Department.objects.all(),
         'selected_college': college_id,
         'selected_department': department_id,
+        'selected_semester': semester,
     }
     
     return render(request, 'schedules/timeline.html', context)
 
 
+@login_required
 def grid_view(request):
     """عرض الجدول الشبكي الأسبوعي"""
     rooms = Room.objects.filter(is_active=True).select_related('department', 'department__college')
@@ -231,6 +289,7 @@ def grid_view(request):
     college_id = request.GET.get('college')
     department_id = request.GET.get('department')
     room_id = request.GET.get('room')
+    semester = request.GET.get('semester')
     
     if college_id:
         rooms = rooms.filter(department__college_id=college_id)
@@ -241,6 +300,8 @@ def grid_view(request):
     if room_id:
         rooms = rooms.filter(id=room_id)
         schedules = schedules.filter(room_id=room_id)
+    if semester:
+        schedules = schedules.filter(semester=semester)
     
     # تنظيم الحصص في شبكة
     grid_data = {}
@@ -257,16 +318,19 @@ def grid_view(request):
     context = {
         'grid_data': grid_data.values(),
         'days': DAY_ORDER,
+        'semesters': Schedule.SEMESTERS,
         'colleges': College.objects.all(),
         'departments': Department.objects.all(),
         'rooms': Room.objects.filter(is_active=True),
         'selected_college': college_id,
         'selected_department': department_id,
         'selected_room': room_id,
+        'selected_semester': semester,
     }
     
     return render(request, 'schedules/grid.html', context)
 
+@login_required
 def day_schedule(request):
     """عرض الجدول الشامل لليوم (لكافة القاعات) - مخصص للطباعة"""
     from django.utils import timezone
@@ -275,6 +339,7 @@ def day_schedule(request):
     current_day = get_arabic_day(timezone.now())
     day = request.GET.get('day', current_day)
     college_id = request.GET.get('college')
+    semester = request.GET.get('semester')
     
     rooms = Room.objects.filter(is_active=True).select_related('department', 'department__college')
     if college_id:
@@ -287,6 +352,8 @@ def day_schedule(request):
     
     if college_id:
         schedules = schedules.filter(room__department__college_id=college_id)
+    if semester:
+        schedules = schedules.filter(semester=semester)
 
     # تنظيم البيانات: قاعة -> حصص
     room_data = []
@@ -301,8 +368,10 @@ def day_schedule(request):
         'day': day,
         'room_data': room_data,
         'days': DAY_ORDER,
+        'semesters': Schedule.SEMESTERS,
         'colleges': College.objects.all(),
         'selected_college': college_id,
+        'selected_semester': semester,
         'title': f'تقرير الجدول اليومي الشامل: يوم {day}',
         'now': timezone.now(),
     }

@@ -45,8 +45,9 @@
                             {{ schedule.start_time|time:"H:i" }}
                         </span>
                     </div>
-                    <p class="text-[10px] text-gray-500 mt-2 font-bold">{{ schedule.start_time|time:"H:i" }} - {{
-                        schedule.end_time|time:"H:i" }}</p>
+                    <p class="text-[10px] text-gray-500 mt-2 font-bold">
+                        {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                    </p>
                 </div>
                 {% empty %}
                 <p class="text-gray-400 text-center py-4 text-sm font-bold italic">لا توجد حصص</p>
@@ -79,8 +80,9 @@
                     {{ day }}
                 </td>
                 {% endif %}
-                <td class="border border-black px-4 py-2">{{ schedule.start_time|time:"H:i" }} - {{
-                    schedule.end_time|time:"H:i" }}</td>
+                <td class="border border-black px-4 py-2">
+                    {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
+                </td>
                 <td class="border border-black px-4 py-2 font-bold">{{ schedule.subject.name }}</td>
                 <td class="border border-black px-4 py-2">{{ schedule.room.name }}</td>
                 <td class="border border-black px-4 py-2 text-xs">{{ schedule.notes|default:"" }}</td>

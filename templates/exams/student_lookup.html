@@ -1,0 +1,93 @@
+{% extends 'base.html' %}
+
+{% block title %}بحث عن مقعد — {{ session.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border p-8">
+        <div class="text-center mb-8">
+            <div class="bg-blue-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                </svg>
+            </div>
+            <h1 class="text-2xl font-bold text-gray-900 mb-1">بحث عن مقعد الطالب</h1>
+            <p class="text-gray-500">{{ session.name }}</p>
+        </div>
+
+        <!-- Search Form -->
+        <form method="GET" class="mb-8">
+            <div class="relative">
+                <input type="text" name="q" value="{{ search_query }}"
+                       placeholder="أدخل اسم الطالب أو الرقم الجامعي..."
+                       class="form-input w-full rounded-xl border-gray-300 pr-12 py-4 text-lg focus:border-blue-500 focus:ring-blue-500"
+                       autofocus>
+                <button type="submit" class="absolute left-3 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                </button>
+            </div>
+        </form>
+
+        <!-- Result -->
+        {% if result %}
+        {% if result.found %}
+        <div class="bg-gradient-to-br from-emerald-50 to-blue-50 rounded-2xl border-2 border-emerald-200 p-8 text-center">
+            <div class="bg-emerald-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+            </div>
+
+            <h2 class="text-xl font-bold text-gray-900 mb-1">{{ result.student_name }}</h2>
+            <p class="text-gray-500 mb-6">{{ result.university_id }}</p>
+
+            <div class="grid grid-cols-2 gap-4 max-w-md mx-auto">
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-1">القاعة</p>
+                    <p class="text-xl font-black text-blue-600">{{ result.room_name }}</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-1">المقعد</p>
+                    <p class="text-xl font-black text-purple-600">{{ result.seat_label }}</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-1">الصف</p>
+                    <p class="text-lg font-bold text-gray-700">{{ result.row }}</p>
+                </div>
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <p class="text-sm text-gray-500 mb-1">العمود</p>
+                    <p class="text-lg font-bold text-gray-700">{{ result.column }}</p>
+                </div>
+            </div>
+
+            {% if result.subject_name %}
+            <div class="mt-4 bg-white rounded-xl p-3 shadow-sm inline-block">
+                <span class="text-sm text-gray-500">المادة:</span>
+                <span class="font-bold text-gray-700">{{ result.subject_name }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <div class="bg-red-50 border border-red-200 rounded-2xl p-8 text-center">
+            <div class="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-red-700 mb-2">لم يتم العثور على الطالب</h3>
+            <p class="text-red-500 text-sm">تأكد من الاسم أو الرقم الجامعي وحاول مجدداً</p>
+        </div>
+        {% endif %}
+        {% endif %}
+
+        <div class="mt-6 text-center">
+            <a href="{% url 'exams:seating_map' session.pk %}" class="text-blue-600 hover:text-blue-800 font-bold text-sm">
+                ← عرض الخريطة الكاملة
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

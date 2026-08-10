@@ -2,6 +2,7 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib import messages
 from django.http import HttpResponse
 from apps.core.decorators import editor_required
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from datetime import date, timedelta
 import calendar
@@ -12,6 +13,7 @@ from apps.core.models import Department
 from apps.schedules.models import Schedule
 
 
+@login_required
 def calendar_view(request):
     """عرض التقويم الشهري"""
     today = timezone.now().date()
@@ -97,6 +99,7 @@ def calendar_view(request):
     return render(request, 'calendar_app/calendar.html', context)
 
 
+@login_required
 def holiday_list(request):
     """عرض قائمة العطل"""
     holidays = Holiday.objects.all().order_by('-date')
@@ -171,6 +174,7 @@ def holiday_delete(request, pk):
     return render(request, 'calendar_app/holiday_delete.html', context)
 
 
+@login_required
 def off_day_list(request):
     """عرض أيام الراحة للأقسام"""
     off_days = DepartmentOffDay.objects.select_related(

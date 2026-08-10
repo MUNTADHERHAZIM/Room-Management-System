@@ -32,6 +32,7 @@ class Room(models.Model):
     has_computers = models.BooleanField(default=False, verbose_name='يحتوي على حاسبات')
     has_whiteboard = models.BooleanField(default=True, verbose_name='يحتوي على سبورة')
     has_air_conditioning = models.BooleanField(default=False, verbose_name='يحتوي على تكييف')
+    has_audio_system = models.BooleanField(default=False, verbose_name='يحتوي على نظام صوتي')
     notes = models.TextField(blank=True, verbose_name='ملاحظات')
     is_active = models.BooleanField(default=True, verbose_name='فعال')
     created_at = models.DateTimeField(auto_now_add=True, verbose_name='تاريخ الإنشاء')

@@ -24,17 +24,20 @@
 
     <div class="bg-white rounded-3xl shadow-2xl border border-gray-100 overflow-hidden animate-fade-in mb-10">
         <!-- Form Header -->
-        <div class="bg-gradient-to-l from-blue-700 to-indigo-800 px-8 py-10 md:py-12 text-center relative overflow-hidden">
+        <div
+            class="bg-gradient-to-l from-blue-700 to-indigo-800 px-8 py-10 md:py-12 text-center relative overflow-hidden">
             <div class="absolute inset-0 bg-blue-900/20 backdrop-blur-2xl"></div>
             <div class="relative z-10">
-                <div class="inline-flex p-4 bg-white/10 border border-white/20 rounded-3xl backdrop-blur-3xl mb-5 shadow-2xl">
+                <div
+                    class="inline-flex p-4 bg-white/10 border border-white/20 rounded-3xl backdrop-blur-3xl mb-5 shadow-2xl">
                     <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                             d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                 </div>
                 <h1 class="text-4xl font-black text-white tracking-tight mb-2">{{ title }}</h1>
-                <p class="text-blue-100 text-lg font-medium opacity-80">نظام ذكي لإدارة الجداول الزمنية ومنع تعارض المواعيد</p>
+                <p class="text-blue-100 text-lg font-medium opacity-80">نظام ذكي لإدارة الجداول الزمنية ومنع تعارض
+                    المواعيد</p>
             </div>
         </div>
 
@@ -43,7 +46,8 @@
 
             <!-- Conflict/General Errors -->
             {% if form.non_field_errors %}
-            <div class="bg-red-50 border-r-8 border-red-500 text-red-800 p-6 rounded-3xl flex items-start gap-5 animate-shake shadow-lg shadow-red-100/50">
+            <div
+                class="bg-red-50 border-r-8 border-red-500 text-red-800 p-6 rounded-3xl flex items-start gap-5 animate-shake shadow-lg shadow-red-100/50">
                 <div class="w-12 h-12 bg-red-100 rounded-2xl flex items-center justify-center shrink-0">
                     <svg class="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -71,7 +75,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
                     <!-- Subject -->
                     <div class="space-y-3 group">
-                        <label class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
+                        <label
+                            class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
@@ -80,15 +85,16 @@
                         </label>
                         {{ form.subject }}
                         {% if form.subject.errors %}
-                            <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
-                                {{ form.subject.errors.0 }}
-                            </p>
+                        <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
+                            {{ form.subject.errors.0 }}
+                        </p>
                         {% endif %}
                     </div>
 
                     <!-- Instructor -->
                     <div class="space-y-3 group">
-                        <label class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
+                        <label
+                            class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -97,15 +103,16 @@
                         </label>
                         {{ form.instructor }}
                         {% if form.instructor.errors %}
-                            <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
-                                {{ form.instructor.errors.0 }}
-                            </p>
+                        <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
+                            {{ form.instructor.errors.0 }}
+                        </p>
                         {% endif %}
                     </div>
 
                     <!-- Room -->
                     <div class="space-y-3 group">
-                        <label class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
+                        <label
+                            class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5" />
@@ -114,15 +121,16 @@
                         </label>
                         {{ form.room }}
                         {% if form.room.errors %}
-                            <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
-                                {{ form.room.errors.0 }}
-                            </p>
+                        <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
+                            {{ form.room.errors.0 }}
+                        </p>
                         {% endif %}
                     </div>
 
                     <!-- Schedule Type -->
                     <div class="space-y-3 group">
-                        <label class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
+                        <label
+                            class="flex items-center gap-2 text-sm font-black text-gray-700 uppercase tracking-widest group-focus-within:text-blue-600 transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                     d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
@@ -131,7 +139,7 @@
                         </label>
                         {{ form.schedule_type }}
                         {% if form.schedule_type.errors %}
-                            <p class="text-red-500 text-xs font-black mt-2">{{ form.schedule_type.errors.0 }}</p>
+                        <p class="text-red-500 text-xs font-black mt-2">{{ form.schedule_type.errors.0 }}</p>
                         {% endif %}
                     </div>
                 </div>
@@ -144,13 +152,24 @@
                     <h2 class="text-2xl font-black text-gray-800 uppercase tracking-tight">الزمان والموعد</h2>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-start">
                     <div class="space-y-3">
                         <label class="block text-sm font-black text-gray-700 uppercase tracking-widest">
                             {{ form.day.label }} <span class="text-red-500">*</span>
                         </label>
                         {{ form.day }}
-                        {% if form.day.errors %}<p class="text-red-500 text-xs font-black mt-2">{{ form.day.errors.0 }}</p>{% endif %}
+                        {% if form.day.errors %}<p class="text-red-500 text-xs font-black mt-2">{{ form.day.errors.0 }}
+                        </p>{% endif %}
+                    </div>
+
+                    <div class="space-y-3">
+                        <label class="block text-sm font-black text-gray-700 uppercase tracking-widest">
+                            {{ form.semester.label }} <span class="text-red-500">*</span>
+                        </label>
+                        {{ form.semester }}
+                        {% if form.semester.errors %}<p class="text-red-500 text-xs font-black mt-2">{{
+                            form.semester.errors.0 }}
+                        </p>{% endif %}
                     </div>
 
                     <div class="space-y-3">
@@ -159,10 +178,20 @@
                         </label>
                         {{ form.start_time }}
                         {% if form.start_time.errors %}
-                            <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
-                                {{ form.start_time.errors.0 }}
-                            </p>
+                        <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
+                            {{ form.start_time.errors.0 }}
+                        </p>
                         {% endif %}
+                    </div>
+
+                    <!-- Duration Field -->
+                    <div class="space-y-3">
+                        <label class="block text-sm font-black text-gray-700 uppercase tracking-widest">
+                            {{ form.duration.label }}
+                            <span class="text-blue-500 text-xs font-normal mr-2">(اختياري)</span>
+                        </label>
+                        {{ form.duration }}
+                        <p class="text-xs text-gray-500 mt-1">اختر المدة ليتم حساب وقت النهاية تلقائياً</p>
                     </div>
 
                     <div class="space-y-3">
@@ -171,10 +200,25 @@
                         </label>
                         {{ form.end_time }}
                         {% if form.end_time.errors %}
-                            <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
-                                {{ form.end_time.errors.0 }}
-                            </p>
+                        <p class="text-red-500 text-xs font-black mt-2 bg-red-50 px-3 py-1.5 rounded-lg inline-block">
+                            {{ form.end_time.errors.0 }}
+                        </p>
                         {% endif %}
+                    </div>
+                </div>
+
+                <!-- شريط المعلومات -->
+                <div class="bg-blue-50 border border-blue-100 rounded-2xl p-4 flex items-center gap-4">
+                    <div class="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <p class="text-blue-800 font-bold text-sm">نصيحة:</p>
+                        <p class="text-blue-600 text-sm">يمكنك اختيار مدة المحاضرة من القائمة لحساب وقت النهاية
+                            تلقائياً، أو إدخال وقت النهاية يدوياً.</p>
                     </div>
                 </div>
             </div>
@@ -182,14 +226,16 @@
             <!-- Final Touches -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-10">
                 <div class="md:col-span-2 space-y-3">
-                    <label class="block text-sm font-black text-gray-700 uppercase tracking-widest">{{ form.notes.label }}</label>
+                    <label class="block text-sm font-black text-gray-700 uppercase tracking-widest">{{ form.notes.label}}</label>
                     {{ form.notes }}
-                    {% if form.notes.errors %}<p class="text-red-500 text-xs font-black mt-2">{{ form.notes.errors.0 }}</p>{% endif %}
+                    {% if form.notes.errors %}<p class="text-red-500 text-xs font-black mt-2">{{ form.notes.errors.0 }}
+                    </p>{% endif %}
                 </div>
 
                 <div class="bg-blue-50/50 p-8 rounded-3xl border border-blue-100 flex flex-col justify-center gap-4">
                     <div class="flex items-center justify-between">
-                        <label class="text-base font-black text-gray-800 cursor-pointer" for="{{ form.is_active.id_for_label }}">
+                        <label class="text-base font-black text-gray-800 cursor-pointer"
+                            for="{{ form.is_active.id_for_label }}">
                             تفعيل الحصة
                         </label>
                         <div class="scale-125">{{ form.is_active }}</div>
@@ -217,52 +263,99 @@
 
 <style>
     @keyframes fade-in {
-        from { opacity: 0; transform: scale(0.98) translateY(30px); }
-        to   { opacity: 1; transform: scale(1) translateY(0); }
+        from {
+            opacity: 0;
+            transform: scale(0.98) translateY(30px);
+        }
+
+        to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
+        }
     }
 
     @keyframes shake {
-        0%, 100% { transform: translateX(0); }
-        20% { transform: translateX(-10px); }
-        40% { transform: translateX(10px); }
-        60% { transform: translateX(-10px); }
-        80% { transform: translateX(10px); }
+
+        0%,
+        100% {
+            transform: translateX(0);
+        }
+
+        20% {
+            transform: translateX(-10px);
+        }
+
+        40% {
+            transform: translateX(10px);
+        }
+
+        60% {
+            transform: translateX(-10px);
+        }
+
+        80% {
+            transform: translateX(10px);
+        }
     }
 
-    .animate-fade-in { animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both; }
-    .animate-shake   { animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
+    .animate-fade-in {
+        animation: fade-in 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .animate-shake {
+        animation: shake 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97) both;
+    }
 
     /* بديل @apply (يعمل مع Tailwind CDN) */
-    input, select, textarea {
+    input,
+    select,
+    textarea {
         width: 100%;
-        border-radius: 1rem;                /* rounded-2xl */
-        border: 1px solid #f3f4f6;          /* gray-100 */
-        background: rgba(249, 250, 251, 0.7); /* gray-50/70 */
+        border-radius: 1rem;
+        /* rounded-2xl */
+        border: 1px solid #f3f4f6;
+        /* gray-100 */
+        background: rgba(249, 250, 251, 0.7);
+        /* gray-50/70 */
         font-weight: 700;
-        padding: 1rem 1.5rem;               /* py-4 px-6 */
-        color: #1f2937;                     /* gray-800 */
+        padding: 1rem 1.5rem;
+        /* py-4 px-6 */
+        color: #1f2937;
+        /* gray-800 */
         font-size: 1rem;
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05); /* shadow-sm */
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        /* shadow-sm */
         transition: all 300ms ease;
         outline: none;
     }
 
-    input:hover, select:hover, textarea:hover {
-        border-color: #d1d5db;              /* gray-300 */
+    input:hover,
+    select:hover,
+    textarea:hover {
+        border-color: #d1d5db;
+        /* gray-300 */
     }
 
-    input:focus, select:focus, textarea:focus {
+    input:focus,
+    select:focus,
+    textarea:focus {
         background: #ffffff;
-        border-color: #3b82f6;              /* blue-500 */
-        box-shadow: 0 0 0 6px rgba(59,130,246,0.10);
+        border-color: #3b82f6;
+        /* blue-500 */
+        box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.10);
     }
 
     input[type="checkbox"] {
-        width: 1.75rem;                     /* w-7 */
-        height: 1.75rem;                    /* h-7 */
-        border-radius: 0.75rem;             /* rounded-xl */
-        border: 1px solid #d1d5db;          /* gray-300 */
-        accent-color: #2563eb;              /* blue-600 */
+        width: 1.75rem;
+        /* w-7 */
+        height: 1.75rem;
+        /* h-7 */
+        border-radius: 0.75rem;
+        /* rounded-xl */
+        border: 1px solid #d1d5db;
+        /* gray-300 */
+        accent-color: #2563eb;
+        /* blue-600 */
         cursor: pointer;
         box-shadow: none;
     }
@@ -278,15 +371,65 @@
         appearance: none;
     }
 
-    textarea { min-height: 120px; }
+    textarea {
+        min-height: 120px;
+    }
 
-    ::-webkit-scrollbar { width: 10px; }
-    ::-webkit-scrollbar-track { background: #f1f1f1; }
+    ::-webkit-scrollbar {
+        width: 10px;
+    }
+
+    ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+
     ::-webkit-scrollbar-thumb {
         background: #d1d5db;
         border-radius: 10px;
         border: 3px solid #f1f1f1;
     }
-    ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: #9ca3af;
+    }
 </style>
+
+<script>
+    // حساب وقت النهاية تلقائياً بناءً على مدة المحاضرة
+    document.addEventListener('DOMContentLoaded', function () {
+        const startTimeInput = document.getElementById('id_start_time');
+        const durationSelect = document.getElementById('id_duration');
+        const endTimeInput = document.getElementById('id_end_time');
+
+        function calculateEndTime() {
+            const startTime = startTimeInput.value;
+            const duration = durationSelect.value;
+
+            if (startTime && duration) {
+                // تحويل وقت البداية إلى دقائق
+                const [hours, minutes] = startTime.split(':').map(Number);
+                const startMinutes = hours * 60 + minutes;
+
+                // إضافة المدة
+                const endMinutes = startMinutes + parseInt(duration);
+
+                // تحويل إلى ساعات:دقائق
+                const endHours = Math.floor(endMinutes / 60);
+                const endMins = endMinutes % 60;
+
+                // التأكد من أن الوقت لا يتجاوز 23:59
+                if (endHours < 24) {
+                    // تنسيق الوقت
+                    const formattedTime = `${String(endHours).padStart(2, '0')}:${String(endMins).padStart(2, '0')}`;
+                    endTimeInput.value = formattedTime;
+                }
+            }
+        }
+
+        if (startTimeInput && durationSelect && endTimeInput) {
+            startTimeInput.addEventListener('change', calculateEndTime);
+            durationSelect.addEventListener('change', calculateEndTime);
+        }
+    });
+</script>
 {% endblock %}

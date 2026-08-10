@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تسجيل الحضور الذكي - {{ session.schedule.subject.name }}</title>
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <!-- Alpine.js -->
+    <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js" defer></script>
+    <style>
+        body {
+            font-family: 'Cairo', sans-serif;
+            background-color: #0F172A; /* Slate 900 */
+        }
+        .glass-card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+        .animate-checkmark {
+            animation: scaleUp 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+        @keyframes scaleUp {
+            0% { transform: scale(0); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex flex-col items-center justify-center p-4 relative overflow-hidden">
+    <!-- Decorative background blobs -->
+    <div class="absolute w-72 h-72 rounded-full bg-indigo-600/10 blur-3xl -top-20 -left-20"></div>
+    <div class="absolute w-72 h-72 rounded-full bg-emerald-600/10 blur-3xl -bottom-20 -right-20"></div>
+
+    <div class="w-full max-w-md glass-card rounded-3xl p-6 shadow-2xl relative z-10">
+        <!-- Logo/Header -->
+        <div class="text-center mb-6">
+            <span class="inline-flex p-3 bg-indigo-500/10 text-indigo-400 rounded-2xl border border-indigo-500/20 mb-3">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v1m6 11h2m-6 0h-2v4m0-11v3m0 0h.01M12 12h4.01M16 20h4M4 12h4m12 0a8 8 0 11-16 0 8 8 0 0116 0z" />
+                </svg>
+            </span>
+            <h1 class="text-xl font-black tracking-wide text-white">نظام تسجيل الحضور الذكي</h1>
+            <p class="text-xs text-slate-400 mt-1">بوابة تسجيل حضور الطلاب الإلكترونية</p>
+        </div>
+
+        {% if success %}
+        <!-- Active form section managed by Alpine.js -->
+        <div x-data="studentAttendanceForm()" class="space-y-4">
+            
+            <!-- Lecture details Card -->
+            <div class="bg-slate-800/50 rounded-2xl p-4 border border-slate-700/50 space-y-2">
+                <span class="text-[10px] bg-indigo-500/20 text-indigo-300 font-bold px-2 py-0.5 rounded">تفاصيل المحاضرة الحالية</span>
+                <h2 class="font-bold text-white text-lg mt-1">{{ session.schedule.subject.name }}</h2>
+                <div class="text-xs text-slate-400 space-y-1">
+                    <p>الأستاذ: <strong class="text-slate-200">{{ session.schedule.instructor.name }}</strong></p>
+                    <p>القاعة: <strong class="text-slate-200">{{ session.schedule.room.name }}</strong></p>
+                </div>
+            </div>
+
+            <!-- Form states -->
+            <div x-show="!isSubmitted" class="space-y-4">
+                <p class="text-sm text-slate-300 text-center">
+                    يرجى كتابة رقمك الجامعي لتأكيد حضورك في القاعة الدراسية:
+                </p>
+
+                <!-- Form -->
+                <form @submit.prevent="submitForm">
+                    <div class="space-y-3">
+                        <div>
+                            <label for="university_id" class="block text-xs font-semibold text-slate-400 mb-1.5">الرقم الجامعي للطالب:</label>
+                            <input type="text" 
+                                   id="university_id" 
+                                   x-model="universityId" 
+                                   placeholder="مثال: 20261014" 
+                                   class="w-full bg-slate-900/60 border border-slate-700 text-white font-mono font-bold placeholder-slate-600 rounded-xl px-4 py-3 text-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
+                                   required>
+                        </div>
+
+                        <!-- Error Banner -->
+                        <div x-show="errorMessage" 
+                             x-text="errorMessage" 
+                             class="bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs rounded-xl p-3 text-center" 
+                             style="display: none;">
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" 
+                                :disabled="isLoading"
+                                class="w-full bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-800 text-white font-bold py-3.5 rounded-xl transition flex items-center justify-center gap-2 shadow-lg shadow-indigo-950">
+                            <template x-if="isLoading">
+                                <svg class="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                            </template>
+                            <span x-text="isLoading ? 'جاري التحقق...' : 'تأكيد تسجيل الحضور ⚡'">تأكيد تسجيل الحضور ⚡</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Success screen -->
+            <div x-show="isSubmitted" class="text-center py-6 space-y-4" style="display: none;">
+                <!-- Animated glowing checkmark -->
+                <div class="inline-flex p-4 bg-emerald-500/10 text-emerald-400 rounded-full border border-emerald-500/20 animate-checkmark shadow-inner">
+                    <svg class="w-16 h-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                    </svg>
+                </div>
+                
+                <div class="space-y-1">
+                    <h3 class="text-xl font-black text-emerald-400" x-text="successMessage">تم تسجيل حضورك!</h3>
+                    <p class="text-sm font-semibold text-white mt-1" x-text="studentName"></p>
+                    <p class="text-xs text-slate-400">لقد تم حفظ وتوثيق حضورك في سجلات المحاضرة بنجاح.</p>
+                </div>
+
+                <div class="text-[10px] text-slate-500 pt-4 border-t border-slate-800">
+                    بصمة الجهاز المعتمدة: <span class="font-mono text-indigo-400" x-text="deviceHash"></span>
+                </div>
+            </div>
+
+        </div>
+        {% else %}
+        <!-- Expired/Error Screen -->
+        <div class="text-center py-6 space-y-4">
+            <div class="inline-flex p-4 bg-rose-500/10 text-rose-400 rounded-full border border-rose-500/20">
+                <svg class="w-14 h-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            
+            <div class="space-y-1">
+                <h3 class="text-lg font-bold text-rose-400">رمز غير صالح أو منتهٍ</h3>
+                <p class="text-xs text-slate-300 leading-relaxed px-4">
+                    {{ error|default:"لقد انتهت صلاحية رمز الـ QR هذا نظراً لتأخر المسح أو تدوير الرمز الأمني." }}
+                </p>
+                <p class="text-xs text-amber-300 font-semibold pt-2">
+                    يرجى إعادة مسح الرمز الجديد المعروض حالياً على شاشة الأستاذ.
+                </p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Footer -->
+        <div class="text-center mt-6 text-[10px] text-slate-500 border-t border-slate-800 pt-4">
+            حقوق النشر © 2026 - نظام إدارة القاعات والمختبرات الذكي
+        </div>
+    </div>
+
+    {% if success %}
+    <script>
+        function studentAttendanceForm() {
+            return {
+                universityId: '',
+                isLoading: false,
+                isSubmitted: false,
+                errorMessage: '',
+                successMessage: '',
+                studentName: '',
+                deviceHash: '',
+
+                submitForm() {
+                    this.isLoading = true;
+                    this.errorMessage = '';
+
+                    const formData = new FormData();
+                    formData.append('university_id', this.universityId);
+                    formData.append('otp_token', '{{ otp_token }}');
+
+                    fetch("{% url 'attendance:submit_attendance' session.pk %}", {
+                        method: 'POST',
+                        body: formData
+                    })
+                    .then(response => response.json().then(data => ({ status: response.status, body: data })))
+                    .then(res => {
+                        this.isLoading = false;
+                        if (res.status === 200) {
+                            // النجاح
+                            this.studentName = res.body.student_name;
+                            this.successMessage = res.body.message || res.body.info;
+                            this.deviceHash = 'FP-' + Math.random().toString(36).substring(2, 10).toUpperCase();
+                            this.isSubmitted = true;
+                            
+                            // اهتزاز الموبايل التفاعلي (Haptic Feedback)
+                            if (navigator.vibrate) {
+                                navigator.vibrate([100, 50, 120]);
+                            }
+                        } else {
+                            // الفشل
+                            this.errorMessage = res.body.error || 'حدث خطأ غير متوقع!';
+                        }
+                    })
+                    .catch(err => {
+                        this.isLoading = false;
+                        this.errorMessage = 'حدث خطأ في الاتصال بالشبكة المحلية!';
+                        console.error("Connection error:", err);
+                    });
+                }
+            }
+        }
+    </script>
+    {% endif %}
+</body>
+</html>

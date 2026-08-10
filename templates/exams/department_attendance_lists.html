@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}قوائم الحضور حسب الأقسام — {{ session.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    @media print {
+        body { background: white !important; }
+        nav, button, .no-print { display: none !important; }
+        .print-container { width: 100% !important; margin: 0 !important; padding: 0 !important; }
+        .page-break { page-break-after: always; }
+        .card { border: none !important; box-shadow: none !important; }
+        @page { size: A4; margin: 1cm; }
+    }
+
+    .attendance-table th, .attendance-table td {
+        border: 1px solid #e2e8f0;
+        padding: 0.75rem;
+        text-align: center;
+    }
+    .attendance-table th {
+        background-color: #f8fafc;
+        font-weight: bold;
+        color: #1e293b;
+    }
+    .signature-cell {
+        min-width: 150px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="max-w-6xl mx-auto print-container">
+    <!-- Action Bar (Hidden when printing) -->
+    <div class="flex items-center justify-between mb-8 no-print bg-white p-4 rounded-2xl shadow-sm border">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">قوائم الحضور حسب الأقسام</h1>
+            <p class="text-sm text-gray-500">{{ session.name }} — {{ session.date }}</p>
+        </div>
+        <div class="flex flex-wrap gap-3 items-center">
+            <label class="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg border hover:bg-gray-100 transition-all">
+                <input type="checkbox" id="toggleId" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                <span class="text-xs font-bold text-gray-700">الرقم الجامعي</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg border hover:bg-gray-100 transition-all">
+                <input type="checkbox" id="toggleSubject" class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                <span class="text-xs font-bold text-gray-700">المادة</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg border hover:bg-gray-100 transition-all">
+                <input type="checkbox" id="toggleSeat" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                <span class="text-xs font-bold text-gray-700">المقعد</span>
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer bg-gray-50 px-3 py-1.5 rounded-lg border hover:bg-gray-100 transition-all">
+                <input type="checkbox" id="toggleDept" checked class="w-4 h-4 text-indigo-600 rounded focus:ring-indigo-500">
+                <span class="text-xs font-bold text-gray-700">اسم القسم</span>
+            </label>
+            
+            <button onclick="window.print()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2.5 rounded-xl font-bold flex items-center gap-2 transition-all shadow-lg ml-auto">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-3a2 2 0 00-2-2H9a2 2 0 00-2 2v3a2 2 0 002 2zm0 0v-8a2 2 0 012-2h6a2 2 0 012 2v8j"/></svg>
+                طباعة القوائم
+            </button>
+            <a href="{% url 'exams:session_detail' session.pk %}" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-6 py-2.5 rounded-xl font-bold transition-all">
+                رجوع للجلسة
+            </a>
+        </div>
+    </div>
+
+    {% for dept in departments %}
+    <div class="bg-white rounded-3xl shadow-sm border p-8 mb-8 page-break">
+        <!-- Report Header -->
+        <div class="flex justify-between items-start border-b-2 border-indigo-600 pb-6 mb-6">
+            <div class="text-right">
+                <h2 class="text-2xl font-black text-gray-900 mb-1">قائمة حضور الطلاب</h2>
+                <p class="text-indigo-600 font-bold text-lg dept-header">قسم {{ dept.name }}</p>
+            </div>
+            <div class="text-left text-sm text-gray-500 font-bold">
+                <p>{{ session.name }}</p>
+                <p>التاريخ: {{ session.date }}</p>
+                <p>الوقت: {{ session.start_time|time:"H:i" }} — {{ session.end_time|time:"H:i" }}</p>
+            </div>
+        </div>
+
+        <!-- Table -->
+        <div class="overflow-x-auto">
+            <table class="w-full attendance-table text-sm">
+                <thead>
+                    <tr>
+                        <th class="w-12">#</th>
+                        <th>اسم الطالب</th>
+                        <th class="id-column">الكود / الرقم الجامعي</th>
+                        <th class="w-32">المرحلة</th>
+                        <th class="subject-column">المادة</th>
+                        <th class="w-32 seat-column">المقعد</th>
+                        <th class="signature-cell">التوقيع</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for student in dept.students %}
+                    <tr class="hover:bg-gray-50 transition-colors">
+                        <td class="font-bold text-gray-400">{{ forloop.counter }}</td>
+                        <td class="text-right font-bold text-gray-900">{{ student.name }}</td>
+                        <td class="font-mono text-indigo-600 id-column">{{ student.university_id }}</td>
+                        <td>
+                            <span class="bg-blue-50 text-blue-700 px-2 py-1 rounded text-xs font-bold">
+                                {{ student.stage }}
+                            </span>
+                        </td>
+                        <td class="text-gray-600 subject-column">{{ student.subject }}</td>
+                        <td class="font-bold seat-column">
+                            <span class="text-gray-400 text-xs">{{ student.hall }}</span><br>
+                            <span class="text-indigo-600">{{ student.seat }}</span>
+                        </td>
+                        <td class="signature-cell border-b border-gray-300"></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Footer for signature -->
+        <div class="mt-12 grid grid-cols-2 gap-8 text-center no-print">
+            <div>
+                <p class="font-bold text-gray-500 mb-8">توقيع مشرف القاعة</p>
+                <div class="border-b border-dashed border-gray-400 w-48 mx-auto"></div>
+            </div>
+            <div>
+                <p class="font-bold text-gray-500 mb-8">توقيع اللجنة الامتحانية</p>
+                <div class="border-b border-dashed border-gray-400 w-48 mx-auto"></div>
+            </div>
+        </div>
+        
+        <div class="hidden print:block mt-20 grid grid-cols-2 gap-8 text-center">
+            <div>
+                <p class="font-bold text-gray-700 mb-12">توقيع مشرف القاعة</p>
+                <div class="border-b border-gray-400 w-48 mx-auto"></div>
+            </div>
+            <div>
+                <p class="font-bold text-gray-700 mb-12">توقيع اللجنة الامتحانية</p>
+                <div class="border-b border-gray-400 w-48 mx-auto"></div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<script>
+    function setupToggle(checkboxId, targetClass) {
+        const checkbox = document.getElementById(checkboxId);
+        const elements = document.querySelectorAll('.' + targetClass);
+        
+        // Initial state
+        elements.forEach(el => el.style.display = checkbox.checked ? '' : 'none');
+
+        checkbox.addEventListener('change', function(e) {
+            elements.forEach(el => {
+                el.style.display = e.target.checked ? '' : 'none';
+            });
+        });
+    }
+
+    setupToggle('toggleId', 'id-column');
+    setupToggle('toggleSubject', 'subject-column');
+    setupToggle('toggleSeat', 'seat-column');
+    setupToggle('toggleDept', 'dept-header');
+</script>
+{% endblock %}

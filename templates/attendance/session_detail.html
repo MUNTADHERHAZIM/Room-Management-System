@@ -1,0 +1,551 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}لوحة التحضير اللحظية - {{ session.get_subject_name }}{% endblock %}
+
+{% block content %}
+<div class="space-y-6" x-data="qrSession()">
+    <!-- Top Action bar -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-gray-200 shadow-md">
+        <div class="flex items-center gap-3">
+            <a href="{% url 'attendance:session_list' %}" class="text-gray-600 hover:text-gray-900 transition">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+                </svg>
+            </a>
+            <div>
+                <h1 class="text-xl font-black text-gray-900 flex items-center gap-2">
+                    جلسة التحضير اللحظية
+                    <span style="background-color: #e0e7ff; color: #3730a3;" class="text-xs border border-indigo-300 font-mono font-black px-2.5 py-0.5 rounded-lg">PIN: {{ session.session_pin }}</span>
+                </h1>
+                <p class="text-xs font-bold text-gray-600 mt-0.5">حصة: <span class="font-black text-indigo-900">{{ session.get_subject_name }}</span> | القاعة: <strong class="text-gray-900">{{ session.get_room_name }}</strong></p>
+            </div>
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center">
+            {% if session.is_active %}
+            <!-- Camera scanner button -->
+            <a href="{% url 'attendance:scanner_view' session.pk %}"
+               style="background-color: #4f46e5; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-md">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                فتح ماسح الكاميرا
+            </a>
+
+            <!-- Mark remaining absent button -->
+            <form hx-post="{% url 'attendance:mark_remaining_absent' session.pk %}"
+                  hx-target="#student-table-container"
+                  hx-swap="innerHTML"
+                  hx-confirm="هل أنت متأكد من رغبتك في تسجيل كافة الطلاب غير الحاضرين كـ (غائبين) لهذه الجلسة؟"
+                  class="inline">
+                {% csrf_token %}
+                <button type="submit"
+                    style="background-color: #d97706; color: #ffffff;"
+                    class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-md">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 12H6" />
+                    </svg>
+                    تحضير المتبقين غائبين
+                </button>
+            </form>
+
+            <!-- Close session button -->
+            <form method="POST" class="inline" @submit="confirmClose($event)">
+                {% csrf_token %}
+                <button type="submit" name="close_session"
+                    style="background-color: #dc2626; color: #ffffff;"
+                    class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-md">
+                    <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    إنهاء الجلسة وحفظ
+                </button>
+            </form>
+            {% else %}
+            <span style="background-color: #e5e7eb; color: #1f2937;" class="font-black px-4 py-2.5 rounded-xl text-sm border border-gray-300">الجلسة مغلقة</span>
+            {% endif %}
+
+            <!-- Export buttons with explicit background colors -->
+            <a href="{% url 'attendance:export_excel' session.pk %}"
+               style="background-color: #059669; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-md">
+                تصدير إكسل Excel
+            </a>
+            <a href="{% url 'attendance:export_pdf' session.pk %}"
+               style="background-color: #b91c1c; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-md">
+                تصدير PDF
+            </a>
+            <button onclick="window.print()"
+               style="background-color: #111827; color: #ffffff;"
+               class="font-black px-4 py-2.5 rounded-xl text-sm transition flex items-center gap-1.5 shadow-md">
+                طباعة التقرير
+            </button>
+        </div>
+    </div>
+
+    <!-- Live Stats Grid -->
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- Present card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex items-center gap-4">
+            <div style="background-color: #dcfce7; color: #15803d;" class="p-3 rounded-xl font-black">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <span class="text-xs text-gray-700 font-bold">الطلاب الحاضرين</span>
+                <h3 class="text-3xl font-black text-green-700 mt-0.5" id="stats-present">{{ total_present }}</h3>
+            </div>
+        </div>
+
+        <!-- Late card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex items-center gap-4">
+            <div style="background-color: #fef3c7; color: #b45309;" class="p-3 rounded-xl font-black">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+            </div>
+            <div>
+                <span class="text-xs text-gray-700 font-bold">المتأخرين</span>
+                <h3 class="text-3xl font-black text-amber-700 mt-0.5" id="stats-late">{{ total_late }}</h3>
+            </div>
+        </div>
+
+        <!-- Excused card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex items-center gap-4">
+            <div style="background-color: #dbeafe; color: #1d4ed8;" class="p-3 rounded-xl font-black">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 012-2h2a2 2 0 012-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+            </div>
+            <div>
+                <span class="text-xs text-gray-700 font-bold">المستأذنين</span>
+                <h3 class="text-3xl font-black text-blue-700 mt-0.5" id="stats-excused">{{ total_excused }}</h3>
+            </div>
+        </div>
+
+        <!-- Duplicate warning card -->
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-5 flex items-center gap-4">
+            <div style="background-color: #fee2e2; color: #b91c1c;" class="p-3 rounded-xl font-black">
+                <svg class="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+            </div>
+            <div>
+                <span class="text-xs text-gray-700 font-bold">تحذيرات تكرار الأجهزة</span>
+                <h3 class="text-3xl font-black text-red-700 mt-0.5" id="stats-duplicates">{{ duplicate_count }}</h3>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Layout: QR presentation left, Table right -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+        <!-- QR Presentation Panel (4 cols) -->
+        <div class="lg:col-span-4 flex flex-col items-center">
+            {% if session.is_active %}
+            <!-- Glowing Glass Card -->
+            <div style="background-color: #111827; color: #ffffff;" class="w-full rounded-3xl p-6 shadow-xl border border-gray-800 flex flex-col items-center justify-center text-center relative overflow-hidden">
+                <span style="background-color: #1f2937; color: #facc15;" class="border border-gray-700 font-black text-xs uppercase px-3 py-1 rounded-full">رمز التحضير المشفر</span>
+                
+                <!-- QR Code Target -->
+                <div class="bg-white p-5 rounded-2xl shadow-inner my-6 relative overflow-hidden transition-transform duration-300 origin-center cursor-pointer"
+                     :style="`transform: scale(${qrScale})`"
+                     @click="toggleFullscreen()"
+                     id="qrcode-container"
+                     title="اضغط للتكبير على كامل الشاشة">
+                    <div id="qrcode" class="w-56 h-56 flex items-center justify-center text-gray-800">
+                        <!-- Dynamic QR -->
+                    </div>
+                </div>
+
+                <!-- QR Controls -->
+                <div style="background-color: #1f2937;" class="flex items-center gap-2 mb-4 rounded-full p-1 border border-gray-700">
+                    <button @click="zoomOut()" class="w-8 h-8 rounded-full flex items-center justify-center text-blue-200 hover:bg-gray-700 hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4" /></svg>
+                    </button>
+                    <span class="text-xs font-mono font-bold text-white w-8 text-center" x-text="Math.round(qrScale * 100) + '%'">100%</span>
+                    <button @click="zoomIn()" class="w-8 h-8 rounded-full flex items-center justify-center text-blue-200 hover:bg-gray-700 hover:text-white transition">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" /></svg>
+                    </button>
+                    <div class="w-px h-5 bg-gray-600 mx-1"></div>
+                    <button @click="toggleFullscreen()" class="w-8 h-8 rounded-full flex items-center justify-center text-blue-200 hover:bg-gray-700 hover:text-white transition" title="ملء الشاشة">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8V4m0 0h4M4 4l5 5m11-1V4m0 0h-4m4 0l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" /></svg>
+                    </button>
+                </div>
+
+                <!-- Timer & Info -->
+                <div style="background-color: #1f2937;" class="flex items-center gap-3 border border-gray-700 rounded-2xl py-2.5 px-4 w-full justify-center">
+                    <div class="relative flex items-center justify-center w-8 h-8 rounded-full border-2 border-yellow-400">
+                        <span class="font-black text-sm text-yellow-300 font-mono" x-text="secondsLeft">10</span>
+                    </div>
+                    <span class="text-xs font-bold text-gray-200">يتغير الرمز أمنياً كل 10 ثوانٍ</span>
+                </div>
+
+                <!-- Session PIN -->
+                <div style="background-color: #1f2937;" class="mt-4 p-4 border border-gray-700 rounded-2xl w-full text-center">
+                    <span class="text-xs text-gray-300 font-bold block mb-1">رمز التحضير بالـ PIN</span>
+                    <span style="color: #facc15;" class="text-3xl font-black tracking-[0.25em] font-mono">{{ session.session_pin }}</span>
+                </div>
+            </div>
+            {% else %}
+            <!-- Session closed view -->
+            <div class="w-full bg-gray-100 border-2 border-dashed border-gray-300 rounded-3xl p-8 flex flex-col items-center justify-center text-center text-gray-600 min-h-[350px]">
+                <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                </svg>
+                <h3 class="font-black text-gray-900 text-lg">جلسة التحضير مغلقة</h3>
+                <p class="text-sm font-bold mt-1 text-gray-700">تم حفظ وحظر التسجيل الإضافي للجلسة.</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Professional High Contrast Manual Attendance Widget (8 cols) -->
+        <div class="lg:col-span-8 flex flex-col gap-6" x-data="{ selectedStatus: 'حاضر', notePreset: '' }">
+            
+            <!-- Professional Manual Add Form -->
+            <div class="bg-white rounded-3xl shadow-md border-2 border-indigo-100 p-6">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-3 mb-4">
+                    <h3 class="font-black text-gray-900 text-lg flex items-center gap-2">
+                        <span style="background-color: #e0e7ff; color: #4338ca;" class="p-2 rounded-xl">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" /></svg>
+                        </span>
+                        تسجيل وتعديل الحضور اليدوي الاحترافي
+                    </h3>
+                    <span class="text-xs font-bold text-gray-600">تحضير مباشر مع إرفاق الأعذار الرسمية</span>
+                </div>
+
+                <form hx-post="{% url 'attendance:add_manual_record' session.pk %}"
+                      hx-target="#student-table-container"
+                      hx-swap="innerHTML"
+                      class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="status" :value="selectedStatus">
+
+                    <!-- Row 1: Searchable Custom Student Select & Status Switcher Buttons -->
+                    <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-start">
+                        <!-- High-End Searchable Student Select Component -->
+                        <div class="md:col-span-6 relative" 
+                             x-data="searchableStudentSelect([
+                                {% for st in students %}
+                                { id: '{{ st.id }}', name: '{{ st.name|escapejs }}', university_id: '{{ st.university_id|escapejs }}', dept: '{{ st.department.name|escapejs }}', stage: '{{ st.stage|escapejs }}' }{% if not forloop.last %},{% endif %}
+                                {% endfor %}
+                             ])">
+                            <label class="block text-xs font-black text-gray-900 mb-1">اختر الطالب من القائمة (البحث الفوري) *</label>
+                            
+                            <input type="hidden" name="student_id" :value="selectedStudentId" required>
+
+                            <!-- Select Trigger Button -->
+                            <button type="button" 
+                                    @click="open = !open" 
+                                    @click.away="open = false"
+                                    class="w-full text-right bg-white border-2 border-indigo-200 hover:border-indigo-600 rounded-xl p-3 text-sm font-bold text-gray-900 flex items-center justify-between shadow-sm transition group">
+                                <span class="flex items-center gap-2 truncate">
+                                    <template x-if="selectedStudentId">
+                                        <span style="background-color: #4f46e5; color: #ffffff;" class="w-6 h-6 rounded-full font-black text-xs flex items-center justify-center flex-shrink-0" x-text="selectedStudentName.charAt(0)"></span>
+                                    </template>
+                                    <span x-text="selectedStudentLabel" class="truncate font-black text-gray-900"></span>
+                                </span>
+                                <svg class="w-5 h-5 text-indigo-600 transition-transform duration-200 flex-shrink-0 group-hover:scale-110" :class="{'rotate-180': open}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                                </svg>
+                            </button>
+
+                            <!-- Compact Dropdown Popup Menu -->
+                            <div x-show="open" 
+                                 x-transition.opacity.duration.200ms
+                                 style="display: none; background-color: #ffffff; border: 2px solid #6366f1; z-index: 9999;"
+                                 class="absolute mt-1 w-full rounded-2xl shadow-2xl overflow-hidden p-2 space-y-2">
+                                
+                                <!-- Search Input Box -->
+                                <div class="relative">
+                                    <input type="text" 
+                                           x-model="search" 
+                                           x-ref="searchInput"
+                                           placeholder="🔍 اكتب اسم الطالب أو الرقم الجامعي..." 
+                                           class="w-full text-xs font-black text-gray-900 bg-indigo-50/50 border border-indigo-200 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-600">
+                                </div>
+
+                                <!-- Student Options List with EXPLICIT max-height constraint -->
+                                <div style="max-height: 220px; overflow-y: auto;" class="divide-y divide-gray-100 rounded-xl border border-gray-100">
+                                    <template x-for="st in filteredStudents" :key="st.id">
+                                        <div @click="selectStudent(st)"
+                                             class="p-2 hover:bg-indigo-100/70 cursor-pointer transition flex items-center justify-between gap-2 rounded-lg"
+                                             :class="{'bg-indigo-100 font-black border-r-4 border-r-indigo-600': selectedStudentId == st.id}">
+                                            <div class="flex items-center gap-2 truncate">
+                                                <span style="background-color: #1e1b4b; color: #facc15;" class="w-6 h-6 rounded-lg font-black text-xs flex items-center justify-center flex-shrink-0 shadow-sm" x-text="st.name.charAt(0)"></span>
+                                                <span class="text-xs font-black text-gray-900 truncate" x-text="st.name"></span>
+                                            </div>
+                                            <div class="flex items-center gap-1.5 flex-shrink-0">
+                                                <span style="background-color: #e0e7ff; color: #3730a3;" class="text-[10px] font-mono font-black px-2 py-0.5 rounded border border-indigo-200" x-text="'#' + st.university_id"></span>
+                                            </div>
+                                        </div>
+                                    </template>
+
+                                    <template x-if="filteredStudents.length === 0">
+                                        <div class="p-3 text-center text-xs font-bold text-gray-500 bg-gray-50">
+                                            لم يتم العثور على طالب يطابق البحث...
+                                        </div>
+                                    </template>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Selection Pills -->
+                        <div class="md:col-span-6">
+                            <label class="block text-xs font-black text-gray-900 mb-1">تحديد حالة الحضور *</label>
+                            <div class="grid grid-cols-4 gap-1.5 bg-gray-100 p-1 rounded-xl border border-gray-200">
+                                <button type="button" @click="selectedStatus = 'حاضر'"
+                                        :style="selectedStatus === 'حاضر' ? 'background-color: #16a34a; color: #ffffff;' : 'color: #374151;'"
+                                        class="py-2.5 rounded-lg text-xs font-black transition text-center shadow-sm">
+                                    🟢 حاضر
+                                </button>
+                                <button type="button" @click="selectedStatus = 'متأخر'"
+                                        :style="selectedStatus === 'متأخر' ? 'background-color: #d97706; color: #ffffff;' : 'color: #374151;'"
+                                        class="py-2.5 rounded-lg text-xs font-black transition text-center shadow-sm">
+                                    🟡 متأخر
+                                </button>
+                                <button type="button" @click="selectedStatus = 'مستأذن'"
+                                        :style="selectedStatus === 'مستأذن' ? 'background-color: #2563eb; color: #ffffff;' : 'color: #374151;'"
+                                        class="py-2.5 rounded-lg text-xs font-black transition text-center shadow-sm">
+                                    🔵 مستأذن
+                                </button>
+                                <button type="button" @click="selectedStatus = 'غائب'"
+                                        :style="selectedStatus === 'غائب' ? 'background-color: #dc2626; color: #ffffff;' : 'color: #374151;'"
+                                        class="py-2.5 rounded-lg text-xs font-black transition text-center shadow-sm">
+                                    🔴 غائب
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Preset Excuse Badges & Custom Notes -->
+                    <div>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-xs font-black text-gray-900">ملاحظة / عذر رسمي (اختياري)</label>
+                            <span class="text-[11px] text-indigo-900 font-bold">نقرة سريعة للتعبئة:</span>
+                        </div>
+
+                        <!-- Quick Presets -->
+                        <div class="flex flex-wrap gap-2 mb-2">
+                            <button type="button" @click="notePreset = 'عذر مرضي رسمي معتمد'" style="background-color: #e0e7ff; color: #312e81;" class="text-xs border border-indigo-200 px-3 py-1 rounded-lg font-bold transition hover:bg-indigo-200">
+                                🩺 عذر مرضي رسمي
+                            </button>
+                            <button type="button" @click="notePreset = 'موافقة القسم والعمادة'" style="background-color: #e0e7ff; color: #312e81;" class="text-xs border border-indigo-200 px-3 py-1 rounded-lg font-bold transition hover:bg-indigo-200">
+                                🏛️ موافقة القسم
+                            </button>
+                            <button type="button" @click="notePreset = 'تأخير بسبب وسائل النقل'" style="background-color: #e0e7ff; color: #312e81;" class="text-xs border border-indigo-200 px-3 py-1 rounded-lg font-bold transition hover:bg-indigo-200">
+                                🚗 تأخير مواصلات
+                            </button>
+                            <button type="button" @click="notePreset = 'عذر شخصي بموافقة الأستاذ'" style="background-color: #e0e7ff; color: #312e81;" class="text-xs border border-indigo-200 px-3 py-1 rounded-lg font-bold transition hover:bg-indigo-200">
+                                💬 عذر شخصي
+                            </button>
+                        </div>
+
+                        <input type="text" name="notes" x-model="notePreset" placeholder="اكتب عذراً أو اختر من الأزرار السريعة أعلاه..." 
+                               class="w-full text-sm font-bold text-gray-900 bg-white border border-gray-300 rounded-xl p-3 focus:ring-2 focus:ring-indigo-500 shadow-sm">
+                    </div>
+
+                    <!-- Row 3: Submit Action -->
+                    <div class="pt-2 flex justify-end">
+                        <button type="submit" style="background-color: #4f46e5; color: #ffffff;" class="w-full sm:w-auto font-black py-3 px-8 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+                            <span>تأكيد وحفظ حضور الطالب</span>
+                            <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" /></svg>
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Table section with HTMX Polling (every 3 seconds) -->
+            <div class="bg-white rounded-3xl shadow-md border border-gray-200 p-6 flex flex-col justify-between flex-grow">
+                <div class="flex items-center justify-between border-b border-gray-200 pb-4 mb-4">
+                    <div>
+                        <h2 class="font-black text-gray-900 text-lg">جدول حضور الطلاب التفاعلي</h2>
+                        <p class="text-xs font-bold text-gray-600 mt-0.5">تحديث مباشر لحظي، وتعديل يدوياً بنقرة واحدة</p>
+                    </div>
+                    <span style="background-color: #e0e7ff; color: #312e81;" class="inline-flex items-center gap-1.5 text-xs font-black px-3 py-1 rounded-full border border-indigo-200">
+                        <span class="h-2.5 w-2.5 rounded-full bg-indigo-600 animate-pulse"></span>
+                        تحديث حي
+                    </span>
+                </div>
+
+                <div class="overflow-x-auto min-h-[300px]" 
+                     {% if session.is_active %}
+                     hx-get="{% url 'attendance:session_detail' session.pk %}" 
+                     hx-trigger="every 3s" 
+                     hx-target="#student-table-container"
+                     {% endif %}>
+                    <div id="student-table-container">
+                        {% include 'attendance/partials/student_table.html' %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Fullscreen QR Modal -->
+    <div x-show="isFullscreen" 
+         style="display: none;"
+         class="fixed inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center transition-opacity"
+         x-transition.opacity.duration.300ms>
+        
+        <button @click="toggleFullscreen()" class="absolute top-6 right-6 text-white/50 hover:text-white p-2 rounded-full hover:bg-white/10 transition">
+            <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+
+        <h2 class="text-white text-2xl font-bold mb-8">امسح الرمز لتسجيل الحضور</h2>
+        
+        <div class="bg-white p-8 rounded-3xl shadow-2xl relative" id="fullscreen-qrcode-container">
+            <div id="qrcode-fullscreen" class="w-96 h-96 flex items-center justify-center"></div>
+        </div>
+        
+        <div class="mt-8 flex items-center gap-4 text-gray-300 text-lg">
+            <div class="relative flex items-center justify-center w-12 h-12 rounded-full border-2 border-yellow-400">
+                <span class="font-bold text-xl text-yellow-300 font-mono" x-text="secondsLeft">10</span>
+            </div>
+            <span>يتم التحديث لحماية الجلسة...</span>
+        </div>
+        
+        <div class="text-gray-300 mt-6 font-mono tracking-widest text-xl bg-gray-800 px-6 py-3 rounded-2xl border border-gray-700 font-bold" x-text="scannedUrl"></div>
+    </div>
+</div>
+
+<!-- Load David Shim QRCode JS library -->
+<script src="{% static 'vendor/qrcode.min.js' %}"></script>
+
+<script>
+    function searchableStudentSelect(studentsData) {
+        return {
+            open: false,
+            search: '',
+            selectedStudentId: '',
+            selectedStudentName: '',
+            selectedStudentLabel: '-- اختر الطالب من القائمة --',
+            students: studentsData,
+
+            init() {
+                this.$watch('open', value => {
+                    if (value) {
+                        this.$nextTick(() => {
+                            if (this.$refs.searchInput) this.$refs.searchInput.focus();
+                        });
+                    }
+                });
+            },
+
+            get filteredStudents() {
+                if (!this.search.trim()) return this.students;
+                const query = this.search.toLowerCase().trim();
+                return this.students.filter(st =>
+                    st.name.toLowerCase().includes(query) ||
+                    st.university_id.toLowerCase().includes(query)
+                );
+            },
+
+            selectStudent(st) {
+                this.selectedStudentId = st.id;
+                this.selectedStudentName = st.name;
+                this.selectedStudentLabel = `${st.name} (الرقم الجامعي: ${st.university_id})`;
+                this.open = false;
+                this.search = '';
+            }
+        }
+    }
+
+    function qrSession() {
+        return {
+            secondsLeft: 10,
+            scannedUrl: 'جاري التحميل...',
+            qrcodeObj: null,
+            qrcodeFullscreenObj: null,
+            intervalId: null,
+            qrScale: 1.0,
+            isFullscreen: false,
+
+            init() {
+                {% if session.is_active %}
+                this.qrcodeObj = new QRCode(document.getElementById("qrcode"), {
+                    text: "http://{{ request.get_host }}/",
+                    width: 224,
+                    height: 224,
+                    colorDark : "#0A0F1D",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+                
+                this.qrcodeFullscreenObj = new QRCode(document.getElementById("qrcode-fullscreen"), {
+                    text: "http://{{ request.get_host }}/",
+                    width: 384,
+                    height: 384,
+                    colorDark : "#0A0F1D",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+
+                this.fetchNewQr();
+
+                this.intervalId = setInterval(() => {
+                    this.secondsLeft--;
+                    if (this.secondsLeft <= 0) {
+                        this.fetchNewQr();
+                    }
+                }, 1000);
+                
+                document.addEventListener('keydown', (e) => {
+                    if (e.key === 'Escape' && this.isFullscreen) {
+                        this.toggleFullscreen();
+                    }
+                });
+                {% endif %}
+            },
+
+            zoomIn() {
+                if (this.qrScale < 2.0) this.qrScale += 0.1;
+            },
+            
+            zoomOut() {
+                if (this.qrScale > 0.5) this.qrScale -= 0.1;
+            },
+            
+            toggleFullscreen() {
+                this.isFullscreen = !this.isFullscreen;
+                if (this.isFullscreen) {
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    document.body.style.overflow = '';
+                }
+            },
+
+            fetchNewQr() {
+                fetch("{% url 'attendance:rotate_qr' session.pk %}")
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            this.scannedUrl = data.url;
+                            this.secondsLeft = data.seconds_left;
+                            
+                            this.qrcodeObj.clear();
+                            this.qrcodeObj.makeCode(data.url);
+                            
+                            if (this.qrcodeFullscreenObj) {
+                                this.qrcodeFullscreenObj.clear();
+                                this.qrcodeFullscreenObj.makeCode(data.url);
+                            }
+                        }
+                    })
+                    .catch(err => console.error("Error rotating QR:", err));
+            },
+
+            confirmClose(e) {
+                if (!confirm("هل أنت متأكد من إنهاء جلسة الحضور؟ لن يتمكن الطلاب من تسجيل حضورهم بعدها.")) {
+                    e.preventDefault();
+                }
+            }
+        }
+    }
+</script>
+{% endblock %}

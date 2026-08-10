@@ -25,11 +25,11 @@
             </div>
         </div>
 
-        <form method="GET" class="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 items-end border-t pt-6">
+        <form method="GET" class="mt-8 grid grid-cols-1 md:grid-cols-4 gap-6 items-end border-t pt-6">
             <div class="space-y-2">
                 <label class="text-sm font-black text-gray-700 uppercase tracking-widest">اختر اليوم</label>
                 <select name="day"
-                    class="w-full rounded-xl border-gray-200 bg-gray-50 font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all">
+                    class="tom-select w-full rounded-xl border-gray-200 bg-gray-50 font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all">
                     {% for d in days %}
                     <option value="{{ d }}" {% if d == day %}selected{% endif %}>{{ d }}</option>
                     {% endfor %}
@@ -38,12 +38,22 @@
             <div class="space-y-2">
                 <label class="text-sm font-black text-gray-700 uppercase tracking-widest">الكلية</label>
                 <select name="college"
-                    class="w-full rounded-xl border-gray-200 bg-gray-50 font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all">
+                    class="tom-select w-full rounded-xl border-gray-200 bg-gray-50 font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all">
                     <option value="">كافة الكليات</option>
                     {% for college in colleges %}
                     <option value="{{ college.id }}" {% if selected_college == college.id|stringformat:"i" %}selected{% endif %}>
                         {{ college.name }}
                     </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="space-y-2">
+                <label class="text-sm font-black text-gray-700 uppercase tracking-widest">الفصل الدراسي</label>
+                <select name="semester"
+                    class="form-select w-full rounded-xl border-gray-200 bg-gray-50 font-bold focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all">
+                    <option value="">جميع الفصول</option>
+                    {% for val, label in semesters %}
+                    <option value="{{ val }}" {% if selected_semester == val %}selected{% endif %}>{{ label }}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -73,9 +83,12 @@
                 <table class="w-full text-sm">
                     <thead>
                         <tr class="bg-gray-50 print:bg-transparent">
-                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">الموعد</th>
-                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">المادة</th>
-                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">الأستاذ</th>
+                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">الموعد
+                            </th>
+                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">المادة
+                            </th>
+                            <th class="px-6 py-3 text-right font-black text-gray-700 border-b print:border-black">
+                                الأستاذ</th>
                         </tr>
                     </thead>
                     <tbody class="divide-y divide-gray-100 print:divide-black">
@@ -84,8 +97,11 @@
                             <td class="px-6 py-4 font-bold border-l border-gray-50 print:border-black">
                                 {{ schedule.start_time|time:"H:i" }} - {{ schedule.end_time|time:"H:i" }}
                             </td>
-                            <td class="px-6 py-4 font-black text-blue-700 print:text-black">{{ schedule.subject.name }}</td>
-                            <td class="px-6 py-4 text-gray-600 font-bold print:text-black">{{ schedule.instructor.name }}</td>
+                            <td class="px-6 py-4 font-black text-blue-700 print:text-black">{{ schedule.subject.name }}
+                            </td>
+                            <td class="px-6 py-4 text-gray-600 font-bold print:text-black">
+                                {{ schedule.instructor.name|default:"غير محدد" }}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
@@ -120,7 +136,9 @@
 <style>
     /* ضمان سلوك الطباعة حتى بدون Tailwind build */
     @media print {
-        .no-print { display: none !important; }
+        .no-print {
+            display: none !important;
+        }
 
         .print-container {
             display: block !important;

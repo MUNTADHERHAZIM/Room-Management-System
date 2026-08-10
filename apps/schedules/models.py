@@ -24,6 +24,12 @@ class Schedule(models.Model):
         ('أخرى', 'أخرى'),
     ]
     
+    SEMESTERS = [
+        ('1', 'الفصل الدراسي الأول'),
+        ('2', 'الفصل الدراسي الثاني'),
+        ('سنة', 'سنوي'),
+    ]
+    
     room = models.ForeignKey(
         Room,
         on_delete=models.CASCADE,
@@ -49,6 +55,12 @@ class Schedule(models.Model):
     )
     start_time = models.TimeField(verbose_name='وقت البداية')
     end_time = models.TimeField(verbose_name='وقت النهاية')
+    semester = models.CharField(
+        max_length=10,
+        choices=SEMESTERS,
+        default='1',
+        verbose_name='الفصل الدراسي'
+    )
     schedule_type = models.CharField(
         max_length=20,
         choices=SCHEDULE_TYPES,
@@ -102,6 +114,7 @@ class Schedule(models.Model):
         # التحقق من تعارض القاعة
         room_conflict = check_room_conflict(
             room, self.day, self.start_time, self.end_time,
+            semester=self.semester,
             exclude_id=self.pk
         )
         if room_conflict:
@@ -110,6 +123,7 @@ class Schedule(models.Model):
         # التحقق من تعارض الأستاذ
         instructor_conflict = check_instructor_conflict(
             instructor, self.day, self.start_time, self.end_time,
+            semester=self.semester,
             exclude_id=self.pk
         )
         if instructor_conflict:

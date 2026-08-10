@@ -25,7 +25,7 @@
         <form method="GET" class="flex flex-wrap gap-4 items-end">
             <div class="flex-1 min-w-[150px]">
                 <label class="block text-sm font-medium text-gray-700 mb-1">الكلية</label>
-                <select name="college" class="form-select w-full rounded-lg border-gray-300"
+                <select name="college" class="tom-select w-full rounded-lg border-gray-300"
                     onchange="this.form.submit()">
                     <option value="">جميع الكليات</option>
                     {% for college in colleges %}
@@ -38,8 +38,7 @@
 
             <div class="flex-1 min-w-[150px]">
                 <label class="block text-sm font-medium text-gray-700 mb-1">اللقب العلمي</label>
-                <select name="title" class="form-select w-full rounded-lg border-gray-300"
-                    onchange="this.form.submit()">
+                <select name="title" class="tom-select w-full rounded-lg border-gray-300" onchange="this.form.submit()">
                     <option value="">الجميع</option>
                     {% for val, label in academic_titles %}
                     <option value="{{ val }}" {% if selected_title == val %}selected{% endif %}>

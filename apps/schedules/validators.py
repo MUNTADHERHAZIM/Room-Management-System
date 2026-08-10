@@ -4,7 +4,7 @@ Conflict detection logic
 """
 
 
-def check_room_conflict(room, day, start_time, end_time, exclude_id=None):
+def check_room_conflict(room, day, start_time, end_time, semester='1', exclude_id=None):
     """
     التحقق من عدم وجود تعارض في القاعة
     قاعدة التداخل: a_start < b_end AND a_end > b_start
@@ -14,6 +14,7 @@ def check_room_conflict(room, day, start_time, end_time, exclude_id=None):
         day: اليوم
         start_time: وقت البداية
         end_time: وقت النهاية
+        semester: الفصل الدراسي (جديد)
         exclude_id: معرف الحصة المستثناة (للتعديل)
     
     Returns:
@@ -28,6 +29,7 @@ def check_room_conflict(room, day, start_time, end_time, exclude_id=None):
     conflicts = Schedule.objects.filter(
         room=room,
         day=day,
+        semester=semester,
         start_time__lt=end_time,
         end_time__gt=start_time,
         is_active=True
@@ -39,7 +41,7 @@ def check_room_conflict(room, day, start_time, end_time, exclude_id=None):
     return conflicts.select_related('subject', 'instructor').first()
 
 
-def check_instructor_conflict(instructor, day, start_time, end_time, exclude_id=None):
+def check_instructor_conflict(instructor, day, start_time, end_time, semester='1', exclude_id=None):
     """
     التحقق من عدم تعارض جدول الأستاذ
     
@@ -48,6 +50,7 @@ def check_instructor_conflict(instructor, day, start_time, end_time, exclude_id=
         day: اليوم
         start_time: وقت البداية
         end_time: وقت النهاية
+        semester: الفصل الدراسي (جديد)
         exclude_id: معرف الحصة المستثناة (للتعديل)
     
     Returns:
@@ -62,6 +65,7 @@ def check_instructor_conflict(instructor, day, start_time, end_time, exclude_id=
     conflicts = Schedule.objects.filter(
         instructor=instructor,
         day=day,
+        semester=semester,
         start_time__lt=end_time,
         end_time__gt=start_time,
         is_active=True
@@ -96,7 +100,7 @@ def check_department_off_day(department, day):
     ).exists()
 
 
-def get_available_rooms(day, start_time, end_time, department=None, room_type=None):
+def get_available_rooms(day, start_time, end_time, semester='1', department=None, room_type=None):
     """
     الحصول على القاعات المتاحة في وقت معين
     
@@ -104,6 +108,7 @@ def get_available_rooms(day, start_time, end_time, department=None, room_type=No
         day: اليوم
         start_time: وقت البداية
         end_time: وقت النهاية
+        semester: الفصل الدراسي (جديد)
         department: القسم (اختياري)
         room_type: نوع القاعة (اختياري)
     
@@ -116,6 +121,7 @@ def get_available_rooms(day, start_time, end_time, department=None, room_type=No
     # الحصص المتعارضة
     conflicting_schedules = Schedule.objects.filter(
         day=day,
+        semester=semester,
         start_time__lt=end_time,
         end_time__gt=start_time,
         is_active=True

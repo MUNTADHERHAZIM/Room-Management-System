@@ -27,7 +27,7 @@
             <div class="flex-1 min-w-[150px]">
                 <label class="block text-sm font-medium text-gray-700 mb-2">اليوم</label>
                 <select name="day"
-                    class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    class="tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     onchange="this.form.submit()">
                     <option value="">جميع الأيام</option>
                     {% for val, label in days %}
@@ -36,13 +36,24 @@
                 </select>
             </div>
             <div class="flex-1 min-w-[150px]">
+                <label class="block text-sm font-medium text-gray-700 mb-2">الفصل الدراسي</label>
+                <select name="semester"
+                    class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    onchange="this.form.submit()">
+                    <option value="">جميع الفصول</option>
+                    {% for val, label in semesters %}
+                    <option value="{{ val }}" {% if selected_semester == val %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex-1 min-w-[150px]">
                 <label class="block text-sm font-medium text-gray-700 mb-2">الأستاذ</label>
                 <select name="instructor"
-                    class="form-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
+                    class="tom-select w-full rounded-lg border-gray-300 focus:border-blue-500 focus:ring-blue-500"
                     onchange="this.form.submit()">
                     <option value="">جميع الأساتذة</option>
                     {% for inst in instructors %}
-                    <option value="{{ inst.id }}" {% if selected_instructor == inst.id %}selected{% endif %}>
+                    <option value="{{ inst.id }}" {% if selected_instructor == .id %}selected{% endif %}>
                         {{ inst.name }}
                     </option>
                     {% endfor %}
@@ -131,4 +142,11 @@
         </div>
     </div>
 </div>
+
+<script>
+    // التأكد من تهيئة الجداول عند تحميل هذه الصفحة تحديداً
+    if (typeof initTomSelect === 'function') {
+        initTomSelect();
+    }
+</script>
 {% endblock %}

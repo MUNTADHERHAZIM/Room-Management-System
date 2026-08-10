@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
@@ -6,34 +7,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}نظام إدارة القاعات{% endblock %}</title>
 
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        'arabic': ['Cairo', 'Tajawal', 'sans-serif'],
-                    }
-                }
-            }
-        }
-    </script>
+    <!-- Tailwind CSS (Pre-built locally - NO JIT compiler overhead) -->
+    <link rel="stylesheet" href="{% static 'css/tailwind.min.css' %}">
 
     <!-- Google Fonts - Arabic -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- HTMX -->
-    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <!-- Tom Select CSS -->
+    <link rel="stylesheet" href="{% static 'vendor/tom-select.min.css' %}">
 
-    <!-- Alpine.js -->
-    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- HTMX (local) -->
+    <script src="{% static 'vendor/htmx.min.js' %}" defer></script>
 
-    <!-- Tom Select -->
-    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+    <!-- Alpine.js (local) -->
+    <script src="{% static 'vendor/alpine.min.js' %}" defer></script>
+
+    <!-- Tom Select JS (local) -->
+    <script src="{% static 'vendor/tom-select.min.js' %}" defer></script>
 
     <style>
         body {
@@ -109,38 +101,106 @@
             display: none;
         }
 
-        /* Tom Select Premium & RTL Styling */
-        .ts-wrapper.tom-select {
+        /* Tom Select Premium RTL Styling */
+        .ts-wrapper.tom-select,
+        .ts-wrapper.form-select {
             direction: rtl !important;
+            width: 100% !important;
         }
 
-        .ts-wrapper.tom-select .ts-control {
-            border-radius: 1rem !important;
-            padding: 0.75rem 1.25rem !important;
-            border: 1px solid #f3f4f6 !important;
-            background: rgba(249, 250, 251, 0.7) !important;
+        .ts-wrapper .ts-control {
+            border-radius: 0.75rem !important;
+            padding: 0.625rem 1rem !important;
+            padding-left: 2.25rem !important;
+            border: 1.5px solid #d1d5db !important;
+            background-color: #ffffff !important;
             font-family: 'Cairo', sans-serif !important;
             font-weight: 700 !important;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05) !important;
+            font-size: 0.875rem !important;
+            color: #1f2937 !important;
+            box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05) !important;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1) !important;
+            min-height: 42px !important;
+            display: flex !important;
+            align-items: center !important;
         }
 
-        .ts-wrapper.tom-select.focus .ts-control {
+        .ts-wrapper.focus .ts-control {
             border-color: #3b82f6 !important;
-            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.10) !important;
-            background: #ffffff !important;
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15) !important;
+            background-color: #ffffff !important;
+        }
+
+        /* RTL Arrow alignment on the left */
+        .ts-wrapper.single .ts-control::after {
+            left: 0.875rem !important;
+            right: auto !important;
+            border-color: #6b7280 transparent transparent transparent !important;
+            border-width: 5px 4px 0 4px !important;
+            margin-top: -2px !important;
+            transition: transform 0.2s ease !important;
+        }
+
+        .ts-wrapper.single.dropdown-active .ts-control::after {
+            transform: rotate(180deg) !important;
         }
 
         .ts-dropdown {
-            border-radius: 1rem !important;
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1) !important;
-            border: 1px solid #f3f4f6 !important;
-            margin-top: 5px !important;
+            border-radius: 0.875rem !important;
+            box-shadow: 0 12px 30px -5px rgba(0, 0, 0, 0.12), 0 4px 6px -2px rgba(0, 0, 0, 0.04) !important;
+            border: 1.5px solid #e5e7eb !important;
+            margin-top: 6px !important;
             font-family: 'Cairo', sans-serif !important;
+            padding: 6px !important;
+            background: #ffffff !important;
+            z-index: 9999 !important;
+            direction: rtl !important;
+            text-align: right !important;
+            overflow: hidden !important;
         }
 
-        .ts-dropdown .active {
+        .ts-dropdown .ts-dropdown-content {
+            max-height: 240px !important;
+            padding-right: 2px !important;
+        }
+
+        /* Custom Scrollbar for RTL */
+        .ts-dropdown .ts-dropdown-content::-webkit-scrollbar {
+            width: 6px;
+        }
+        .ts-dropdown .ts-dropdown-content::-webkit-scrollbar-track {
+            background: #f3f4f6;
+            border-radius: 4px;
+        }
+        .ts-dropdown .ts-dropdown-content::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .ts-dropdown .ts-dropdown-content::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+
+        .ts-dropdown .option {
+            padding: 9px 14px !important;
+            border-radius: 0.5rem !important;
+            font-size: 0.875rem !important;
+            font-weight: 600 !important;
+            color: #374151 !important;
+            cursor: pointer !important;
+            transition: background-color 0.15s ease, color 0.15s ease !important;
+        }
+
+        .ts-dropdown .active,
+        .ts-dropdown .option:hover {
             background-color: #eff6ff !important;
+            color: #2563eb !important;
+            font-weight: 700 !important;
+        }
+
+        .ts-dropdown .selected {
+            background-color: #dbeafe !important;
             color: #1d4ed8 !important;
+            font-weight: 700 !important;
         }
 
         .ts-wrapper.single .ts-control,
@@ -158,6 +218,7 @@
 
 <body class="bg-gray-50 min-h-screen" x-data="{ sidebarOpen: true, modalOpen: false }">
     <!-- Navbar -->
+    {% block navigation %}
     <nav
         class="bg-gradient-to-l from-blue-700 to-blue-900 text-white shadow-lg fixed top-0 left-0 right-0 z-50 no-print">
         <div class="max-w-full mx-auto px-4">
@@ -190,11 +251,15 @@
 
                     {% if user.is_authenticated %}
                     <div class="flex items-center gap-3">
-                        <span class="text-sm font-medium hidden md:block">{{ user.username }}</span>
-                        <form action="{% url 'admin:logout' %}" method="post" class="inline">
+                        <div
+                            class="bg-white/10 px-3 py-1.5 rounded-xl border border-white/20 hidden md:flex items-center gap-2">
+                            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                            <span class="text-sm font-bold">{{ user.username }}</span>
+                        </div>
+                        <form action="{% url 'core:logout' %}" method="post" class="inline">
                             {% csrf_token %}
-                            <input type="hidden" name="next" value="{{ request.path }}">
-                            <button type="submit" class="bg-red-500/20 hover:bg-red-500/40 p-2 rounded-lg transition"
+                            <button type="submit"
+                                class="bg-red-500 hover:bg-red-600 text-white p-2.5 rounded-xl transition shadow-lg shadow-red-900/20"
                                 title="تسجيل خروج">
                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -204,21 +269,21 @@
                         </form>
                     </div>
                     {% else %}
-                    <a href="{% url 'admin:login' %}?next={{ request.path }}"
-                        class="bg-white/20 hover:bg-white/30 px-4 py-2 rounded-lg text-sm font-medium transition flex items-center gap-2">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{% url 'core:login' %}"
+                        class="bg-white text-blue-900 hover:bg-blue-50 px-6 py-2.5 rounded-xl text-sm font-black transition-all flex items-center gap-2 shadow-lg active:scale-95 transform">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
                         </svg>
-                        دخول الإدارة
+                        تسجيل الدخول
                     </a>
                     {% endif %}
                 </div>
-            </div>
-        </div>
     </nav>
+    {% endblock %}
 
     <!-- Sidebar -->
+    {% block sidebar %}
     <aside
         class="fixed top-16 right-0 h-[calc(100vh-4rem)] w-64 bg-white shadow-xl transform transition-transform duration-300 z-40 no-print"
         :class="sidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'">
@@ -306,6 +371,90 @@
 
             <div class="border-t my-4"></div>
 
+            <!-- Exam Distribution Section -->
+            {% if user_perms.can_access_exams or user.is_superuser %}
+            <p class="text-xs text-gray-500 font-medium px-4 mb-2">توزيع الامتحانات</p>
+
+            <a href="{% url 'exams:session_list' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg transition {% if 'exams/sessions' in request.path %}bg-purple-100 text-purple-700{% else %}hover:bg-gray-100{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                </svg>
+                الجلسات الامتحانية
+            </a>
+
+            <a href="{% url 'exams:student_list' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg transition {% if 'exams/students' in request.path %}bg-purple-100 text-purple-700{% else %}hover:bg-gray-100{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                الطلاب
+            </a>
+
+            <div class="border-t my-4"></div>
+            {% endif %}
+
+            <!-- Attendance Section -->
+            {% if user_perms.can_access_attendance or user.is_superuser %}
+            <p class="text-xs text-gray-500 font-medium px-4 mb-2">بوابة الحضور والانصراف</p>
+
+            <a href="{% url 'attendance:session_list' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg transition {% if request.resolver_match.url_name == 'session_list' %}bg-indigo-100 text-indigo-700 font-bold{% else %}hover:bg-gray-100{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                لوحة الحضور اليومي
+            </a>
+
+            <a href="{% url 'attendance:attendance_history' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg transition {% if request.resolver_match.url_name == 'attendance_history' %}bg-indigo-100 text-indigo-700 font-bold{% else %}hover:bg-gray-100{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                سجل الحضور والتقارير
+            </a>
+
+            <a href="{% url 'attendance:offline_setup_guide' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg transition {% if 'attendance/guide' in request.path %}bg-indigo-100 text-indigo-700 font-bold{% else %}hover:bg-gray-100{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                دليل الاتصال والـ IP
+            </a>
+
+            <a href="{% url 'attendance:digital_id' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-lg transition {% if 'attendance/digital-id' in request.path %}bg-indigo-100 text-indigo-700 font-bold{% else %}hover:bg-gray-100{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.333 0 4 .667 4 2v1H5v-1c0-1.333 2.667-2 4-2z" />
+                </svg>
+                الهوية الرقمية للطلاب
+            </a>
+
+            <div class="border-t my-4"></div>
+            {% endif %}
+
+            <!-- User Accounts & Permissions Section -->
+            {% if user_perms.can_manage_users or user.is_superuser %}
+            <p class="text-xs text-blue-600 font-bold px-4 mb-2">الأمان والحسابات</p>
+
+            <a href="{% url 'core:user_list' %}"
+                class="flex items-center gap-3 px-4 py-3 rounded-xl font-bold transition {% if 'users' in request.path %}bg-blue-600 text-white shadow-md{% else %}hover:bg-blue-50 text-blue-900{% endif %}">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+                </svg>
+                إدارة الحسابات والصلاحيات
+            </a>
+
+            <div class="border-t my-4"></div>
+            {% endif %}
+
             <!-- Management Section -->
             {% if is_editor and system_settings.show_management_buttons %}
             <p class="text-xs text-gray-500 font-medium px-4 mb-2">الإدارة</p>
@@ -384,9 +533,11 @@
             </a>
         </nav>
     </aside>
+    {% endblock %}
 
     <!-- Main Content -->
-    <main class="pt-16 lg:pr-64 min-h-screen transition-all duration-300" :class="sidebarOpen ? 'pr-64' : 'pr-0'">
+    <main class="transition-all duration-300 pt-16 min-h-screen"
+        :class="{% if user.is_authenticated %}sidebarOpen ? 'lg:pr-64' : 'lg:pr-0'{% else %}'lg:pr-0'{% endif %}">
         <!-- Maintenance Mode Banner -->
         {% if system_settings.is_maintenance_mode and user.is_staff %}
         <div
@@ -427,7 +578,7 @@
                         نظام إدارة القاعات © {{ current_year|default:"2026" }}
                     </p>
                     <p class="text-gray-400 text-xs mt-2">
-                        تصميم وتطوير: <span class="font-semibold text-blue-600">MUNTADHER HAZIM</span>
+                        تصميم وتطوير: <span class="font-semibold text-white-600">MUNTADHER HAZIM____07724978301 </span>
                     </p>
                 </div>
             </footer>
@@ -452,59 +603,68 @@
     <script>
         // HTMX configuration
         document.body.addEventListener('htmx:afterSwap', function (event) {
-            // Close modal after successful form submission
             if (event.detail.xhr.status === 204) {
                 Alpine.store('modal', false);
             }
         });
 
-        // Auto-refresh dashboard
-        setInterval(function () {
+        // Auto-refresh dashboard (5 minutes instead of 1 minute)
+        let _dashRefresh;
+        document.addEventListener('DOMContentLoaded', () => {
             const dashboard = document.getElementById('dashboard-content');
-            if (dashboard) {
-                htmx.trigger(dashboard, 'refresh');
+            if (dashboard && typeof htmx !== 'undefined') {
+                _dashRefresh = setInterval(() => htmx.trigger(dashboard, 'refresh'), 300000);
             }
-        }, 60000); // Refresh every minute
+        });
 
         // Real-time Clock
         function updateClock() {
-            const clockElement = document.getElementById('js-clock');
-            if (clockElement) {
+            const el = document.getElementById('js-clock');
+            if (el) {
                 const now = new Date();
-                const h = String(now.getHours()).padStart(2, '0');
-                const m = String(now.getMinutes()).padStart(2, '0');
-                const s = String(now.getSeconds()).padStart(2, '0');
-                clockElement.textContent = `${h}:${m}:${s}`;
+                el.textContent = String(now.getHours()).padStart(2, '0') + ':' +
+                    String(now.getMinutes()).padStart(2, '0') + ':' +
+                    String(now.getSeconds()).padStart(2, '0');
             }
         }
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Tom Select Initialization
+        // Tom Select - Enhanced initialization for searchable dropdowns
         function initTomSelect() {
-            document.querySelectorAll('.tom-select').forEach(el => {
-                if (!el.tomselect) {
+            if (typeof TomSelect === 'undefined') return;
+            document.querySelectorAll('select.tom-select, select.form-select, select[data-searchable="true"]').forEach(el => {
+                if (el.tomselect || el.dataset.noTomselect) return; // skip if already initialized or explicitly excluded
+                try {
+                    el.classList.remove('form-select');
+                    const placeholderText = el.getAttribute('placeholder') || (el.options[0] && el.options[0].value === '' ? el.options[0].text : "ابحث هنا...");
+                    const isSorted = el.dataset.sort !== "none";
                     new TomSelect(el, {
                         create: false,
-                        sortField: {
-                            field: "text",
-                            direction: "asc"
-                        },
-                        placeholder: "ابحث هنا...",
+                        maxOptions: 500,
+                        sortField: isSorted ? { field: "text", direction: "asc" } : null,
+                        placeholder: placeholderText,
                         noResultsText: "لا توجد نتائج مطابقة",
                         render: {
-                            no_results: function (data, escape) {
-                                return '<div class="no-results">لا توجد نتائج مطابقة لـ "' + escape(data.input) + '"</div>';
-                            },
+                            no_results: function(data, escape) {
+                                return '<div class="no-results p-3 text-center text-sm text-gray-500 font-bold">لا توجد نتائج مطابقة "' + escape(data.input) + '"</div>';
+                            }
+                        },
+                        onChange: function (value) {
+                            el.value = value;
+                            const event = new Event('change', { bubbles: true });
+                            el.dispatchEvent(event);
+                            if (typeof el.onchange === 'function') {
+                                el.onchange(event);
+                            }
                         }
                     });
-                }
+                } catch (e) { /* skip */ }
             });
         }
 
-        // Run on load and HTMX swaps
         document.addEventListener('DOMContentLoaded', initTomSelect);
-        document.body.addEventListener('htmx:afterOnLoad', initTomSelect);
+        document.body.addEventListener('htmx:afterSettle', initTomSelect);
     </script>
 </body>
 
