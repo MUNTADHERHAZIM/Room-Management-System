@@ -19,6 +19,12 @@ if DEBUG:
 else:
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,.pythonanywhere.com', cast=Csv())
 
+CSRF_TRUSTED_ORIGINS = config(
+    'CSRF_TRUSTED_ORIGINS',
+    default='https://*.pythonanywhere.com,http://127.0.0.1,http://localhost',
+    cast=Csv()
+)
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
