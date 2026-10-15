@@ -178,13 +178,37 @@
                     </button>
                 </div>
 
-                <!-- Timer & Info -->
-                <div style="background-color: #1f2937;" class="flex items-center gap-3 border border-gray-700 rounded-2xl py-2.5 px-4 w-full justify-center">
-                    <div class="relative flex items-center justify-center w-8 h-8 rounded-full border-2 border-yellow-400">
-                        <span class="font-black text-sm text-yellow-300 font-mono" x-text="secondsLeft">10</span>
-                    </div>
-                    <span class="text-xs font-bold text-gray-200">يتغير الرمز أمنياً كل 10 ثوانٍ</span>
+                <!-- Mode Toggle (Dynamic vs Fixed) -->
+                <div class="grid grid-cols-2 gap-2 w-full mb-3 p-1 rounded-xl border border-gray-700" style="background-color: #1f2937;">
+                    <button type="button" 
+                            @click="setMode('dynamic')"
+                            :style="mode === 'dynamic' ? 'background-color: #4f46e5; color: #ffffff;' : 'color: #9ca3af;'"
+                            class="py-1.5 px-2 rounded-lg text-xs font-black transition flex items-center justify-center gap-1 shadow-sm">
+                        🔄 تدوير الرمز
+                    </button>
+                    <button type="button" 
+                            @click="setMode('fixed')"
+                            :style="mode === 'fixed' ? 'background-color: #059669; color: #ffffff;' : 'color: #9ca3af;'"
+                            class="py-1.5 px-2 rounded-lg text-xs font-black transition flex items-center justify-center gap-1 shadow-sm">
+                        🔒 تثبيت الرمز
+                    </button>
                 </div>
+
+                <!-- Timer & Info -->
+                <template x-if="mode === 'dynamic'">
+                    <div style="background-color: #1f2937;" class="flex items-center gap-2.5 border border-gray-700 rounded-2xl py-2 px-3 w-full justify-center">
+                        <div class="relative flex items-center justify-center w-7 h-7 rounded-full border-2 border-yellow-400">
+                            <span class="font-black text-xs text-yellow-300 font-mono" x-text="secondsLeft">30</span>
+                        </div>
+                        <span class="text-xs font-bold text-gray-200">تدوير كل 30 ثانية (مهلة إرسال 30 دقيقة)</span>
+                    </div>
+                </template>
+                <template x-if="mode === 'fixed'">
+                    <div style="background-color: #064e3b; border: 1.5px solid #059669;" class="flex items-center gap-2 rounded-2xl py-2 px-3 w-full justify-center text-emerald-200 shadow-md">
+                        <span class="text-xs font-black">🔒 الرمز مثبت بنجاح - وقت كافٍ للملء</span>
+                    </div>
+                </template>
+
 
                 <!-- Session PIN -->
                 <div style="background-color: #1f2937;" class="mt-4 p-4 border border-gray-700 rounded-2xl w-full text-center">
@@ -458,13 +482,19 @@
 
     function qrSession() {
         return {
-            secondsLeft: 10,
+            secondsLeft: 30,
+            mode: 'dynamic',
             scannedUrl: 'جاري التحميل...',
             qrcodeObj: null,
             qrcodeFullscreenObj: null,
             intervalId: null,
             qrScale: 1.0,
             isFullscreen: false,
+
+            setMode(newMode) {
+                this.mode = newMode;
+                this.fetchNewQr();
+            },
 
             init() {
                 {% if session.is_active %}
@@ -489,9 +519,11 @@
                 this.fetchNewQr();
 
                 this.intervalId = setInterval(() => {
-                    this.secondsLeft--;
-                    if (this.secondsLeft <= 0) {
-                        this.fetchNewQr();
+                    if (this.mode === 'dynamic') {
+                        this.secondsLeft--;
+                        if (this.secondsLeft <= 0) {
+                            this.fetchNewQr();
+                        }
                     }
                 }, 1000);
                 
@@ -521,7 +553,7 @@
             },
 
             fetchNewQr() {
-                fetch("{% url 'attendance:rotate_qr' session.pk %}")
+                fetch("{% url 'attendance:rotate_qr' session.pk %}?mode=" + this.mode)
                     .then(response => response.json())
                     .then(data => {
                         if (data.success) {
@@ -539,6 +571,7 @@
                     })
                     .catch(err => console.error("Error rotating QR:", err));
             },
+
 
             confirmClose(e) {
                 if (!confirm("هل أنت متأكد من إنهاء جلسة الحضور؟ لن يتمكن الطلاب من تسجيل حضورهم بعدها.")) {

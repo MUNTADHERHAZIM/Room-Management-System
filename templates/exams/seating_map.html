@@ -12,68 +12,130 @@
         padding-bottom: 5rem;
     }
     .seat-cell {
-        width: 85px;
-        height: 85px;
-        border-radius: 1.25rem;
+        width: 96px;
+        min-width: 96px;
+        height: 94px;
+        min-height: 94px;
+        border-radius: 12px;
         display: flex;
         flex-direction: column;
+        justify-content: space-between;
         align-items: center;
-        justify-content: center;
         text-align: center;
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         position: relative;
         cursor: pointer;
-        padding: 6px;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        padding: 6px 5px 5px 5px;
+        box-shadow: 0 2px 4px -1px rgba(0, 0, 0, 0.08), 0 1px 2px -1px rgba(0, 0, 0, 0.05);
+        overflow: hidden;
     }
     .seat-cell:hover {
-        transform: translateY(-5px) scale(1.05);
+        transform: translateY(-3px) scale(1.04);
         z-index: 30;
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     .occupied-seat {
-        border: 2px solid rgba(255,255,255,0.25);
-        color: white;
-        text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        border: 1.5px solid rgba(255, 255, 255, 0.35);
+        color: #ffffff;
+    }
+    .occupied-seat::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40%;
+        background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
+        pointer-events: none;
+        border-top-left-radius: 10px;
+        border-top-right-radius: 10px;
     }
     .empty-seat {
         background: #ffffff;
-        border: 2px dashed #e2e8f0;
+        border: 2px dashed #cbd5e1;
         color: #94a3b8;
         box-shadow: none !important;
     }
+    .empty-seat:hover {
+        border-color: #94a3b8;
+        background: #f8fafc;
+    }
+    .map-student-name {
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 0.72rem;
+        line-height: 1.25;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        word-break: break-word;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+        margin-top: 1px;
+    }
+    .map-student-id {
+        font-size: 0.65rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.95);
+        background: rgba(0, 0, 0, 0.25);
+        padding: 1px 4px;
+        border-radius: 4px;
+        margin-top: 2px;
+        letter-spacing: 0.3px;
+    }
+    .map-subject-name {
+        font-size: 0.6rem;
+        font-weight: 700;
+        color: rgba(255, 255, 255, 0.9);
+        margin-top: 2px;
+    }
+    .map-seat-label {
+        display: inline-block;
+        background: rgba(0, 0, 0, 0.32);
+        color: #ffffff;
+        font-size: 9px;
+        font-weight: 800;
+        padding: 1px 6px;
+        border-radius: 5px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        letter-spacing: 0.5px;
+    }
     .grid-header {
         font-weight: 900;
-        color: #64748b;
-        font-size: 0.75rem;
-        padding: 0.5rem;
+        color: #475569;
+        font-size: 0.8rem;
+        padding: 0.4rem;
         text-transform: uppercase;
-        letter-spacing: 0.1em;
+        letter-spacing: 0.05em;
         text-align: center;
     }
     
-    /* Toggle Button Styling */
-    .toggle-btn {
-        background: #ffffff;
-        color: #475569;
-        border: 2px solid #e2e8f0;
-        padding: 0.6rem 1.25rem;
-        border-radius: 0.75rem;
-        font-size: 0.75rem;
+    /* Dedicated Filter Pills */
+    .filter-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 14px;
+        border-radius: 12px;
+        font-size: 12px;
         font-weight: 800;
-        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        border: 1.5px solid #cbd5e1;
+        background-color: #f1f5f9;
+        color: #334155;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        user-select: none;
     }
-    .toggle-btn.active {
-        background: #6366f1;
-        color: #ffffff;
-        border-color: #6366f1;
-        box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    .filter-pill:hover {
+        background-color: #e2e8f0;
+        border-color: #94a3b8;
+        color: #0f172a;
     }
-    .toggle-btn:hover:not(.active) {
-        border-color: #6366f1;
-        background: #f5f7ff;
-        color: #6366f1;
+    .filter-pill.active {
+        background-color: #0f172a !important;
+        border-color: #0f172a !important;
+        color: #ffffff !important;
+        box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
     }
 
     /* Tooltip */
@@ -82,20 +144,20 @@
         bottom: 110%;
         left: 50%;
         transform: translateX(-50%) translateY(10px);
-        background: rgba(15, 23, 42, 0.9);
+        background: rgba(15, 23, 42, 0.95);
         backdrop-filter: blur(12px);
         color: white;
-        padding: 1rem;
-        border-radius: 1rem;
+        padding: 0.85rem 1rem;
+        border-radius: 0.75rem;
         font-size: 0.75rem;
         z-index: 100;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.3s;
-        min-width: 180px;
+        transition: all 0.25s;
+        min-width: 170px;
         text-align: right;
-        border: 1px solid rgba(255,255,255,0.1);
-        box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+        border: 1px solid rgba(255,255,255,0.15);
+        box-shadow: 0 15px 25px -5px rgba(0, 0, 0, 0.3);
     }
     .seat-cell:hover .seat-tooltip {
         opacity: 1;
@@ -103,47 +165,217 @@
         transform: translateX(-50%) translateY(0);
     }
 
-    /* ──────────── Print Styles ──────────── */
+    /* ──────────── Professional Print Styles ──────────── */
     @media print {
-        @page { size: landscape; margin: 0.5cm; }
-        body { background: white !important; font-size: 9pt; color: black !important; }
-        .no-print, nav, aside, footer, #editModeBar, .seat-tooltip, .toast-notif { display: none !important; }
-        main { padding: 0 !important; margin: 0 !important; max-width: 100% !important; }
+        @page {
+            size: A4 landscape;
+            margin: 0.6cm;
+        }
+        body {
+            background: #ffffff !important;
+            color: #000000 !important;
+            font-family: 'Segoe UI', Tahoma, Arial, sans-serif !important;
+            margin: 0 !important;
+            padding: 0 !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .no-print, nav, aside, footer, #editModeBar, .seat-tooltip, .toast-notif, #toastNotif {
+            display: none !important;
+        }
+        main, .max-w-full {
+            padding: 0 !important;
+            margin: 0 !important;
+            max-width: 100% !important;
+            width: 100% !important;
+        }
         
         .hall-map-card {
-            page-break-after: always;
-            border: 2pt solid #000 !important;
-            border-radius: 0 !important;
-            padding: 30px !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            page-break-after: always !important;
+            break-after: page !important;
+            border: 1.5px solid #0f172a !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
             box-shadow: none !important;
-            margin-bottom: 0 !important;
+            margin: 0 auto !important;
+            background: #ffffff !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
         }
-        .seat-cell {
-            width: 70px !important;
-            height: 70px !important;
-            border: 1.5pt solid #000 !important;
-            border-radius: 4pt !important;
-            box-shadow: none !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
+
+        .hall-map-card > div:first-child {
+            margin-bottom: 6px !important;
+            padding-bottom: 6px !important;
+            border-bottom: 1.5px solid #cbd5e1 !important;
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: space-between !important;
+            align-items: center !important;
         }
-        .empty-seat { border: 1pt dashed #ccc !important; background: transparent !important; }
-        .occupied-seat { color: black !important; }
-        .map-student-name { color: white !important; font-size: 8pt !important; -webkit-print-color-adjust: exact; }
-        .map-seat-label { color: white !important; -webkit-print-color-adjust: exact; }
-        
+
+        .hall-map-card h2 {
+            font-size: 16pt !important;
+            line-height: 1.2 !important;
+        }
+
         .board-indicator {
-            background: #f0f0f0 !important;
-            color: #000 !important;
-            border: 2pt solid #000 !important;
-            font-size: 10pt !important;
+            background: #0f172a !important;
+            color: #ffffff !important;
+            padding: 3px 16px !important;
+            border-radius: 6px !important;
+            font-size: 7.5pt !important;
+            font-weight: 900 !important;
+            letter-spacing: 0.15em !important;
+            margin: 0 !important;
+            width: auto !important;
+            min-width: 180px !important;
+            box-shadow: none !important;
+            border: none !important;
+            text-align: center !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+
+        /* إلغاء container التمرير الذي يسبب كسر الصفحة في الطباعة */
+        .overflow-x-auto {
+            overflow: visible !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            width: 100% !important;
+        }
+
+        /* الجدول يتمركز في الصفحة وتكون أبعاده ثابتة ومتوازنة */
+        table {
+            margin: 0 auto !important;
+            border-collapse: separate !important;
+            border-spacing: 8px !important;
+            direction: ltr !important;
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+            width: auto !important;
+            max-width: 100% !important;
+            table-layout: auto !important;
+        }
+        tr, td {
+            page-break-inside: avoid !important;
+            break-inside: avoid !important;
+        }
+
+        /* عمود تسمية الصفوف A, B, C... */
+        tr td:first-child {
+            width: 28px !important;
+            min-width: 28px !important;
+            max-width: 32px !important;
+            text-align: center !important;
+            font-weight: 900 !important;
+            font-size: 9pt !important;
+            color: #0f172a !important;
+        }
+
+        .grid-header {
+            font-size: 8.5pt !important;
+            font-weight: 900 !important;
+            color: #0f172a !important;
+            text-align: center !important;
+            padding: 2px !important;
+        }
+
+        /* مقاس بطاقة المقعد في الطباعة */
+        .seat-cell {
+            width: 108px !important;
+            min-width: 85px !important;
+            max-width: 125px !important;
+            height: 72px !important;
+            min-height: 72px !important;
+            max-height: 78px !important;
+            box-sizing: border-box !important;
+            border: 1.5px solid #1e293b !important;
+            border-radius: 8px !important;
+            box-shadow: none !important;
+            padding: 4px 3px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: space-between !important;
+            align-items: center !important;
+            overflow: hidden !important;
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+        }
+        .occupied-seat {
+            color: #ffffff !important;
+        }
+        .occupied-seat::before {
+            display: none !important;
+        }
+        .map-student-name {
+            font-size: 8pt !important;
+            line-height: 1.2 !important;
+            font-weight: 800 !important;
+            color: #ffffff !important;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
+            display: -webkit-box !important;
+            -webkit-line-clamp: 2 !important;
+            -webkit-box-orient: vertical !important;
+            overflow: hidden !important;
+            word-break: break-word !important;
+            text-align: center !important;
+        }
+        .map-subject-name {
+            font-size: 6.5pt !important;
+            font-weight: 700 !important;
+            color: rgba(255, 255, 255, 0.95) !important;
+            margin-top: 1px !important;
+            text-align: center !important;
+            white-space: nowrap !important;
+            overflow: hidden !important;
+            text-overflow: ellipsis !important;
+            max-width: 100% !important;
+        }
+        .map-student-id {
+            font-size: 6.2pt !important;
+            color: #f8fafc !important;
+            line-height: 1.1 !important;
+            background: rgba(0, 0, 0, 0.35) !important;
+            padding: 1px 4px !important;
+            border-radius: 3px !important;
+            display: inline-block !important;
+        }
+        .map-seat-label {
+            font-size: 7pt !important;
+            font-weight: 900 !important;
+            padding: 1px 5px !important;
+            background: rgba(0, 0, 0, 0.45) !important;
+            color: #ffffff !important;
+            border-radius: 4px !important;
+            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            display: inline-block !important;
+        }
+        .empty-seat {
+            border: 1.5px dashed #94a3b8 !important;
+            background: #f8fafc !important;
+            width: 108px !important;
+            height: 72px !important;
+            min-height: 72px !important;
+            max-height: 78px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        .empty-seat span {
+            font-size: 7.5pt !important;
+            color: #475569 !important;
+            font-weight: 800 !important;
         }
     }
+
 
     /* Edit Mode */
     .seat-cell.selected-seat {
         outline: 4px solid #f59e0b !important;
-        outline-offset: 4px;
+        outline-offset: 3px;
         z-index: 50 !important;
     }
     .occupied-seat.opacity-10 {
@@ -203,6 +435,7 @@
                 </a>
                 <!-- ✨ زر وضع التعديل اليدوي -->
                 <button id="toggleEditBtn" onclick="toggleEditMode()"
+                        style="background-color: #d97706; color: #ffffff;"
                         class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-amber-500/30">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     تعديل المقاعد
@@ -265,33 +498,27 @@
                 </h3>
                 <div class="flex flex-wrap gap-2">
                     <button @click="showNames = !showNames; document.querySelectorAll('.map-student-name').forEach(el => el.classList.toggle('hidden', !showNames)); updatePdfLink()"
-                            :class="showNames ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'"
-                            class="px-4 py-2 rounded-xl text-xs font-black transition-all">
+                            :class="showNames ? 'filter-pill active' : 'filter-pill'">
                         👤 الأسماء
                     </button>
                     <button @click="showIds = !showIds; document.querySelectorAll('.map-student-id').forEach(el => el.classList.toggle('hidden', !showIds)); updatePdfLink()"
-                            :class="showIds ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'"
-                            class="px-4 py-2 rounded-xl text-xs font-black transition-all">
+                            :class="showIds ? 'filter-pill active' : 'filter-pill'">
                         🆔 الأرقام الامتحانية
                     </button>
                     <button @click="showLabels = !showLabels; document.querySelectorAll('.map-seat-label').forEach(el => el.classList.toggle('hidden', !showLabels))"
-                            :class="showLabels ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'"
-                            class="px-4 py-2 rounded-xl text-xs font-black transition-all">
+                            :class="showLabels ? 'filter-pill active' : 'filter-pill'">
                         🪑 أرقام المقاعد
                     </button>
                     <button @click="showColors = !showColors; document.querySelectorAll('.occupied-seat').forEach(el => { if(!showColors) { el.dataset.oldBg = el.style.backgroundColor; el.style.backgroundColor = '#94a3b8'; } else { el.style.backgroundColor = el.dataset.oldBg || ''; } })"
-                            :class="showColors ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'"
-                            class="px-4 py-2 rounded-xl text-xs font-black transition-all">
+                            :class="showColors ? 'filter-pill active' : 'filter-pill'">
                         🎨 الألوان
                     </button>
                     <button @click="showHallInfo = !showHallInfo; document.querySelectorAll('.map-hall-header').forEach(el => el.classList.toggle('hidden', !showHallInfo))"
-                            :class="showHallInfo ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'"
-                            class="px-4 py-2 rounded-xl text-xs font-black transition-all">
+                            :class="showHallInfo ? 'filter-pill active' : 'filter-pill'">
                         🏛️ معلومات القاعة
                     </button>
                     <button @click="showSubjects = !showSubjects; document.querySelectorAll('.map-subject-name').forEach(el => el.classList.toggle('hidden', !showSubjects))"
-                            :class="showSubjects ? 'bg-slate-800 text-white' : 'bg-slate-100 text-slate-400'"
-                            class="px-4 py-2 rounded-xl text-xs font-black transition-all">
+                            :class="showSubjects ? 'filter-pill active' : 'filter-pill'">
                         📖 أسماء المواد
                     </button>
                 </div>
@@ -356,16 +583,21 @@
                              data-assign-id="{{ cell.assignment_id|default:'' }}"
                         >
                             {% if cell %}
-                                <div class="relative z-10 pointer-events-none">
-                                    <div class="map-student-name font-black text-[0.65rem] md:text-[0.75rem] mb-1 text-white drop-shadow-sm leading-tight">{{ cell.student_name }}</div>
-                                    <div class="map-student-id hidden font-bold text-[0.6rem] text-white/80 mb-1 leading-tight">{{ cell.university_id }}</div>
-                                    <div class="map-subject-name hidden font-bold text-[0.6rem] text-white/90 mb-1 leading-tight">{{ cell.subject_name }}</div>
-                                    <div class="map-seat-label flex items-center justify-center gap-1">
-                                        <span class="bg-white/20 px-1.5 py-0.5 rounded text-[9px] font-bold text-white">{{ cell.seat_label }}</span>
+                                <div class="relative z-10 pointer-events-none w-full h-full flex flex-col justify-between items-center text-center">
+                                    <div class="seat-top-info w-full flex flex-col items-center">
+                                        <div class="map-student-name">{{ cell.student_name }}</div>
+                                        <div class="map-student-id hidden">{{ cell.university_id }}</div>
+                                        <div class="map-subject-name hidden">{{ cell.subject_name }}</div>
+                                    </div>
+                                    <div class="seat-bottom-info w-full flex items-center justify-center pt-0.5">
+                                        <span class="map-seat-label">{{ cell.seat_label }}</span>
                                     </div>
                                 </div>
                             {% else %}
-                                <div class="text-slate-300 font-bold text-[0.6rem] pointer-events-none">{% row_letter forloop.parentloop.counter0 %}{{ forloop.counter }}</div>
+                                <div class="text-slate-400 font-bold text-xs pointer-events-none flex flex-col items-center justify-center h-full w-full">
+                                    <span class="text-slate-300 text-[10px] mb-0.5">🪑</span>
+                                    <span>{% row_letter forloop.parentloop.counter0 %}{{ forloop.counter }}</span>
+                                </div>
                             {% endif %}
                         </div>
                     </td>

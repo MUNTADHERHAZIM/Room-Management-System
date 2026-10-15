@@ -3,7 +3,9 @@
 <div class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition-shadow">
     <!-- Status Bar -->
     <div class="h-2
-        {% if item.status == 'free' %}bg-green-500
+        {% if item.is_exam and item.status == 'busy' %}bg-purple-600
+        {% elif item.is_exam and item.status == 'soon' %}bg-amber-500
+        {% elif item.status == 'free' %}bg-green-500
         {% elif item.status == 'busy' %}bg-red-500
         {% elif item.status == 'soon' %}bg-yellow-500
         {% elif item.status == 'holiday' %}bg-gray-400
@@ -22,13 +24,17 @@
                 </p>
             </div>
 
-            <span class="shrink-0 px-3 py-1 rounded-full text-xs font-medium
-                {% if item.status == 'free' %}bg-green-100 text-green-800
+            <span class="shrink-0 px-3 py-1 rounded-full text-xs font-bold
+                {% if item.is_exam and item.status == 'busy' %}bg-purple-100 text-purple-900 border border-purple-200
+                {% elif item.is_exam and item.status == 'soon' %}bg-amber-100 text-amber-900 border border-amber-200
+                {% elif item.status == 'free' %}bg-green-100 text-green-800
                 {% elif item.status == 'busy' %}bg-red-100 text-red-800
                 {% elif item.status == 'soon' %}bg-yellow-100 text-yellow-800
                 {% elif item.status == 'holiday' %}bg-gray-100 text-gray-800
                 {% else %}bg-gray-100 text-gray-800{% endif %}">
-                {% if item.status == 'free' %}متاحة
+                {% if item.is_exam and item.status == 'busy' %}🔴 امتحان جاري
+                {% elif item.is_exam and item.status == 'soon' %}⏳ امتحان قريباً
+                {% elif item.status == 'free' %}متاحة
                 {% elif item.status == 'busy' %}مشغولة
                 {% elif item.status == 'soon' %}قريباً
                 {% elif item.status == 'holiday' %}عطلة
@@ -47,8 +53,30 @@
             </span>
         </div>
 
-        <!-- Current/Upcoming Schedule -->
-        {% if item.schedule %}
+        <!-- Current/Upcoming Schedule or Exam -->
+        {% if item.is_exam and item.exam_session %}
+        <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200/90 rounded-xl p-3 mb-3 shadow-xs">
+            <div class="flex items-center justify-between text-xs font-bold text-purple-800 mb-1.5">
+                <span class="flex items-center gap-1.5">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    امتحان جاري بالقاعة
+                </span>
+                <span class="bg-purple-200/80 text-purple-900 px-2 py-0.5 rounded-md font-mono text-[11px] font-bold">
+                    {{ item.exam_session.start_time|time:"H:i" }} - {{ item.exam_session.end_time|time:"H:i" }}
+                </span>
+            </div>
+            <p class="font-bold text-purple-950 text-sm truncate" title="{{ item.exam_session.name }}">
+                {{ item.exam_session.name }}
+            </p>
+            <div class="flex items-center justify-between text-xs text-purple-700 mt-2 pt-2 border-t border-purple-100 font-bold">
+                <span>👥 {{ item.exam_assigned_count }} طالب موزع</span>
+                <a href="{% url 'exams:seating_map' item.exam_session.pk %}" class="text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                    خريطة الجلوس
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                </a>
+            </div>
+        </div>
+        {% elif item.schedule %}
         <div class="bg-gray-50 rounded-lg p-3 mb-3">
             <div class="flex items-center gap-2 text-sm">
                 <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -68,12 +96,40 @@
                 {{ item.schedule.instructor.name|default:"—" }}
             </p>
         </div>
-        {% else %}
-        {% if item.status == 'busy' %}
-        <div class="bg-red-50 rounded-lg p-3 mb-3 text-sm text-red-700">
-            الحالة مشغولة ولكن لا يوجد Schedule مرتبط الآن (تحقق من منطق الحالة في الـ view).
+        {% elif item.today_exam %}
+        <div class="bg-indigo-50/80 border border-indigo-200/80 rounded-xl p-2.5 mb-3">
+            <div class="flex items-center justify-between text-xs font-bold text-indigo-800 mb-1">
+                <span class="flex items-center gap-1">
+                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                    امتحان مجدول اليوم
+                </span>
+                <span class="bg-indigo-100 text-indigo-900 px-2 py-0.5 rounded font-mono text-[11px] font-bold">
+                    {{ item.today_exam.start_time|time:"H:i" }}
+                </span>
+            </div>
+            <p class="font-bold text-indigo-950 text-xs truncate">{{ item.today_exam.name }}</p>
+            <div class="flex items-center justify-between text-[11px] text-indigo-600 mt-1.5 pt-1 border-t border-indigo-100 font-bold">
+                <span>👥 {{ item.today_exam_count }} طالب</span>
+                <a href="{% url 'exams:seating_map' item.today_exam.pk %}" class="hover:text-indigo-900">الخريطة ←</a>
+            </div>
         </div>
-        {% endif %}
+        {% elif item.latest_exam %}
+        <div class="bg-slate-50 border border-slate-200/80 rounded-xl p-2.5 mb-3">
+            <div class="flex items-center justify-between text-[11px] font-bold text-slate-700 mb-1">
+                <span class="flex items-center gap-1 text-indigo-700">
+                    <svg class="w-3.5 h-3.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    امتحان مجدول للقاعة
+                </span>
+                <span class="bg-slate-200/80 text-slate-700 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold">
+                    {{ item.latest_exam.date|date:"m/d" }}
+                </span>
+            </div>
+            <p class="font-bold text-slate-900 text-xs truncate">{{ item.latest_exam.name }}</p>
+            <div class="flex items-center justify-between text-[11px] text-slate-500 mt-1.5 pt-1 border-t border-slate-200/60 font-semibold">
+                <span>👥 {{ item.latest_exam_count }} طالب</span>
+                <a href="{% url 'exams:seating_map' item.latest_exam.pk %}" class="text-indigo-600 hover:text-indigo-800 font-bold">الخريطة ←</a>
+            </div>
+        </div>
         {% endif %}
 
         <!-- Room Info -->
@@ -111,6 +167,22 @@
                 class="flex-1 text-center py-2 px-3 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition text-sm font-medium">
                 التفاصيل
             </a>
+            {% if item.is_exam and item.exam_session %}
+            <a href="{% url 'exams:seating_map' item.exam_session.pk %}"
+                class="py-2 px-3 bg-purple-50 text-purple-700 rounded-lg hover:bg-purple-100 transition text-sm font-bold flex items-center gap-1">
+                الخريطة
+            </a>
+            {% elif item.today_exam %}
+            <a href="{% url 'exams:seating_map' item.today_exam.pk %}"
+                class="py-2 px-3 bg-indigo-50 text-indigo-700 rounded-lg hover:bg-indigo-100 transition text-sm font-bold flex items-center gap-1">
+                الخريطة
+            </a>
+            {% elif item.latest_exam %}
+            <a href="{% url 'exams:seating_map' item.latest_exam.pk %}"
+                class="py-2 px-3 bg-slate-100 text-slate-700 rounded-lg hover:bg-slate-200 transition text-sm font-bold flex items-center gap-1">
+                الخريطة
+            </a>
+            {% endif %}
         </div>
     </div>
 </div>

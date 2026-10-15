@@ -38,7 +38,7 @@ def get_arabic_day(dt=None):
 def get_rooms_with_status_bulk(rooms_qs, current_datetime=None):
     """
     حساب حالة جميع القاعات دفعة واحدة بدلاً من قاعة قاعة (تحسين أداء جذري).
-    بدلاً من N+1 استعلام، نستخدم فقط 3 استعلامات.
+    يدعم الحصص الدراسية والجلسات الامتحانية.
     """
     if current_datetime is None:
         current_datetime = timezone.localtime(timezone.now())
@@ -51,7 +51,7 @@ def get_rooms_with_status_bulk(rooms_qs, current_datetime=None):
     is_holiday = Holiday.objects.filter(date=current_date).exists()
 
     if is_holiday:
-        return [{'room': room, 'status': 'holiday', 'schedule': None} for room in rooms_qs]
+        return [{'room': room, 'status': 'holiday', 'schedule': None, 'is_exam': False} for room in rooms_qs]
 
     # 2. جلب جميع الحصص الجارية حالياً لكل القاعات (استعلام واحد)
     busy_schedules = Schedule.objects.filter(
@@ -82,15 +82,94 @@ def get_rooms_with_status_bulk(rooms_qs, current_datetime=None):
         if s.room_id not in soon_map:
             soon_map[s.room_id] = s
 
-    # 4. تجميع النتائج
+    # 4. جلب إعدادات الجلسات الامتحانية المرتبطة بالقاعات
+    from apps.exams.models import HallSetup
+    exam_setups = HallSetup.objects.filter(
+        room__in=rooms_qs,
+    ).select_related('session', 'room').annotate(
+        assigned_count=Count('assignments')
+    ).order_by('-session__date', '-session__start_time')
+
+    exam_busy_map = {}
+    exam_soon_map = {}
+    exam_today_map = {}
+    latest_exam_map = {}
+
+    for hs in exam_setups:
+        sess = hs.session
+        r_id = hs.room_id
+        # حفظ أحدث/أقرب امتحان للقاعة دائماً للعرض
+        if r_id not in latest_exam_map:
+            latest_exam_map[r_id] = hs
+
+        if sess.date == current_date:
+            if sess.start_time <= current_time and sess.end_time > current_time:
+                exam_busy_map[r_id] = hs
+            elif current_time < sess.start_time <= soon_time:
+                exam_soon_map[r_id] = hs
+            elif r_id not in exam_today_map:
+                exam_today_map[r_id] = hs
+
+    # 5. تجميع النتائج
     results = []
     for room in rooms_qs:
-        if room.id in busy_map:
-            results.append({'room': room, 'status': 'busy', 'schedule': busy_map[room.id]})
+        item = {
+            'room': room,
+            'is_exam': False,
+            'exam_session': None,
+            'exam_setup': None,
+            'exam_assigned_count': 0,
+            'today_exam': exam_today_map.get(room.id).session if room.id in exam_today_map else None,
+            'today_exam_count': exam_today_map.get(room.id).assigned_count if room.id in exam_today_map else 0,
+            'latest_exam': latest_exam_map.get(room.id).session if room.id in latest_exam_map else None,
+            'latest_exam_count': latest_exam_map.get(room.id).assigned_count if room.id in latest_exam_map else 0,
+        }
+
+        # الأولوية 1: امتحان جاري الآن
+        if room.id in exam_busy_map:
+            hs = exam_busy_map[room.id]
+            item.update({
+                'status': 'busy',
+                'is_exam': True,
+                'exam_session': hs.session,
+                'exam_setup': hs,
+                'exam_assigned_count': hs.assigned_count,
+                'schedule': None,
+            })
+        # الأولوية 2: حصة دراسية جارية الآن
+        elif room.id in busy_map:
+            item.update({
+                'status': 'busy',
+                'is_exam': False,
+                'schedule': busy_map[room.id],
+            })
+        # الأولوية 3: امتحان قادم قريباً (خلال 60 دقيقة)
+        elif room.id in exam_soon_map:
+            hs = exam_soon_map[room.id]
+            item.update({
+                'status': 'soon',
+                'is_exam': True,
+                'exam_session': hs.session,
+                'exam_setup': hs,
+                'exam_assigned_count': hs.assigned_count,
+                'schedule': None,
+            })
+        # الأولوية 4: حصة دراسية قادمة قريباً
         elif room.id in soon_map:
-            results.append({'room': room, 'status': 'soon', 'schedule': soon_map[room.id]})
+            item.update({
+                'status': 'soon',
+                'is_exam': False,
+                'schedule': soon_map[room.id],
+            })
+        # متاح
         else:
-            results.append({'room': room, 'status': 'free', 'schedule': None})
+            item.update({
+                'status': 'free',
+                'is_exam': False,
+                'schedule': None,
+            })
+
+        results.append(item)
 
     return results
 
@@ -162,7 +241,12 @@ def dashboard(request):
     all_rooms_status = get_rooms_with_status_bulk(rooms, current_datetime)
 
     # تطبيق فلتر الحالة
-    if status_filter:
+    if status_filter == 'exam':
+        rooms_with_status = [
+            r for r in all_rooms_status
+            if r.get('is_exam') or r.get('today_exam') or r.get('latest_exam')
+        ]
+    elif status_filter:
         rooms_with_status = [r for r in all_rooms_status if r['status'] == status_filter]
     else:
         rooms_with_status = all_rooms_status
@@ -173,6 +257,7 @@ def dashboard(request):
         'free': sum(1 for r in all_rooms_status if r['status'] == 'free'),
         'busy': sum(1 for r in all_rooms_status if r['status'] == 'busy'),
         'soon': sum(1 for r in all_rooms_status if r['status'] == 'soon'),
+        'exams': sum(1 for r in all_rooms_status if r.get('is_exam') or r.get('today_exam') or r.get('latest_exam')),
     }
 
     context = {

@@ -953,182 +953,273 @@ def student_lookup(request, pk):
 
 @login_required
 def seating_pdf(request, pk):
-    """تصدير خريطة الجلوس كـ PDF"""
+    """تصدير خريطة الجلوس كـ PDF بتصميم احترافي ودعم كامل للغة العربية"""
     from reportlab.lib import colors
     from reportlab.lib.pagesizes import A4, landscape
     from reportlab.lib.units import cm
-    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer
+    from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, PageBreak
     from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-    from reportlab.pdfbase import pdfmetrics
-    from reportlab.pdfbase.ttfonts import TTFont
-    import arabic_reshaper
-    from bidi.algorithm import get_display
+    from apps.core.pdf_utils import register_arabic_fonts, reshape_arabic
 
     session = get_object_or_404(ExamSession, pk=pk)
-    hall_setups = session.hall_setups.select_related('room').all()
-    assignments = session.assignments.select_related(
+    hall_setups = list(session.hall_setups.select_related('room').all())
+    assignments = list(session.assignments.select_related(
         'student', 'hall_setup', 'hall_setup__room',
         'exam_subject', 'exam_subject__subject'
-    ).all()
+    ).all())
 
     response = HttpResponse(content_type='application/pdf')
     response['Content-Disposition'] = f'attachment; filename="seating_{session.pk}.pdf"'
 
+    # هوامش محسوبة بدقة لاستغلال مساحة صفحة A4 بالعرض
     doc = SimpleDocTemplate(
         response,
         pagesize=landscape(A4),
-        rightMargin=1 * cm,
-        leftMargin=1 * cm,
-        topMargin=1 * cm,
-        bottomMargin=1 * cm,
+        rightMargin=0.8 * cm,
+        leftMargin=0.8 * cm,
+        topMargin=0.7 * cm,
+        bottomMargin=0.7 * cm,
     )
 
     elements = []
     
-    # تسجيل خط يدعم اللغة العربية
-    import os
-    font_path = "C:/Windows/Fonts/arial.ttf"
-    if os.path.exists(font_path):
-        pdfmetrics.registerFont(TTFont('ArabicFont', font_path))
-    else:
-        # Fallback in case Arial is somehow missing
-        pass
+    font_name = register_arabic_fonts()
+    bold_font_name = 'ArabicFont-Bold' if font_name == 'ArabicFont' else font_name
 
     styles = getSampleStyleSheet()
     
-    # تعديل الأنماط لاستخدام الخط العربي
-    styles['Normal'].fontName = 'ArabicFont' if os.path.exists(font_path) else 'Helvetica'
-    styles['Title'].fontName = 'ArabicFont' if os.path.exists(font_path) else 'Helvetica'
-    styles['Heading2'].fontName = 'ArabicFont' if os.path.exists(font_path) else 'Helvetica'
-    styles['Heading3'].fontName = 'ArabicFont' if os.path.exists(font_path) else 'Helvetica'
-
-    def reshape_arabic(text):
-        """تحويل النص العربي لعرضه في PDF"""
-        if not text:
-            return ""
-        try:
-            reshaped = arabic_reshaper.reshape(str(text))
-            return get_display(reshaped)
-        except Exception:
-            return str(text)
-
-    # عنوان
     title_style = ParagraphStyle(
         'ArabicTitle',
         parent=styles['Title'],
+        fontName=bold_font_name,
         alignment=1,
-        fontSize=16,
+        fontSize=15,
+        leading=18,
+        textColor=colors.HexColor('#0F172A'),
     )
-    elements.append(Paragraph(reshape_arabic(f"خريطة الجلوس — {session.name}"), title_style))
-    elements.append(Paragraph(reshape_arabic(f"التاريخ: {session.date}"), styles['Normal']))
-    elements.append(Spacer(1, 0.5 * cm))
+    subtitle_style = ParagraphStyle(
+        'ArabicSubtitle',
+        parent=styles['Normal'],
+        fontName=font_name,
+        alignment=1,
+        fontSize=8.5,
+        leading=11,
+        textColor=colors.HexColor('#475569'),
+    )
+    hall_title_style = ParagraphStyle(
+        'ArabicHallTitle',
+        parent=styles['Heading2'],
+        fontName=bold_font_name,
+        alignment=1,
+        fontSize=11.5,
+        leading=14,
+        textColor=colors.HexColor('#1E293B'),
+    )
+    board_style = ParagraphStyle(
+        'ArabicBoard',
+        parent=styles['Normal'],
+        fontName=bold_font_name,
+        alignment=1,
+        fontSize=8,
+        leading=10,
+        textColor=colors.white,
+    )
+    header_cell_style = ParagraphStyle(
+        'HeaderCell',
+        parent=styles['Normal'],
+        fontName=bold_font_name,
+        alignment=1,
+        fontSize=7.5,
+        leading=9,
+        textColor=colors.white,
+    )
+    cell_student_style = ParagraphStyle(
+        'CellStudent',
+        parent=styles['Normal'],
+        fontName=bold_font_name,
+        alignment=1,
+        fontSize=6.8,
+        leading=8,
+        textColor=colors.HexColor('#0F172A'),
+    )
+    cell_empty_style = ParagraphStyle(
+        'CellEmpty',
+        parent=styles['Normal'],
+        fontName=font_name,
+        alignment=1,
+        fontSize=6.5,
+        leading=8,
+        textColor=colors.HexColor('#94A3B8'),
+    )
+    legend_style_text = ParagraphStyle(
+        'LegendText',
+        parent=styles['Normal'],
+        fontName=bold_font_name,
+        alignment=1,
+        fontSize=7.5,
+        leading=9,
+        textColor=colors.HexColor('#1E293B'),
+    )
 
-    for hall in hall_setups:
+    hide_names = request.GET.get('hide_names') == '1'
+    hide_ids = request.GET.get('hide_ids') == '1'
+
+    for hall_idx, hall in enumerate(hall_setups):
         hall_assignments = [a for a in assignments if a.hall_setup_id == hall.id]
 
-        # عنوان القاعة
-        elements.append(Paragraph(
-            reshape_arabic(f"القاعة: {hall.room.name} ({hall.rows}×{hall.columns})"),
-            styles['Heading2']
-        ))
+        # الترويسة العليا للقاعة
+        header_text = reshape_arabic(f"خريطة توزيع مقاعد الامتحان — {session.name}")
+        sub_text = reshape_arabic(f"التاريخ: {session.date}   |   القاعة: {hall.room.name} ({hall.rows}×{hall.columns})   |   الطلاب الموزعون: {len(hall_assignments)} طالب")
+        
+        elements.append(Paragraph(header_text, title_style))
+        elements.append(Spacer(1, 0.15 * cm))
+        elements.append(Paragraph(sub_text, subtitle_style))
+        elements.append(Spacer(1, 0.3 * cm))
+
+        # حساب الأبعاد المتجاوبة للجدول
+        total_avail_w = 28.1 * cm
+        row_hdr_w = 1.0 * cm
+        col_w = min(4.4 * cm, (total_avail_w - row_hdr_w) / max(1, hall.columns))
+        actual_table_w = row_hdr_w + (col_w * hall.columns)
+
+        # شريط السبورة (اتجاه النظر)
+        board_data = [[Paragraph(reshape_arabic("◄ السبورة (اتجاه النظر) ►"), board_style)]]
+        board_table = Table(board_data, colWidths=[actual_table_w])
+        board_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#1E293B')),
+            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+            ('TOPPADDING', (0, 0), (-1, -1), 3),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+        ]))
+        elements.append(board_table)
+        elements.append(Spacer(1, 0.2 * cm))
 
         # بناء جدول الشبكة
-        grid = [['' for _ in range(hall.columns + 1)] for _ in range(hall.rows + 1)]
+        grid = [[None for _ in range(hall.columns + 1)] for _ in range(hall.rows + 1)]
 
         # رؤوس الأعمدة
-        grid[0][0] = ''
+        grid[0][0] = Paragraph("", header_cell_style)
         for c in range(hall.columns):
-            grid[0][c + 1] = str(c + 1)
+            grid[0][c + 1] = Paragraph(str(c + 1), header_cell_style)
 
         # رؤوس الصفوف
         for r in range(hall.rows):
-            grid[r + 1][0] = chr(65 + r)
+            grid[r + 1][0] = Paragraph(chr(65 + r), header_cell_style)
 
+        # تجهيز خريطة توزيع المقاعد
+        assign_map = {(a.row, a.column): a for a in hall_assignments}
 
-        # ملء البيانات
-        hide_names = request.GET.get('hide_names') == '1'
-        hide_ids = request.GET.get('hide_ids') == '1'
+        # ملء المقاعد
+        for r in range(hall.rows):
+            for c in range(hall.columns):
+                a = assign_map.get((r, c))
+                seat_label = f"{chr(65 + r)}{c + 1}"
+                if a:
+                    parts = []
+                    if not hide_names:
+                        parts.append(f"<b>{reshape_arabic(a.student.name)}</b>")
+                    if not hide_ids:
+                        parts.append(f"<font size=5.5 color='#334155'>{reshape_arabic(str(a.student.university_id))}</font>")
+                    parts.append(f"<font size=5 color='#64748B'>[{seat_label}]</font>")
+                    grid[r + 1][c + 1] = Paragraph("<br/>".join(parts), cell_student_style)
+                else:
+                    grid[r + 1][c + 1] = Paragraph(f"<font size=5.5 color='#94A3B8'>{seat_label}</font>", cell_empty_style)
 
-        for a in hall_assignments:
-            parts = []
-            if not hide_names:
-                parts.append(str(a.student.name))
-            if not hide_ids:
-                parts.append(str(a.student.university_id))
-            
-            cell_text = reshape_arabic("\n".join(parts))
-            
-            if a.row + 1 < len(grid) and a.column + 1 < len(grid[0]):
-                grid[a.row + 1][a.column + 1] = cell_text
+        # تحديد ارتفاع الصفوف لكي تتسع الصفحة دائماً بدون تجاوز
+        row_h = min(1.6 * cm, max(1.05 * cm, (12.5 * cm) / max(1, hall.rows)))
+        row_heights = [0.6 * cm] + [row_h] * hall.rows
+        col_widths = [row_hdr_w] + [col_w] * hall.columns
 
-        # إنشاء الجدول
-        col_width = max(2.5 * cm, (25 * cm) / (hall.columns + 1))
-        table = Table(grid, colWidths=[1.5 * cm] + [col_width] * hall.columns)
+        table = Table(grid, colWidths=col_widths, rowHeights=row_heights)
 
         style_commands = [
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('BACKGROUND', (0, 0), (-1, 0), colors.Color(0.2, 0.3, 0.5)),
-            ('TEXTCOLOR', (0, 0), (-1, 0), colors.white),
-            ('BACKGROUND', (0, 0), (0, -1), colors.Color(0.2, 0.3, 0.5)),
-            ('TEXTCOLOR', (0, 0), (0, -1), colors.white),
+            ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#CBD5E1')),
+            ('BOX', (0, 0), (-1, -1), 1.2, colors.HexColor('#475569')),
+            ('BACKGROUND', (0, 0), (-1, 0), colors.HexColor('#1E293B')),
+            ('BACKGROUND', (0, 0), (0, -1), colors.HexColor('#1E293B')),
             ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
             ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('FONTNAME', (0, 0), (-1, -1), 'ArabicFont' if os.path.exists(font_path) else 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 7),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 4),
-            ('TOPPADDING', (0, 0), (-1, -1), 4),
+            ('TOPPADDING', (0, 0), (-1, -1), 2),
+            ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+            ('LEFTPADDING', (0, 0), (-1, -1), 2),
+            ('RIGHTPADDING', (0, 0), (-1, -1), 2),
         ]
 
-        # تلوين المقاعد حسب المادة
-        for a in hall_assignments:
-            if a.exam_subject:
-                hex_color = a.exam_subject.color_code
-                try:
-                    r_val = int(hex_color[1:3], 16) / 255
-                    g_val = int(hex_color[3:5], 16) / 255
-                    b_val = int(hex_color[5:7], 16) / 255
-                    bg = colors.Color(r_val, g_val, b_val, alpha=0.2)
+        # تلوين المقاعد الشاغرة بخلفية خفيفة جداً
+        for r in range(hall.rows):
+            for c in range(hall.columns):
+                if (r, c) not in assign_map:
                     style_commands.append((
-                        'BACKGROUND',
-                        (a.column + 1, a.row + 1),
-                        (a.column + 1, a.row + 1),
-                        bg
+                        'BACKGROUND', (c + 1, r + 1), (c + 1, r + 1), colors.HexColor('#F8FAFC')
                     ))
+
+        # تلوين المقاعد حسب المادة بنعومة وتناسق
+        for a in hall_assignments:
+            if a.exam_subject and a.exam_subject.color_code:
+                hex_color = a.exam_subject.color_code.strip()
+                try:
+                    if hex_color.startswith('#') and len(hex_color) == 7:
+                        r_val = int(hex_color[1:3], 16) / 255
+                        g_val = int(hex_color[3:5], 16) / 255
+                        b_val = int(hex_color[5:7], 16) / 255
+                        bg = colors.Color(r_val, g_val, b_val, alpha=0.18)
+                        style_commands.append((
+                            'BACKGROUND', (a.column + 1, a.row + 1), (a.column + 1, a.row + 1), bg
+                        ))
                 except Exception:
                     pass
 
         table.setStyle(TableStyle(style_commands))
         elements.append(table)
-        elements.append(Spacer(1, 1 * cm))
+        elements.append(Spacer(1, 0.4 * cm))
 
-    # بناء مفتاح الألوان
-    exam_subjects = session.exam_subjects.select_related('subject').all()
-    if exam_subjects:
-        elements.append(Paragraph(reshape_arabic("مفتاح المواد:"), styles['Heading3']))
-        legend_data = [[
-            reshape_arabic(es.subject.name) for es in exam_subjects
-        ]]
-        legend_table = Table(legend_data)
-        legend_style = [
-            ('GRID', (0, 0), (-1, -1), 0.5, colors.grey),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('FONTNAME', (0, 0), (-1, -1), 'ArabicFont' if os.path.exists(font_path) else 'Helvetica'),
-            ('FONTSIZE', (0, 0), (-1, -1), 9),
-        ]
-        for i, es in enumerate(exam_subjects):
-            try:
-                hex_color = es.color_code
-                r_val = int(hex_color[1:3], 16) / 255
-                g_val = int(hex_color[3:5], 16) / 255
-                b_val = int(hex_color[5:7], 16) / 255
-                legend_style.append((
-                    'BACKGROUND', (i, 0), (i, 0),
-                    colors.Color(r_val, g_val, b_val, alpha=0.3)
-                ))
-            except Exception:
-                pass
-        legend_table.setStyle(TableStyle(legend_style))
-        elements.append(legend_table)
+        # مفتاح المواد لكل قاعة
+        hall_subjects = {}
+        for a in hall_assignments:
+            if a.exam_subject and a.exam_subject.subject:
+                sub_id = a.exam_subject.subject.id
+                if sub_id not in hall_subjects:
+                    hall_subjects[sub_id] = {
+                        'name': a.exam_subject.subject.name,
+                        'color': a.exam_subject.color_code,
+                        'count': 0
+                    }
+                hall_subjects[sub_id]['count'] += 1
+
+        if hall_subjects:
+            legend_cells = []
+            legend_styles = [
+                ('GRID', (0, 0), (-1, -1), 0.5, colors.HexColor('#E2E8F0')),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('TOPPADDING', (0, 0), (-1, -1), 2),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 2),
+            ]
+            
+            for idx, (sub_id, info) in enumerate(hall_subjects.items()):
+                text = reshape_arabic(f"{info['name']} ({info['count']} طالب)")
+                legend_cells.append(Paragraph(text, legend_style_text))
+                hex_color = info['color'] or '#3B82F6'
+                try:
+                    if hex_color.startswith('#') and len(hex_color) == 7:
+                        r_val = int(hex_color[1:3], 16) / 255
+                        g_val = int(hex_color[3:5], 16) / 255
+                        b_val = int(hex_color[5:7], 16) / 255
+                        legend_styles.append((
+                            'BACKGROUND', (idx, 0), (idx, 0),
+                            colors.Color(r_val, g_val, b_val, alpha=0.22)
+                        ))
+                except Exception:
+                    pass
+
+            legend_table = Table([legend_cells], colWidths=[actual_table_w / max(1, len(legend_cells))] * len(legend_cells))
+            legend_table.setStyle(TableStyle(legend_styles))
+            elements.append(legend_table)
+
+        # فاصل صفحة بين القاعات إذا كانت هناك أكثر من قاعة
+        if hall_idx < len(hall_setups) - 1:
+            elements.append(PageBreak())
 
     doc.build(elements)
     return response

@@ -39,26 +39,47 @@ def get_local_ips():
     return list(set(ips))
 
 
-def generate_qr_otp(session_token, time_step=10):
+def generate_qr_otp(session_token, time_step=30, is_fixed=False):
     """
-    تولد رمز OTP ديناميكي يتغير كل (time_step) ثوانٍ (الافتراضي 10 ثوانٍ)
-    بناءً على التوقيت الحالي ومفتاح الجلسة السري.
+    تولد رمز QR مشفر للجلسة:
+    - إذا كان is_fixed=True: يولد رمزاً ثابتاً طوال الجلسة (نمط تثبيت الرمز).
+    - إذا كان ديناميكياً: يتغير الرمز على الشاشة كل 30 ثانية لمنع تصوير الشاشة وتمريرها.
     """
+    if is_fixed:
+        fixed_hash = hashlib.sha256(f"FIXED:{session_token}".encode("utf-8")).hexdigest()[:16]
+        return f"FIXED-{fixed_hash}"
+
     time_block = int(time.time() // time_step)
-    # استخدام HMAC أمني
     key = session_token.encode("utf-8")
     message = str(time_block).encode("utf-8")
     hmac_digest = hmac.new(key, message, hashlib.sha256).hexdigest()
-    # نأخذ أول 16 حرفاً فقط للتبسيط
     return f"{time_block}-{hmac_digest[:16]}"
 
 
-def validate_qr_otp(session_token, otp_string, time_step=10):
+def validate_qr_otp(session_token, otp_string, session_pin=None, time_step=30, max_valid_seconds=1800):
     """
-    تتحقق من صحة الرمز الممسوح.
-    تسمح بالرمز الحالي والرمز السابق (بفارق خطوة واحدة) لتفادي أي تأخير طفيف في الإرسال.
+    تتحقق من صحة الرمز الممسوح أمنياً:
+    1. تقبل النمط الثابت (Fixed Mode) طالما الجلسة مفتوحة.
+    2. تقبل رمز الـ PIN إذا طابق الجلسة.
+    3. في النمط الديناميكي: تمنح الطالب مهلة تصل إلى 30 دقيقة (1800 ثانية) بعد مسح الكود
+       لكتابة اسمه ورقمه الجامعي وإرسال التحضير براحة تامة دون انتهاء الصلاحية!
     """
+    if not otp_string:
+        return False
+        
     try:
+        # 1. فحص النمط الثابت (تثبيت الرمز)
+        if otp_string.startswith("FIXED-"):
+            expected_fixed = f"FIXED-{hashlib.sha256(f'FIXED:{session_token}'.encode('utf-8')).hexdigest()[:16]}"
+            return hmac.compare_digest(otp_string, expected_fixed)
+            
+        # 2. فحص مطابقة الـ PIN
+        if session_pin:
+            clean_pin = str(session_pin).strip().upper()
+            if otp_string.upper() in (clean_pin, f"PIN-{clean_pin}"):
+                return True
+
+        # 3. فحص الرمز الديناميكي
         parts = otp_string.split("-")
         if len(parts) != 2:
             return False
@@ -66,20 +87,26 @@ def validate_qr_otp(session_token, otp_string, time_step=10):
         scanned_time_block = int(parts[0])
         scanned_hash = parts[1]
         
-        current_time_block = int(time.time() // time_step)
-        
-        # السماح بفرق خطوة زمنية واحدة فقط (مثلاً، تأخير إرسال لـ 10 ثوانٍ)
-        if abs(current_time_block - scanned_time_block) > 1:
-            return False
-            
-        # إعادة حساب الـ HMAC للتأكد من عدم التلاعب
+        # التأكد من صحة التوقيع الأمني أولاً لمنع التلاعب
         key = session_token.encode("utf-8")
         message = str(scanned_time_block).encode("utf-8")
         expected_digest = hmac.new(key, message, hashlib.sha256).hexdigest()
+        if not hmac.compare_digest(scanned_hash, expected_digest[:16]):
+            return False
+            
+        # فحص العمر الزمني للرمز: نمنح الطالب 30 دقيقة (1800 ثانية) من وقت المسح
+        scanned_timestamp = scanned_time_block * time_step
+        current_timestamp = time.time()
         
-        return hmac.compare_digest(scanned_hash, expected_digest[:16])
+        age = current_timestamp - scanned_timestamp
+        # نقبل الرمز طالما عمره أقل من 30 دقيقة مع سماح 60 ثانية لفروق التوقيت
+        if -60 <= age <= max_valid_seconds:
+            return True
+            
+        return False
     except Exception:
         return False
+
 
 
 def get_device_fingerprint(request):

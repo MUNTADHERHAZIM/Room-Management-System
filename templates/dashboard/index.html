@@ -14,19 +14,30 @@
 
         <!-- Stats Cards -->
         <div class="flex flex-wrap gap-4">
-            <div class="bg-gradient-to-l from-green-500 to-green-600 text-white px-6 py-3 rounded-xl shadow-lg">
+            <div class="bg-gradient-to-l from-green-500 to-green-600 text-white px-5 py-3 rounded-xl shadow-lg">
                 <div class="text-3xl font-bold">{{ stats.free }}</div>
                 <div class="text-green-100 text-sm">متاحة</div>
             </div>
-            <div class="bg-gradient-to-l from-red-500 to-red-600 text-white px-6 py-3 rounded-xl shadow-lg">
+            <div class="bg-gradient-to-l from-red-500 to-red-600 text-white px-5 py-3 rounded-xl shadow-lg">
                 <div class="text-3xl font-bold">{{ stats.busy }}</div>
                 <div class="text-red-100 text-sm">مشغولة</div>
             </div>
-            <div class="bg-gradient-to-l from-yellow-500 to-yellow-600 text-white px-6 py-3 rounded-xl shadow-lg">
+            <div class="bg-gradient-to-l from-yellow-500 to-yellow-600 text-white px-5 py-3 rounded-xl shadow-lg">
                 <div class="text-3xl font-bold">{{ stats.soon }}</div>
                 <div class="text-yellow-100 text-sm">قريباً</div>
             </div>
-            <div class="bg-gradient-to-l from-blue-500 to-blue-600 text-white px-6 py-3 rounded-xl shadow-lg">
+            <div class="bg-gradient-to-l from-purple-600 to-indigo-700 text-white px-5 py-3 rounded-xl shadow-lg cursor-pointer hover:opacity-95 transition-all"
+                 hx-get="{% url 'core:dashboard' %}?status=exam"
+                 hx-target="#room-cards"
+                 hx-push-url="true"
+                 title="تصفية قاعات الامتحانات">
+                <div class="text-3xl font-bold">{{ stats.exams|default:0 }}</div>
+                <div class="text-purple-100 text-sm flex items-center gap-1 font-bold">
+                    <span>قاعات الامتحانات</span>
+                    <span class="text-xs">📝</span>
+                </div>
+            </div>
+            <div class="bg-gradient-to-l from-blue-500 to-blue-600 text-white px-5 py-3 rounded-xl shadow-lg">
                 <div class="text-3xl font-bold">{{ stats.total }}</div>
                 <div class="text-blue-100 text-sm">الإجمالي</div>
             </div>
@@ -95,6 +106,7 @@
                     <option value="free" {% if selected_status == 'free' %}selected{% endif %}>متاحة</option>
                     <option value="busy" {% if selected_status == 'busy' %}selected{% endif %}>مشغولة</option>
                     <option value="soon" {% if selected_status == 'soon' %}selected{% endif %}>قريباً</option>
+                    <option value="exam" {% if selected_status == 'exam' %}selected{% endif %}>قاعات الامتحانات 📝</option>
                 </select>
             </div>
 

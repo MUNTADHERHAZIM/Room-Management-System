@@ -224,14 +224,18 @@ def session_detail(request, pk):
 
 def rotate_qr(request, pk):
     """
-    ممر API لتوليد رمز QR مشفر ودوار كل 10 ثوانٍ.
-    يعيد الرمز المشفر ورابط التحضير المباشر.
+    ممر API لتوليد رمز QR مشفر:
+    - يدعم النمط الثابت (mode=fixed) لتثبيت الرمز طوال الجلسة بدون أي انتهاء صلاحية.
+    - يدعم النمط الديناميكي (mode=dynamic) مع منح الطالب 30 دقيقة بعد المسح لإتمام التسجيل.
     """
     session = get_object_or_404(AttendanceSession, pk=pk)
     if not session.is_active:
         return JsonResponse({"success": False, "error": "الجلسة مغلقة"})
         
-    otp = generate_qr_otp(session.session_token)
+    mode = request.GET.get("mode", "dynamic")
+    is_fixed = (mode == "fixed")
+    
+    otp = generate_qr_otp(session.session_token, time_step=30, is_fixed=is_fixed)
     
     # بناء رابط التحضير الذي سيمسحه الطالب
     host = request.get_host()
@@ -242,17 +246,16 @@ def rotate_qr(request, pk):
             port = request.get_port()
             host = f"{local_ips[0]}:{port}"
 
-    # يمكن للطلاب كتابة الرابط مع الآي بي المحلي
     full_url = f"http://{host}/attendance/scan/{otp}/"
-    
-    # حساب الثواني المتبقية حتى التدوير القادم (كل 10 ثوانٍ)
-    seconds_left = 10 - (int(time.time()) % 10)
+    seconds_left = 9999 if is_fixed else (30 - (int(time.time()) % 30))
     
     return JsonResponse({
         "success": True,
         "token": otp,
         "url": full_url,
-        "seconds_left": seconds_left
+        "seconds_left": seconds_left,
+        "is_fixed": is_fixed,
+        "pin": session.session_pin
     })
 
 
@@ -266,7 +269,7 @@ def student_scan(request, otp_token):
     matched_session = None
     
     for session in active_sessions:
-        if validate_qr_otp(session.session_token, otp_token):
+        if validate_qr_otp(session.session_token, otp_token, session_pin=session.session_pin):
             matched_session = session
             break
             
@@ -316,9 +319,10 @@ def submit_attendance(request, pk):
     is_scanner_bypass = request.user.is_authenticated and request.POST.get("bypass_otp") == "true"
     
     if not is_scanner_bypass:
-        # التحقق الأخير من أن الـ QR لم ينته وقته
-        if not validate_qr_otp(session.session_token, otp_token):
+        # التحقق من صلاحية الرمز مع دعم النمط الثابت والمهلة الواسعة (30 دقيقة)
+        if not validate_qr_otp(session.session_token, otp_token, session_pin=session.session_pin):
             return JsonResponse({"success": False, "error": "انتهت صلاحية الرمز! يرجى إعادة مسح الـ QR المحدث من شاشة الأستاذ."}, status=400)
+
         
     student_id = request.POST.get("student")
     university_id = request.POST.get("university_id")
@@ -490,28 +494,11 @@ def export_pdf(request, pk):
     
     elements = []
     
-    # تسجيل خط يدعم اللغة العربية (Arial الافتراضي في ويندوز)
-    font_path = "C:/Windows/Fonts/arial.ttf"
-    has_arabic_font = os.path.exists(font_path)
-    if has_arabic_font:
-        pdfmetrics.registerFont(TTFont("ArabicFont", font_path))
-        
+    from apps.core.pdf_utils import register_arabic_fonts, reshape_arabic
+    font_name = register_arabic_fonts()
     styles = getSampleStyleSheet()
-    
-    # تعديل الأنماط الافتراضية للخط العربي
-    font_name = "ArabicFont" if has_arabic_font else "Helvetica"
     styles["Normal"].fontName = font_name
     styles["Title"].fontName = font_name
-    
-    def reshape_arabic(text):
-        """دالة تهيئة النص العربي للطباعة في PDF"""
-        if not text:
-            return ""
-        try:
-            reshaped = arabic_reshaper.reshape(str(text))
-            return get_display(reshaped)
-        except Exception:
-            return str(text)
             
     # العناوين والترويسة
     title_style = ParagraphStyle(
@@ -1069,24 +1056,11 @@ def export_history_pdf(request):
     )
     elements = []
 
-    font_path = "C:/Windows/Fonts/arial.ttf"
-    has_arabic_font = os.path.exists(font_path)
-    if has_arabic_font:
-        pdfmetrics.registerFont(TTFont("ArabicFont", font_path))
-
+    from apps.core.pdf_utils import register_arabic_fonts, reshape_arabic
+    font_name = register_arabic_fonts()
     styles = getSampleStyleSheet()
-    font_name = "ArabicFont" if has_arabic_font else "Helvetica"
     styles["Normal"].fontName = font_name
     styles["Title"].fontName = font_name
-
-    def reshape_arabic(text):
-        if not text:
-            return ""
-        try:
-            reshaped = arabic_reshaper.reshape(str(text))
-            return get_display(reshaped)
-        except Exception:
-            return str(text)
 
     title_style = ParagraphStyle(
         "ArabicTitle", parent=styles["Title"],
