@@ -14,6 +14,7 @@ from django.db import transaction
 
 from apps.core.decorators import editor_required, permission_required
 from apps.core.models import College, Department
+from apps.core.search_utils import arabic_search_filter
 from apps.rooms.models import Room
 from apps.subjects.models import Subject
 
@@ -50,9 +51,9 @@ def student_list(request):
         students = students.filter(stage=stage)
     if search:
         students = students.filter(
-            Q(name__icontains=search) |
+            arabic_search_filter('name', search) |
             Q(university_id__icontains=search) |
-            Q(family_name__icontains=search)
+            arabic_search_filter('family_name', search)
         )
 
     context = {
@@ -1014,7 +1015,7 @@ def student_lookup(request, pk):
         assignment = SeatingAssignment.objects.filter(
             session=session
         ).filter(
-            Q(student__name__icontains=search) |
+            arabic_search_filter('student__name', search) |
             Q(student__university_id__icontains=search)
         ).select_related(
             'student', 'hall_setup__room',

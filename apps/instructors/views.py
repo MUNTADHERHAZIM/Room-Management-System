@@ -15,6 +15,9 @@ from apps.schedules.models import Schedule
 DAY_ORDER = ['السبت', 'الأحد', 'الإثنين', 'الثلاثاء', 'الأربعاء', 'الخميس']
 
 
+from apps.core.search_utils import arabic_search_filter
+
+
 @login_required
 def instructor_list(request):
     """عرض قائمة الأساتذة"""
@@ -37,7 +40,7 @@ def instructor_list(request):
     if title:
         instructors = instructors.filter(academic_title=title)
     if search:
-        instructors = instructors.filter(name__icontains=search)
+        instructors = instructors.filter(arabic_search_filter('name', search))
     
     context = {
         'instructors': instructors,

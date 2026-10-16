@@ -652,7 +652,21 @@
         setInterval(updateClock, 1000);
         updateClock();
 
-        // Tom Select - Enhanced initialization for searchable dropdowns
+        // دوال توحيد النصوص العربية لتوفير مرونة فائقة في البحث (أ، إ، آ -> ا | ة -> ه | ى، ئ -> ي | ؤ -> و)
+        function normalizeArabic(text) {
+            if (!text) return '';
+            return text.toString()
+                .replace(/[\u064B-\u065F\u0670]/g, '') // إزالة التشكيل والتنوين
+                .replace(/[أإآٱ]/g, 'ا') // توحيد الألف بكافة أشكالها
+                .replace(/ة/g, 'ه')     // توحيد التاء المربوطة والهاء
+                .replace(/[ىئ]/g, 'ي')  // توحيد الياء والألف المقصورة والهمزة على نبرة
+                .replace(/ؤ/g, 'و')     // توحيد الواو مع الهمزة
+                .replace(/ـ/g, '')      // إزالة التطويل
+                .toLowerCase()
+                .trim();
+        }
+
+        // Tom Select - Enhanced initialization for searchable dropdowns with Flexible Arabic Search
         function initTomSelect() {
             if (typeof TomSelect === 'undefined') return;
             document.querySelectorAll('select.tom-select, select.form-select, select[data-searchable="true"]').forEach(el => {
@@ -664,9 +678,41 @@
                     new TomSelect(el, {
                         create: false,
                         maxOptions: 500,
+                        searchField: ['text'],
                         sortField: isSorted ? { field: "text", direction: "asc" } : null,
                         placeholder: placeholderText,
                         noResultsText: "لا توجد نتائج مطابقة",
+                        score: function(search) {
+                            const normSearch = normalizeArabic(search);
+                            if (!normSearch) {
+                                return function() { return 1; };
+                            }
+                            const searchTokens = normSearch.split(/\s+/).filter(Boolean);
+                            
+                            return function(item) {
+                                const rawText = item.text || (item.$option ? item.$option.text : '') || '';
+                                const normText = normalizeArabic(rawText);
+                                
+                                // 1. مطابقة العبارة بالكامل
+                                const fullIndex = normText.indexOf(normSearch);
+                                if (fullIndex !== -1) {
+                                    return (fullIndex === 0 ? 100 : 80) - Math.min(fullIndex, 20);
+                                }
+                                
+                                // 2. مطابقة الكلمات المنفصلة بأي ترتيب
+                                let matchedCount = 0;
+                                let score = 50;
+                                for (const token of searchTokens) {
+                                    const tokenIndex = normText.indexOf(token);
+                                    if (tokenIndex === -1) {
+                                        return 0; // إذا لم توجد إحدى الكلمات، لا تطابق
+                                    }
+                                    matchedCount++;
+                                    if (tokenIndex === 0) score += 10;
+                                }
+                                return score + matchedCount * 5;
+                            };
+                        },
                         render: {
                             no_results: function(data, escape) {
                                 return '<div class="no-results p-3 text-center text-sm text-gray-500 font-bold">لا توجد نتائج مطابقة "' + escape(data.input) + '"</div>';

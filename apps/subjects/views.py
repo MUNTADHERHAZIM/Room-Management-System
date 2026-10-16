@@ -7,6 +7,7 @@ from django.contrib.auth.decorators import login_required
 from .models import Subject
 from .forms import SubjectForm
 from apps.core.models import College, Department
+from apps.core.search_utils import arabic_search_filter
 
 
 @login_required
@@ -27,7 +28,7 @@ def subject_list(request):
     if stage:
         subjects = subjects.filter(stage=stage)
     if search:
-        subjects = subjects.filter(name__icontains=search)
+        subjects = subjects.filter(arabic_search_filter('name', search))
     
     context = {
         'subjects': subjects,

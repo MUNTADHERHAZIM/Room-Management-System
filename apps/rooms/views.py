@@ -12,6 +12,9 @@ from apps.core.views import get_room_status
 from django.utils import timezone
 
 
+from apps.core.search_utils import arabic_search_filter
+
+
 @login_required
 def room_list(request):
     """عرض قائمة القاعات"""
@@ -30,7 +33,7 @@ def room_list(request):
     if room_type:
         rooms = rooms.filter(room_type=room_type)
     if search:
-        rooms = rooms.filter(name__icontains=search)
+        rooms = rooms.filter(arabic_search_filter('name', search))
     
     context = {
         'rooms': rooms,
