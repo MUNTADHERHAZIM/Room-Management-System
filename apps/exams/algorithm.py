@@ -297,10 +297,17 @@ def column_department_distribute(session, hall_setups, exam_subjects_data):
     كل عمود يحتوي على قسمين متناوبين من أعلى لأسفل، بدون مقاعد فارغة.
     يسهّل على المراقب توزيع الأسئلة عمودياً.
     """
+    unique_depts = {s['department_id'] for es in exam_subjects_data for s in es['students'] if s.get('department_id')}
+    use_by_subject = len(unique_depts) <= 1 and len(exam_subjects_data) > 1
+
     dept_groups = defaultdict(list)
     for es_data in exam_subjects_data:
         for student in es_data['students']:
-            dept_groups[student['department_id']].append(student)
+            if use_by_subject:
+                key = student['exam_subject_id']
+            else:
+                key = student.get('department_id') or student['exam_subject_id']
+            dept_groups[key].append(student)
 
     if not dept_groups:
         return {
@@ -378,6 +385,110 @@ def column_department_distribute(session, hall_setups, exam_subjects_data):
         'unassigned': unassigned,
         'stats': {'total_students': total, 'assigned': len(assignments),
                   'unassigned': len(unassigned), 'halls_used': halls_used},
+    }
+
+
+def column_single_department_distribute(session, hall_setups, exam_subjects_data):
+    """
+    توزيع عمودي خالص (قسم كامل في كل عمود).
+    كل عمود يخصص بالكامل لقسم/مادة واحدة من الأعلى للأسفل بدون فراغات.
+    تتناوب الأقسام عموداً بعمود (مثلاً: عمود 1 أحمر، عمود 2 أزرق، عمود 3 أخضر/أحمر، وهكذا).
+    في حال انتهاء طلاب قسم، يُستكمل العمود بالقسم التالي دون ترك أي مقاعد فارغة.
+    """
+    unique_depts = {s['department_id'] for es in exam_subjects_data for s in es['students'] if s.get('department_id')}
+    use_by_subject = len(unique_depts) <= 1 and len(exam_subjects_data) > 1
+
+    dept_groups = defaultdict(list)
+    for es_data in exam_subjects_data:
+        for student in es_data['students']:
+            if use_by_subject:
+                key = student['exam_subject_id']
+            else:
+                key = student.get('department_id') or student['exam_subject_id']
+            dept_groups[key].append(student)
+
+    if not dept_groups:
+        return {
+            'success': False,
+            'assignments': [],
+            'unassigned': [],
+            'stats': {'total_students': 0, 'assigned': 0, 'unassigned': 0, 'halls_used': 0},
+            'error': 'لا يوجد طلاب للتوزيع',
+        }
+
+    # خلط الطلاب عشوائياً داخل كل قسم
+    for group in dept_groups.values():
+        random.shuffle(group)
+
+    assignments = []
+    halls_used = 0
+    dept_queues = {d: list(s) for d, s in dept_groups.items()}
+    # ترتيب الأقسام من الأكثر طلاباً إلى الأقل لضمان التوزيع المتوازن
+    dept_ids = sorted(dept_queues.keys(), key=lambda d: len(dept_queues[d]), reverse=True)
+
+    for hall in hall_setups:
+        if not any(dept_queues.values()):
+            break
+        halls_used += 1
+        rows, cols = hall.rows, hall.columns
+
+        # ملء المقاعد — عمود بعمود (كل عمود يخصص لقسم واحد بالكامل)
+        for c in range(cols):
+            if not any(dept_queues.values()):
+                break
+
+            # تحديد القسم المخصص لهذا العمود
+            ideal_dept = dept_ids[c % len(dept_ids)]
+            if dept_queues.get(ideal_dept):
+                col_dept = ideal_dept
+            else:
+                # إذا نفد طلاب هذا القسم، نأخذ من القسم المتبقي الأكثر طلاباً
+                active_depts = sorted(
+                    [d for d in dept_ids if dept_queues.get(d)],
+                    key=lambda d: len(dept_queues[d]),
+                    reverse=True
+                )
+                col_dept = active_depts[0] if active_depts else None
+
+            if not col_dept:
+                break
+
+            # ملء كل صفوف هذا العمود (من 0 إلى rows-1)
+            for r in range(rows):
+                student = None
+
+                # أخذ طالب من القسم المخصص للعمود
+                if dept_queues.get(col_dept):
+                    student = dept_queues[col_dept].pop(0)
+                else:
+                    # إذا نفد طلاب القسم أثناء ملء العمود، نأخذ من أي قسم آخر متبقٍ لعدم ترك المقعد شاغراً
+                    for other_d in sorted(dept_ids, key=lambda d: len(dept_queues.get(d, [])), reverse=True):
+                        if dept_queues.get(other_d):
+                            student = dept_queues[other_d].pop(0)
+                            break
+
+                if student:
+                    assignments.append({
+                        'hall_setup_id': hall.id,
+                        'student_id': student['student_id'],
+                        'exam_subject_id': student['exam_subject_id'],
+                        'row': r,
+                        'column': c,
+                        'seat_label': generate_seat_label(r, c),
+                    })
+
+    unassigned = [s['student_id'] for q in dept_queues.values() for s in q]
+    total = sum(len(v) for v in dept_groups.values())
+    return {
+        'success': len(unassigned) == 0,
+        'assignments': assignments,
+        'unassigned': unassigned,
+        'stats': {
+            'total_students': total,
+            'assigned': len(assignments),
+            'unassigned': len(unassigned),
+            'halls_used': halls_used
+        },
     }
 
 

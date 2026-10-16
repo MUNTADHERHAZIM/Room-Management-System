@@ -153,6 +153,7 @@ class HallSetup(models.Model):
         ('مقعد_فارغ', 'ترك مقعد فارغ بين كل طالبين'),
         ('بدون_تباعد', 'بدون تباعد (مع تنافر المواد فقط)'),
         ('عمودي_أقسام', 'توزيع عمودي بالأقسام (قسمان في كل عمود بدون فراغات)'),
+        ('عمودي_كامل', 'توزيع عمودي خالص (قسم كامل في كل عمود بدون فراغات)'),
     ]
 
     session = models.ForeignKey(
@@ -207,7 +208,7 @@ class HallSetup(models.Model):
             return (total + 1) // 2
         elif self.spacing_mode == 'مقعد_فارغ':
             return (self.columns + 1) // 2 * self.rows
-        elif self.spacing_mode == 'عمودي_أقسام':
+        elif self.spacing_mode in ('عمودي_أقسام', 'عمودي_كامل'):
             return total  # يملأ القاعة كاملاً بدون فراغات
         return total  # بدون تباعد
 

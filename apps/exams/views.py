@@ -21,7 +21,7 @@ from .forms import (
     HallSetupForm, AddSubjectToSessionForm, AddStudentsToSubjectForm,
     SUBJECT_COLORS
 )
-from .algorithm import smart_distribute, column_department_distribute
+from .algorithm import smart_distribute, column_department_distribute, column_single_department_distribute
 
 
 # ──────────────────────────────────────────────
@@ -539,8 +539,11 @@ def generate_seating(request, pk):
         with transaction.atomic():
             SeatingAssignment.objects.filter(session=session).delete()
 
+            use_single_column_dist = any(hs.spacing_mode == 'عمودي_كامل' for hs in hall_setups)
             use_column_dist = any(hs.spacing_mode == 'عمودي_أقسام' for hs in hall_setups)
-            if use_column_dist:
+            if use_single_column_dist:
+                result = column_single_department_distribute(session, hall_setups, exam_subjects_data)
+            elif use_column_dist:
                 result = column_department_distribute(session, hall_setups, exam_subjects_data)
             else:
                 result = smart_distribute(session, hall_setups, exam_subjects_data, constraints)
