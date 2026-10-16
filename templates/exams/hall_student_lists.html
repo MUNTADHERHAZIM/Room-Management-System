@@ -199,7 +199,7 @@
                     🏢 القسم العلمي
                 </button>
                 <button onclick="toggleColumn('sub-col')" class="toggle-btn active px-5 py-2.5 rounded-xl text-xs font-black" data-col="sub-col">
-                    📖 اسم المادة
+                    🎓 المرحلة الدراسية
                 </button>
                 <button id="sigToggleBtn" onclick="toggleSignature()" class="toggle-btn px-5 py-2.5 rounded-xl text-xs font-black">
                     ✏️ خانة التوقيع
@@ -239,7 +239,7 @@
                     <th>الاسم الثلاثي واللقب</th>
                     <th class="id-col" style="width: 160px;">الرقم الامتحاني</th>
                     <th class="dept-col">القسم</th>
-                    <th class="sub-col">المادة</th>
+                    <th class="sub-col">المرحلة الدراسية</th>
                     <th class="sig-col-header" style="width: 200px;">توقيع الطالب</th>
                 </tr>
             </thead>
@@ -257,7 +257,7 @@
                         <span class="dept-chip">{{ student.department }}</span>
                     </td>
                     <td class="sub-col">
-                        <span class="text-[0.7rem] font-black px-3 py-1 rounded-lg border-2" style="color: {{ student.color }}; border-color: {{ student.color }}20; background: {{ student.color }}08;">{{ student.subject_name }}</span>
+                        <span class="text-[0.7rem] font-black px-3 py-1 rounded-lg border-2" style="color: {{ student.color }}; border-color: {{ student.color }}20; background: {{ student.color }}08;">{{ student.stage|default:student.subject_name }}</span>
                     </td>
                     <td class="sig-col">
                         <div class="w-full border-b border-slate-200 h-8"></div>

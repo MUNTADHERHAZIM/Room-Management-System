@@ -706,10 +706,13 @@ def seating_map(request, pk):
         grid = [[None] * hall.columns for _ in range(hall.rows)]
         for a in hall_assignments:
             if a.row < hall.rows and a.column < hall.columns:
+                stage_val = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else '')
+                stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else ''
                 grid[a.row][a.column] = {
                     'assignment_id': a.id,
                     'student_name': a.student.name,
                     'university_id': a.student.university_id,
+                    'stage': stage_display,
                     'subject_name': a.exam_subject.subject.name if a.exam_subject else '',
                     'subject_id': str(a.exam_subject.subject.id) if a.exam_subject else '',
                     'department': a.student.department.name,
@@ -726,12 +729,18 @@ def seating_map(request, pk):
             'cols_range': range(hall.columns),
         })
 
-    # بيانات المواد للترميز اللوني
+    # بيانات المواد والمراحل للترميز اللوني
     exam_subjects = session.exam_subjects.select_related('subject').all()
-    legend = [
-        {'id': str(es.subject.id), 'name': es.subject.name, 'color': es.color_code}
-        for es in exam_subjects
-    ]
+    legend = []
+    for es in exam_subjects:
+        stage_val = es.subject.stage if es.subject else ''
+        stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else ''
+        legend.append({
+            'id': str(es.subject.id),
+            'name': es.subject.name,
+            'stage_only': stage_display or es.subject.name,
+            'color': es.color_code
+        })
 
     # جلب الأقسام الموجودة في التوزيعة لغرض الفلترة
     departments_dict = {}
@@ -775,11 +784,14 @@ def hall_student_lists(request, pk):
 
         students_list = []
         for a in hall_assignments:
+            stage_val = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else '')
+            stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else ''
             students_list.append({
                 'seat_label': a.seat_label,
                 'student_name': a.student.name,
                 'university_id': a.student.university_id,
                 'department': a.student.department.name,
+                'stage': stage_display,
                 'subject_name': a.exam_subject.subject.name if a.exam_subject else '',
                 'color': a.exam_subject.color_code if a.exam_subject else '#6B7280',
                 'row': a.row,
@@ -792,12 +804,18 @@ def hall_student_lists(request, pk):
             'assigned_count': len(hall_assignments),
         })
 
-    # بيانات المواد
+    # بيانات المواد والمراحل
     exam_subjects = session.exam_subjects.select_related('subject').all()
-    legend = [
-        {'id': str(es.subject.id), 'name': es.subject.name, 'color': es.color_code}
-        for es in exam_subjects
-    ]
+    legend = []
+    for es in exam_subjects:
+        stage_val = es.subject.stage if es.subject else ''
+        stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else ''
+        legend.append({
+            'id': str(es.subject.id),
+            'name': es.subject.name,
+            'stage_only': stage_display or es.subject.name,
+            'color': es.color_code
+        })
 
     context = {
         'session': session,
@@ -1183,8 +1201,11 @@ def seating_pdf(request, pk):
             if a.exam_subject and a.exam_subject.subject:
                 sub_id = a.exam_subject.subject.id
                 if sub_id not in hall_subjects:
+                    stage_val = a.student.stage or a.exam_subject.subject.stage or ''
+                    stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else ''
+                    display_label = stage_display if stage_display else a.exam_subject.subject.name
                     hall_subjects[sub_id] = {
-                        'name': a.exam_subject.subject.name,
+                        'name': display_label,
                         'color': a.exam_subject.color_code,
                         'count': 0
                     }
