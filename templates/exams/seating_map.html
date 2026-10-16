@@ -169,68 +169,101 @@
     @media print {
         @page {
             size: A4 landscape;
-            margin: 0.6cm;
+            margin: 0.4cm 0.5cm;
         }
-        body {
+
+        /* Reset body and containers */
+        html, body {
             background: #ffffff !important;
             color: #000000 !important;
             font-family: 'Segoe UI', Tahoma, Arial, sans-serif !important;
             margin: 0 !important;
             padding: 0 !important;
+            width: 100% !important;
+            height: auto !important;
+            min-height: 0 !important;
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
         }
-        .no-print, nav, aside, footer, #editModeBar, .seat-tooltip, .toast-notif, #toastNotif {
+
+        /* Hide all UI elements, navigation, bars, and alerts */
+        .no-print, nav, aside, footer, header, #editModeBar, 
+        .seat-tooltip, .toast-notif, #toastNotif,
+        .messages, [role="alert"], .alert, .space-y-2 {
             display: none !important;
         }
-        main, .max-w-full {
+
+        main, .max-w-full, .p-6 {
             padding: 0 !important;
             margin: 0 !important;
+            padding-top: 0 !important;
+            min-height: 0 !important;
             max-width: 100% !important;
             width: 100% !important;
         }
         
+        /* Each hall on its own dedicated single page */
         .hall-map-card {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
             page-break-after: always !important;
             break-after: page !important;
+            margin: 0 auto !important;
+            padding: 4px 8px !important;
             border: 1.5px solid #0f172a !important;
             border-radius: 8px !important;
-            padding: 10px 14px !important;
             box-shadow: none !important;
-            margin: 0 auto !important;
             background: #ffffff !important;
             width: 100% !important;
             box-sizing: border-box !important;
+            max-height: 198mm !important;
+            overflow: hidden !important;
+        }
+        .hall-map-card:last-child {
+            page-break-after: auto !important;
+            break-after: auto !important;
         }
 
+        /* Ultra-compact Hall Header */
         .hall-map-card > div:first-child {
-            margin-bottom: 6px !important;
-            padding-bottom: 6px !important;
-            border-bottom: 1.5px solid #cbd5e1 !important;
+            margin-bottom: 3px !important;
+            padding-bottom: 3px !important;
+            border-bottom: 1.5px solid #94a3b8 !important;
             display: flex !important;
             flex-direction: row !important;
             justify-content: space-between !important;
             align-items: center !important;
         }
 
+        .hall-map-card .w-16.h-16 {
+            display: none !important; /* Hide large decorative icon in print */
+        }
+
         .hall-map-card h2 {
-            font-size: 16pt !important;
-            line-height: 1.2 !important;
+            font-size: 13pt !important;
+            font-weight: 900 !important;
+            line-height: 1.1 !important;
+            color: #0f172a !important;
+            margin: 0 !important;
+        }
+
+        .map-hall-header div {
+            margin-top: 1px !important;
+            font-size: 7.5pt !important;
+            color: #475569 !important;
         }
 
         .board-indicator {
             background: #0f172a !important;
             color: #ffffff !important;
-            padding: 3px 16px !important;
-            border-radius: 6px !important;
-            font-size: 7.5pt !important;
+            padding: 2px 14px !important;
+            border-radius: 4px !important;
+            font-size: 7pt !important;
             font-weight: 900 !important;
-            letter-spacing: 0.15em !important;
+            letter-spacing: 0.12em !important;
             margin: 0 !important;
             width: auto !important;
-            min-width: 180px !important;
+            min-width: 140px !important;
             box-shadow: none !important;
             border: none !important;
             text-align: center !important;
@@ -238,7 +271,7 @@
             print-color-adjust: exact !important;
         }
 
-        /* إلغاء container التمرير الذي يسبب كسر الصفحة في الطباعة */
+        /* Table & Grid Layout */
         .overflow-x-auto {
             overflow: visible !important;
             padding: 0 !important;
@@ -246,11 +279,10 @@
             width: 100% !important;
         }
 
-        /* الجدول يتمركز في الصفحة وتكون أبعاده ثابتة ومتوازنة */
         table {
             margin: 0 auto !important;
             border-collapse: separate !important;
-            border-spacing: 8px !important;
+            border-spacing: 4px 2.5px !important;
             direction: ltr !important;
             page-break-inside: avoid !important;
             break-inside: avoid !important;
@@ -261,40 +293,43 @@
         tr, td {
             page-break-inside: avoid !important;
             break-inside: avoid !important;
+            padding: 0 !important;
         }
 
-        /* عمود تسمية الصفوف A, B, C... */
+        /* Row letter column (A, B, C...) */
         tr td:first-child {
-            width: 28px !important;
-            min-width: 28px !important;
-            max-width: 32px !important;
+            width: 20px !important;
+            min-width: 20px !important;
+            max-width: 24px !important;
             text-align: center !important;
             font-weight: 900 !important;
-            font-size: 9pt !important;
+            font-size: 8pt !important;
             color: #0f172a !important;
         }
 
+        /* Column number header (1, 2, 3...) */
         .grid-header {
-            font-size: 8.5pt !important;
+            font-size: 7.5pt !important;
             font-weight: 900 !important;
             color: #0f172a !important;
             text-align: center !important;
-            padding: 2px !important;
+            padding: 1px !important;
+            line-height: 1 !important;
         }
 
-        /* مقاس بطاقة المقعد في الطباعة */
+        /* Seat card dimensions in print: scaled to fit any hall on a single sheet */
         .seat-cell {
-            width: 108px !important;
-            min-width: 85px !important;
-            max-width: 125px !important;
-            height: 72px !important;
-            min-height: 72px !important;
-            max-height: 78px !important;
+            width: 96px !important;
+            min-width: 72px !important;
+            max-width: 112px !important;
+            height: 49px !important;
+            min-height: 48px !important;
+            max-height: 51px !important;
             box-sizing: border-box !important;
-            border: 1.5px solid #1e293b !important;
-            border-radius: 8px !important;
+            border: 1px solid #1e293b !important;
+            border-radius: 6px !important;
             box-shadow: none !important;
-            padding: 4px 3px !important;
+            padding: 1.5px 2px !important;
             display: flex !important;
             flex-direction: column !important;
             justify-content: space-between !important;
@@ -310,23 +345,24 @@
             display: none !important;
         }
         .map-student-name {
-            font-size: 8pt !important;
-            line-height: 1.2 !important;
-            font-weight: 800 !important;
+            font-size: 6.8pt !important;
+            line-height: 1.1 !important;
+            font-weight: 900 !important;
             color: #ffffff !important;
-            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9) !important;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9) !important;
             display: -webkit-box !important;
             -webkit-line-clamp: 2 !important;
             -webkit-box-orient: vertical !important;
             overflow: hidden !important;
             word-break: break-word !important;
             text-align: center !important;
+            margin-bottom: 0.5px !important;
         }
         .map-subject-name {
-            font-size: 6.5pt !important;
+            font-size: 5.5pt !important;
             font-weight: 700 !important;
             color: rgba(255, 255, 255, 0.95) !important;
-            margin-top: 1px !important;
+            margin-top: 0.5px !important;
             text-align: center !important;
             white-space: nowrap !important;
             overflow: hidden !important;
@@ -334,38 +370,39 @@
             max-width: 100% !important;
         }
         .map-student-id {
-            font-size: 6.2pt !important;
+            font-size: 5.5pt !important;
             color: #f8fafc !important;
-            line-height: 1.1 !important;
-            background: rgba(0, 0, 0, 0.35) !important;
-            padding: 1px 4px !important;
-            border-radius: 3px !important;
+            line-height: 1 !important;
+            background: rgba(0, 0, 0, 0.45) !important;
+            padding: 0.5px 3px !important;
+            border-radius: 2px !important;
             display: inline-block !important;
         }
         .map-seat-label {
-            font-size: 7pt !important;
+            font-size: 6pt !important;
             font-weight: 900 !important;
-            padding: 1px 5px !important;
-            background: rgba(0, 0, 0, 0.45) !important;
+            padding: 0.5px 4px !important;
+            background: rgba(0, 0, 0, 0.55) !important;
             color: #ffffff !important;
-            border-radius: 4px !important;
-            border: 1px solid rgba(255, 255, 255, 0.4) !important;
+            border-radius: 3px !important;
+            border: 0.5px solid rgba(255, 255, 255, 0.4) !important;
             display: inline-block !important;
+            line-height: 1 !important;
         }
         .empty-seat {
-            border: 1.5px dashed #94a3b8 !important;
+            border: 1px dashed #94a3b8 !important;
             background: #f8fafc !important;
-            width: 108px !important;
-            height: 72px !important;
-            min-height: 72px !important;
-            max-height: 78px !important;
+            width: 96px !important;
+            height: 49px !important;
+            min-height: 48px !important;
+            max-height: 51px !important;
             display: flex !important;
             flex-direction: column !important;
             align-items: center !important;
             justify-content: center !important;
         }
         .empty-seat span {
-            font-size: 7.5pt !important;
+            font-size: 6.8pt !important;
             color: #475569 !important;
             font-weight: 800 !important;
         }

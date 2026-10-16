@@ -553,7 +553,7 @@
         <div class="p-6">
             <!-- Messages -->
             {% if messages %}
-            <div class="mb-6 space-y-2">
+            <div class="mb-6 space-y-2 no-print">
                 {% for message in messages %}
                 <div class="flex items-center gap-3 p-4 rounded-lg fade-in {% if message.tags == 'success' %}bg-green-100 text-green-800{% elif message.tags == 'error' %}bg-red-100 text-red-800{% elif message.tags == 'warning' %}bg-yellow-100 text-yellow-800{% else %}bg-blue-100 text-blue-800{% endif %}"
                     x-data="{ show: true }" x-show="show" x-transition>
