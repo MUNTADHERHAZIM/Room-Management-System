@@ -138,6 +138,12 @@ class ExamSessionSubject(models.Model):
     def __str__(self):
         return f"{self.subject.name} — {self.session.name}"
 
+    @property
+    def student_count(self):
+        if hasattr(self, 'students_count'):
+            return self.students_count
+        return self.students.count()
+
 
 class HallSetup(models.Model):
     """إعداد قاعة لجلسة امتحانية — مخطط الجلوس"""

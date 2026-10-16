@@ -35,20 +35,13 @@
         box-shadow: 0 12px 20px -3px rgba(0, 0, 0, 0.15), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
     }
     .occupied-seat {
-        border: 1.5px solid rgba(255, 255, 255, 0.35);
-        color: #ffffff;
+        border: 1.5px solid var(--seat-border, #cbd5e1);
+        border-top: 3px solid var(--seat-color, #3b82f6);
+        background-color: var(--seat-bg, #f8fafc);
+        color: #0f172a;
     }
     .occupied-seat::before {
-        content: '';
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        height: 40%;
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0.2) 0%, rgba(255, 255, 255, 0) 100%);
-        pointer-events: none;
-        border-top-left-radius: 10px;
-        border-top-right-radius: 10px;
+        display: none;
     }
     .empty-seat {
         background: #ffffff;
@@ -61,11 +54,11 @@
         background: #f8fafc;
     }
     .map-student-name {
-        color: #ffffff;
+        color: #0f172a;
         font-weight: 800;
-        font-size: 0.72rem;
+        font-size: 0.74rem;
         line-height: 1.25;
-        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+        text-shadow: none;
         word-break: break-word;
         display: -webkit-box;
         -webkit-line-clamp: 3;
@@ -76,29 +69,31 @@
     .map-student-id {
         font-size: 0.65rem;
         font-weight: 700;
-        color: rgba(255, 255, 255, 0.95);
-        background: rgba(0, 0, 0, 0.25);
-        padding: 1px 4px;
+        color: #475569;
+        background: rgba(15, 23, 42, 0.05);
+        padding: 1px 5px;
         border-radius: 4px;
         margin-top: 2px;
         letter-spacing: 0.3px;
+        font-family: monospace;
+        border: 1px solid rgba(15, 23, 42, 0.08);
     }
     .map-subject-name {
-        font-size: 0.6rem;
-        font-weight: 700;
-        color: rgba(255, 255, 255, 0.9);
+        font-size: 0.62rem;
+        font-weight: 800;
+        color: var(--seat-color, #475569);
         margin-top: 2px;
     }
     .map-seat-label {
         display: inline-block;
-        background: rgba(0, 0, 0, 0.32);
+        background: var(--seat-color, #0f172a);
         color: #ffffff;
-        font-size: 9px;
-        font-weight: 800;
-        padding: 1px 6px;
+        font-size: 9.5px;
+        font-weight: 900;
+        padding: 1.5px 7px;
         border-radius: 5px;
-        border: 1px solid rgba(255, 255, 255, 0.25);
         letter-spacing: 0.5px;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
     }
     .grid-header {
         font-weight: 900;
@@ -136,6 +131,37 @@
         border-color: #0f172a !important;
         color: #ffffff !important;
         box-shadow: 0 2px 6px rgba(15, 23, 42, 0.25);
+    }
+
+    /* Visibility Controls: Screen */
+    .hide-names .map-student-name { display: none !important; }
+    .hide-ids .map-student-id { display: none !important; }
+    .hide-labels .map-seat-label { display: none !important; }
+    .hide-subjects .map-subject-name { display: none !important; }
+    .hide-hall-info .map-hall-header,
+    .hide-hall-info .board-indicator { display: none !important; }
+
+    /* Colors toggle on screen */
+    .hide-colors .occupied-seat {
+        background-color: #ffffff !important;
+        border-color: #cbd5e1 !important;
+        box-shadow: none !important;
+    }
+    .hide-colors .map-student-name {
+        color: #0f172a !important;
+        text-shadow: none !important;
+    }
+    .hide-colors .map-student-id {
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+        border: 1px solid #cbd5e1 !important;
+    }
+    .hide-colors .map-subject-name {
+        color: #475569 !important;
+    }
+    .hide-colors .map-seat-label {
+        background: #0f172a !important;
+        color: #ffffff !important;
     }
 
     /* Tooltip */
@@ -339,17 +365,20 @@
             print-color-adjust: exact !important;
         }
         .occupied-seat {
-            color: #ffffff !important;
+            background-color: var(--seat-bg, #f8fafc) !important;
+            border: 1px solid var(--seat-border, #cbd5e1) !important;
+            border-top: 3px solid var(--seat-color, #0f172a) !important;
+            color: #0f172a !important;
         }
         .occupied-seat::before {
             display: none !important;
         }
         .map-student-name {
             font-size: 6.8pt !important;
-            line-height: 1.1 !important;
+            line-height: 1.15 !important;
             font-weight: 900 !important;
-            color: #ffffff !important;
-            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.9) !important;
+            color: #0f172a !important;
+            text-shadow: none !important;
             display: -webkit-box !important;
             -webkit-line-clamp: 2 !important;
             -webkit-box-orient: vertical !important;
@@ -360,8 +389,8 @@
         }
         .map-subject-name {
             font-size: 5.5pt !important;
-            font-weight: 700 !important;
-            color: rgba(255, 255, 255, 0.95) !important;
+            font-weight: 800 !important;
+            color: var(--seat-color, #334155) !important;
             margin-top: 0.5px !important;
             text-align: center !important;
             white-space: nowrap !important;
@@ -371,9 +400,10 @@
         }
         .map-student-id {
             font-size: 5.5pt !important;
-            color: #f8fafc !important;
+            color: #334155 !important;
             line-height: 1 !important;
-            background: rgba(0, 0, 0, 0.45) !important;
+            background: rgba(15, 23, 42, 0.06) !important;
+            border: 0.5px solid rgba(15, 23, 42, 0.1) !important;
             padding: 0.5px 3px !important;
             border-radius: 2px !important;
             display: inline-block !important;
@@ -382,10 +412,9 @@
             font-size: 6pt !important;
             font-weight: 900 !important;
             padding: 0.5px 4px !important;
-            background: rgba(0, 0, 0, 0.55) !important;
+            background: var(--seat-color, #0f172a) !important;
             color: #ffffff !important;
             border-radius: 3px !important;
-            border: 0.5px solid rgba(255, 255, 255, 0.4) !important;
             display: inline-block !important;
             line-height: 1 !important;
         }
@@ -405,6 +434,36 @@
             font-size: 6.8pt !important;
             color: #475569 !important;
             font-weight: 800 !important;
+        }
+
+        /* Visibility overrides in print */
+        .hide-names .map-student-name { display: none !important; }
+        .hide-ids .map-student-id { display: none !important; }
+        .hide-labels .map-seat-label { display: none !important; }
+        .hide-subjects .map-subject-name { display: none !important; }
+        .hide-hall-info .map-hall-header,
+        .hide-hall-info .board-indicator { display: none !important; }
+        
+        .hide-colors .occupied-seat {
+            background-color: #ffffff !important;
+            border: 1px solid #000000 !important;
+            color: #000000 !important;
+        }
+        .hide-colors .map-student-name {
+            color: #000000 !important;
+            text-shadow: none !important;
+        }
+        .hide-colors .map-student-id {
+            background: #f0f0f0 !important;
+            color: #000000 !important;
+            border: 0.5pt solid #000000 !important;
+        }
+        .hide-colors .map-subject-name {
+            color: #000000 !important;
+        }
+        .hide-colors .map-seat-label {
+            background: #000000 !important;
+            color: #ffffff !important;
         }
     }
 
@@ -435,73 +494,147 @@
 {% endblock %}
 
 {% block content %}
-<div class="max-w-full mx-auto" x-data="{ activeDept: 'all', activeSubject: 'all' }">
+<div class="max-w-full mx-auto" 
+     x-data="{ 
+         activeDept: 'all', 
+         activeSubject: 'all',
+         showNames: true, 
+         showLabels: true, 
+         showColors: true, 
+         showHallInfo: true, 
+         showIds: false, 
+         showSubjects: false 
+     }"
+     :class="{
+         'hide-names': !showNames,
+         'hide-ids': !showIds,
+         'hide-labels': !showLabels,
+         'hide-colors': !showColors,
+         'hide-hall-info': !showHallInfo,
+         'hide-subjects': !showSubjects
+     }">
     <!-- Header -->
     <div class="flex flex-wrap items-center justify-between gap-4 mb-8 no-print">
         <div>
-            <h1 class="text-3xl font-bold text-gray-900">
-                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-purple-500 to-indigo-600 text-white shadow-lg shadow-purple-500/30 ml-3">
+            <h1 class="text-3xl font-black text-slate-900 tracking-tight">
+                <div class="inline-flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 text-white shadow-lg shadow-indigo-500/25 ml-3">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
                     </svg>
                 </div>
                 خريطة الجلوس
             </h1>
-            <p class="text-gray-500 mt-2 font-medium flex items-center gap-2">
-                <span class="bg-gray-100 text-gray-700 px-3 py-1 rounded-lg text-sm">{{ session.name }}</span>
-                <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-lg text-sm">{{ session.date }}</span>
-                <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg text-sm">{{ total_assigned }} طالب موزع</span>
+            <p class="text-slate-500 mt-2 font-bold flex items-center gap-2 text-xs">
+                <span class="bg-slate-100 text-slate-700 px-3 py-1 rounded-lg">{{ session.name }}</span>
+                <span class="bg-indigo-50 text-indigo-700 px-3 py-1 rounded-lg">{{ session.date }}</span>
+                <span class="bg-emerald-50 text-emerald-700 px-3 py-1 rounded-lg">{{ total_assigned }} طالب موزع</span>
             </p>
         </div>
-            <div class="flex gap-3 flex-wrap">
-                <a href="{% url 'exams:hall_student_lists' session.pk %}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                    <svg class="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+        
+        <!-- Action Buttons Groups -->
+        <div class="flex items-center gap-3 flex-wrap">
+            <!-- Navigation Reports Group -->
+            <div class="inline-flex items-center bg-slate-100/90 p-1 rounded-2xl gap-1 border border-slate-200">
+                <a href="{% url 'exams:hall_student_lists' session.pk %}" class="bg-white text-slate-700 hover:text-indigo-600 hover:bg-slate-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     قوائم الجلوس
                 </a>
-                <a href="{% url 'exams:seat_cards' session.pk %}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                    <svg class="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
+                <a href="{% url 'exams:seat_cards' session.pk %}" class="bg-white text-slate-700 hover:text-purple-600 hover:bg-slate-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/></svg>
                     بطاقات المقاعد
                 </a>
-                <a href="{% url 'exams:student_lookup' session.pk %}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                <a href="{% url 'exams:student_lookup' session.pk %}" class="bg-white text-slate-700 hover:text-blue-600 hover:bg-slate-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
                     بحث عن طالب
                 </a>
-                <a href="{% url 'exams:seating_pdf' session.pk %}" class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 shadow-sm px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                    <svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            </div>
+
+            <!-- Exports Group -->
+            <div class="inline-flex items-center bg-slate-100/90 p-1 rounded-2xl gap-1 border border-slate-200">
+                <a href="{% url 'exams:session_excel_export' session.pk %}" class="bg-white text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    تصدير Excel
+                </a>
+                <a href="{% url 'exams:seating_pdf' session.pk %}" class="bg-white text-slate-700 hover:text-red-600 hover:bg-red-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
+                    <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     تصدير PDF
                 </a>
-                <!-- ✨ زر وضع التعديل اليدوي -->
+            </div>
+
+            <!-- Core Actions -->
+            <div class="inline-flex items-center gap-2">
                 <button id="toggleEditBtn" onclick="toggleEditMode()"
                         style="background-color: #d97706; color: #ffffff;"
-                        class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-amber-500/30">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                        class="bg-amber-500 hover:bg-amber-600 text-white px-5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 shadow-lg shadow-amber-500/20 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
                     تعديل المقاعد
                 </button>
-                <button onclick="window.print()" class="bg-gray-900 shadow-md hover:bg-gray-800 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                <button onclick="window.print()" style="background-color: #0f172a; color: #ffffff;" class="bg-slate-900 hover:bg-slate-800 text-white px-5 py-2.5 rounded-2xl text-xs font-black transition-all flex items-center gap-2 shadow-lg shadow-slate-900/20 active:scale-95">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
                     طباعة الخريطة
                 </button>
             </div>
+        </div>
     </div>
 
-    <!-- Filters Panel -->
-    <div class="bg-white/70 backdrop-blur-xl rounded-3xl shadow-sm border border-gray-200/60 p-6 mb-8 no-print">
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            <!-- Subject Filter -->
+    <!-- Filters & Visibility Panel -->
+    <div class="bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 mb-8 no-print space-y-6">
+        
+        <!-- Visibility Controls (Upper Strip) -->
+        <div class="bg-slate-50/80 p-4 rounded-2xl border border-slate-200/60 flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+            <div class="flex items-center gap-2.5 text-slate-800 font-black text-xs">
+                <div class="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 flex items-center justify-center">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                </div>
+                <span>إخفاء وإظهار البيانات (للحجب والطباعة):</span>
+            </div>
+            <div class="flex flex-wrap gap-2 items-center">
+                <button type="button" @click="showNames = !showNames"
+                        :class="showNames ? 'filter-pill active' : 'filter-pill'">
+                    👤 الأسماء
+                </button>
+                <button type="button" @click="showIds = !showIds"
+                        :class="showIds ? 'filter-pill active' : 'filter-pill'">
+                    🆔 الأرقام الامتحانية
+                </button>
+                <button type="button" @click="showLabels = !showLabels"
+                        :class="showLabels ? 'filter-pill active' : 'filter-pill'">
+                    🪑 أرقام المقاعد
+                </button>
+                <button type="button" @click="showColors = !showColors"
+                        :class="showColors ? 'filter-pill active' : 'filter-pill'">
+                    🎨 الألوان
+                </button>
+                <button type="button" @click="showHallInfo = !showHallInfo"
+                        :class="showHallInfo ? 'filter-pill active' : 'filter-pill'">
+                    🏛️ معلومات القاعة
+                </button>
+                <button type="button" @click="showSubjects = !showSubjects"
+                        :class="showSubjects ? 'filter-pill active' : 'filter-pill'">
+                    🎓 المرحلة الدراسية
+                </button>
+            </div>
+        </div>
+
+        <!-- Highlighting Controls (Balanced 2 Columns) -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-1">
+            <!-- Stage/Subject Filter -->
             {% if legend %}
-            <div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
-                    التظليل حسب المرحلة الدراسية
-                </h3>
+            <div class="space-y-3 bg-slate-50/40 p-4 rounded-2xl border border-slate-100">
+                <div class="flex items-center gap-2 text-slate-800 font-black text-xs">
+                    <div class="w-6 h-6 rounded-lg bg-purple-500/10 text-purple-600 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                    </div>
+                    <span>التظليل حسب المرحلة الدراسية:</span>
+                </div>
                 <div class="flex flex-wrap gap-2">
-                    <button @click="activeSubject = 'all'" :class="activeSubject === 'all' ? 'bg-gray-800 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'" class="px-4 py-2 rounded-xl text-sm font-bold transition-all">الكل</button>
+                    <button @click="activeSubject = 'all'" :class="activeSubject === 'all' ? 'bg-slate-900 text-white shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all">الكل</button>
                     {% for item in legend %}
                     <button @click="activeSubject = '{{ item.id }}'" 
-                            :class="activeSubject === '{{ item.id }}' ? 'text-white shadow-md scale-105' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'" 
-                            :style="activeSubject === '{{ item.id }}' ? 'background-color: {{ item.color }}' : ''" 
-                            class="px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-2">
-                        <div x-show="activeSubject !== '{{ item.id }}'" class="w-3 h-3 rounded-full" style="background-color: {{ item.color }}"></div>
+                            :class="activeSubject === '{{ item.id }}' ? 'text-white shadow-md scale-105' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'" 
+                            :style="activeSubject === '{{ item.id }}' ? 'background-color: {{ item.color }}; border-color: {{ item.color }};' : ''" 
+                            class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 shadow-sm">
+                        <div x-show="activeSubject !== '{{ item.id }}'" class="w-2.5 h-2.5 rounded-full" style="background-color: {{ item.color }}"></div>
                         {{ item.stage_only|default:item.name }}
                     </button>
                     {% endfor %}
@@ -511,55 +644,23 @@
 
             <!-- Department Filter -->
             {% if departments_filter %}
-            <div>
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
-                    التظليل حسب القسم
-                </h3>
+            <div class="space-y-3 bg-slate-50/40 p-4 rounded-2xl border border-slate-100">
+                <div class="flex items-center gap-2 text-slate-800 font-black text-xs">
+                    <div class="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-600 flex items-center justify-center">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5"/></svg>
+                    </div>
+                    <span>التظليل حسب القسم العلمي:</span>
+                </div>
                 <div class="flex flex-wrap gap-2">
-                    <button @click="activeDept = 'all'" :class="activeDept === 'all' ? 'bg-blue-600 text-white shadow-md' : 'bg-blue-50 text-blue-600 hover:bg-blue-100 border border-blue-100'" class="px-4 py-2 rounded-xl text-sm font-bold transition-all">الكل</button>
+                    <button @click="activeDept = 'all'" :class="activeDept === 'all' ? 'bg-indigo-600 text-white shadow-sm' : 'bg-white text-slate-700 hover:bg-slate-100 border border-slate-200'" class="px-3.5 py-1.5 rounded-xl text-xs font-black transition-all">الكل</button>
                     {% for dept in departments_filter %}
-                    <button @click="activeDept = '{{ dept.id }}'" :class="activeDept === '{{ dept.id }}' ? 'bg-blue-600 text-white shadow-md scale-105' : 'bg-white border border-gray-200 text-gray-600 hover:bg-gray-50'" class="px-4 py-2 rounded-xl text-sm font-semibold transition-all">
+                    <button @click="activeDept = '{{ dept.id }}'" :class="activeDept === '{{ dept.id }}' ? 'bg-indigo-600 text-white shadow-md scale-105 border-indigo-600' : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50'" class="px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all shadow-sm">
                         {{ dept.name }}
                     </button>
                     {% endfor %}
                 </div>
             </div>
             {% endif %}
-
-            <!-- Visibility Controls -->
-            <div x-data="{ showNames: true, showLabels: true, showColors: true, showHallInfo: true, showIds: false, showSubjects: false }">
-                <h3 class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-4 flex items-center gap-2">
-                    <svg class="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-                    إخفاء/إظهار البيانات (للحجب والطباعة)
-                </h3>
-                <div class="flex flex-wrap gap-2">
-                    <button @click="showNames = !showNames; document.querySelectorAll('.map-student-name').forEach(el => el.classList.toggle('hidden', !showNames)); updatePdfLink()"
-                            :class="showNames ? 'filter-pill active' : 'filter-pill'">
-                        👤 الأسماء
-                    </button>
-                    <button @click="showIds = !showIds; document.querySelectorAll('.map-student-id').forEach(el => el.classList.toggle('hidden', !showIds)); updatePdfLink()"
-                            :class="showIds ? 'filter-pill active' : 'filter-pill'">
-                        🆔 الأرقام الامتحانية
-                    </button>
-                    <button @click="showLabels = !showLabels; document.querySelectorAll('.map-seat-label').forEach(el => el.classList.toggle('hidden', !showLabels))"
-                            :class="showLabels ? 'filter-pill active' : 'filter-pill'">
-                        🪑 أرقام المقاعد
-                    </button>
-                    <button @click="showColors = !showColors; document.querySelectorAll('.occupied-seat').forEach(el => { if(!showColors) { el.dataset.oldBg = el.style.backgroundColor; el.style.backgroundColor = '#94a3b8'; } else { el.style.backgroundColor = el.dataset.oldBg || ''; } })"
-                            :class="showColors ? 'filter-pill active' : 'filter-pill'">
-                        🎨 الألوان
-                    </button>
-                    <button @click="showHallInfo = !showHallInfo; document.querySelectorAll('.map-hall-header').forEach(el => el.classList.toggle('hidden', !showHallInfo))"
-                            :class="showHallInfo ? 'filter-pill active' : 'filter-pill'">
-                        🏛️ معلومات القاعة
-                    </button>
-                    <button @click="showSubjects = !showSubjects; document.querySelectorAll('.map-subject-name').forEach(el => el.classList.toggle('hidden', !showSubjects))"
-                            :class="showSubjects ? 'filter-pill active' : 'filter-pill'">
-                        🎓 المرحلة الدراسية
-                    </button>
-                </div>
-            </div>
         </div>
     </div>
 
@@ -602,8 +703,8 @@
                     {% for cell in row %}
                     <td>
                         <!-- المقعد -->
-                        <div class="seat-cell occupied-seat {% if cell %}shadow-lg shadow-slate-200/50{% else %}empty-seat{% endif %}"
-                             style="{% if cell %}background-color: {{ cell.color }};{% endif %}"
+                        <div class="seat-cell {% if cell %}occupied-seat shadow-sm hover:shadow-md{% else %}empty-seat{% endif %}"
+                             style="{% if cell %}--seat-color: {{ cell.color }}; --seat-border: {{ cell.color }}45; --seat-bg: {{ cell.color }}14; background-color: {{ cell.color }}14; border-color: {{ cell.color }}45; border-top-color: {{ cell.color }};{% endif %}"
                              :class="{ 
                                 'opacity-10 grayscale scale-95': (activeSubject !== 'all' && activeSubject !== '{{ cell.subject_id }}') || (activeDept !== 'all' && activeDept !== '{{ cell.department_id }}'),
                                 'cursor-move ring-4 ring-white z-20': editMode && '{{ cell.assignment_id }}',
@@ -623,11 +724,11 @@
                                 <div class="relative z-10 pointer-events-none w-full h-full flex flex-col justify-between items-center text-center">
                                     <div class="seat-top-info w-full flex flex-col items-center">
                                         <div class="map-student-name">{{ cell.student_name }}</div>
-                                        <div class="map-student-id hidden">{{ cell.university_id }}</div>
-                                        <div class="map-subject-name hidden">{{ cell.stage|default:cell.subject_name }}</div>
+                                        <div class="map-student-id">{{ cell.university_id }}</div>
+                                        <div class="map-subject-name" style="color: {{ cell.color }};">{{ cell.stage|default:cell.subject_name }}</div>
                                     </div>
                                     <div class="seat-bottom-info w-full flex items-center justify-center pt-0.5">
-                                        <span class="map-seat-label">{{ cell.seat_label }}</span>
+                                        <span class="map-seat-label" style="background-color: {{ cell.color }};">{{ cell.seat_label }}</span>
                                     </div>
                                 </div>
                             {% else %}

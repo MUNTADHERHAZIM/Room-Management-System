@@ -37,6 +37,7 @@ urlpatterns = [
     path('sessions/<int:pk>/lists/', views.hall_student_lists, name='hall_student_lists'),
     path('sessions/<int:pk>/cards/', views.seat_cards, name='seat_cards'),
     path('sessions/<int:pk>/attendance/', views.department_attendance_lists, name='department_attendance_lists'),
+    path('sessions/<int:pk>/excel/', views.session_excel_export, name='session_excel_export'),
     path('sessions/<int:pk>/pdf/', views.seating_pdf, name='seating_pdf'),
     path('sessions/<int:pk>/lookup/', views.student_lookup, name='student_lookup'),
 ]

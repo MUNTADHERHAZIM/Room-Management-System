@@ -9,8 +9,11 @@ def get_user_permissions(user):
     if not user.is_authenticated:
         return {}
     
+    if hasattr(user, '_cached_user_perms'):
+        return user._cached_user_perms
+
     if user.is_superuser or user.is_staff:
-        return {
+        perms = {
             'can_view_schedules': True,
             'can_manage_schedules': True,
             'can_access_attendance': True,
@@ -22,10 +25,18 @@ def get_user_permissions(user):
             'can_manage_users': True,
             'is_admin': True,
         }
+        user._cached_user_perms = perms
+        return perms
 
     from .models import UserProfile
-    profile, _ = UserProfile.objects.get_or_create(user=user)
-    return {
+    try:
+        profile = getattr(user, 'profile', None)
+        if not profile:
+            profile, _ = UserProfile.objects.get_or_create(user=user)
+    except Exception:
+        profile, _ = UserProfile.objects.get_or_create(user=user)
+
+    perms = {
         'can_view_schedules': profile.has_perm('can_view_schedules'),
         'can_manage_schedules': profile.has_perm('can_manage_schedules'),
         'can_access_attendance': profile.has_perm('can_access_attendance'),
@@ -37,22 +48,29 @@ def get_user_permissions(user):
         'can_manage_users': profile.has_perm('can_manage_users'),
         'is_admin': profile.role == 'admin',
     }
+    user._cached_user_perms = perms
+    return perms
 
 
 def is_editor(user):
     """التحقق مما إذا كان المستخدم يملك صلاحية الإدخال"""
     if not user.is_authenticated:
         return False
-    return has_user_perm(user, 'can_manage_schedules') or user.is_staff or user.groups.filter(name='Data Entry').exists()
+    if hasattr(user, '_cached_is_editor'):
+        return user._cached_is_editor
+
+    val = user.is_superuser or user.is_staff or has_user_perm(user, 'can_manage_schedules') or user.groups.filter(name='Data Entry').exists()
+    user._cached_is_editor = val
+    return val
 
 
 def _get_cached_settings():
-    """جلب إعدادات النظام مع تخزين مؤقت (5 ثواني) لتقليل استعلامات قاعدة البيانات"""
+    """جلب إعدادات النظام مع تخزين مؤقت (30 ثانية) لتقليل استعلامات قاعدة البيانات"""
     from .models import SystemSettings
     settings = cache.get('system_settings')
     if settings is None:
         settings = SystemSettings.load()
-        cache.set('system_settings', settings, 5)  # cache 5 seconds
+        cache.set('system_settings', settings, 30)  # cache 30 seconds
     return settings
 
 

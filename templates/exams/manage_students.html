@@ -43,20 +43,27 @@
             </div>
             <div class="flex flex-col gap-2 md:col-span-3">
                 <div class="flex gap-2 w-full">
-                    <button type="submit" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-bold transition">
+                    <button type="submit" class="w-1/2 bg-blue-600 hover:bg-blue-700 text-white py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/></svg>
                         فلترة الطلاب
                     </button>
-                <form method="POST" class="w-1/2">
-                    {% csrf_token %}
-                    <input type="hidden" name="action" value="add_all_filtered">
-                    <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-bold transition">
-                        إضافة جميع المفلترين
+                    <button type="button" onclick="submitAddAllFiltered()" class="w-1/2 bg-emerald-600 hover:bg-emerald-700 text-white py-2 rounded-lg text-sm font-bold transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                        إضافة جميع المفلترين ({{ students|length }})
                     </button>
-                </form>
                 </div>
             </div>
         </form>
     </div>
+
+    <!-- فورم مستقل لإضافة جميع الطلاب المفلترين -->
+    <form id="addAllFilteredForm" method="POST" action="{% url 'exams:manage_subject_students' session.pk exam_subject.pk %}?{{ request.GET.urlencode }}" class="hidden">
+        {% csrf_token %}
+        <input type="hidden" name="action" value="add_all_filtered">
+        <input type="hidden" name="department" value="{{ selected_department|default:'' }}">
+        <input type="hidden" name="stage" value="{{ selected_stage|default:'' }}">
+        <input type="hidden" name="limit" value="{{ limit|default:'' }}">
+    </form>
 
     <!-- Students Table -->
     <form method="POST">
@@ -107,13 +114,21 @@
             </div>
 
             <!-- Actions -->
-            <div class="p-4 bg-gray-50 flex gap-3">
-                <button type="submit" name="action" value="add_selected" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg text-sm font-bold transition">
-                    ✓ إضافة المحددين
-                </button>
-                <button type="submit" name="action" value="remove_selected" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-lg text-sm font-bold transition">
-                    ✗ إزالة المحددين
-                </button>
+            <div class="p-4 bg-gray-50 flex flex-wrap items-center justify-between gap-3 border-t">
+                <div class="flex items-center gap-3">
+                    <button type="submit" name="action" value="add_selected" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-xl text-sm font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <span>✓</span> إضافة المحددين
+                    </button>
+                    <button type="submit" name="action" value="remove_selected" class="bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl text-sm font-bold transition flex items-center gap-1.5 shadow-sm">
+                        <span>✗</span> إزالة المحددين
+                    </button>
+                </div>
+                <div>
+                    <button type="button" onclick="submitAddAllFiltered()" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2 rounded-xl text-sm font-bold transition flex items-center gap-2 shadow-sm">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+                        إضافة جميع المفلترين ({{ students|length }})
+                    </button>
+                </div>
             </div>
         </div>
     </form>
@@ -122,6 +137,18 @@
 <script>
 function toggleAll(master) {
     document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = master.checked);
+}
+
+function submitAddAllFiltered() {
+    const count = {{ students|length|default:0 }};
+    if (count === 0) {
+        alert('لا يوجد طلاب مفلترين للإضافة حالياً.');
+        return;
+    }
+    const form = document.getElementById('addAllFilteredForm');
+    if (form) {
+        form.submit();
+    }
 }
 </script>
 {% endblock %}

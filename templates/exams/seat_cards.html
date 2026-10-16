@@ -1,11 +1,12 @@
 {% load exam_tags %}
+{% load static %}
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 
 <head>
     <meta charset="UTF-8">
     <title>بطاقات المقاعد الرسمية — {{ session.name }}</title>
-    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="{% static 'css/tailwind.min.css' %}">
     <style>
         /* ══════════════════════════════════════
            نسخة الطباعة النهائية المستقلة
@@ -119,6 +120,106 @@
             text-align: left;
         }
 
+        /* ──── Control Panel (Screen Only) ──── */
+        .cards-control-panel {
+            background-color: #ffffff;
+            border-bottom: 2px solid #cbd5e1;
+            padding: 1.5rem 1rem;
+            margin-bottom: 2rem;
+            text-align: center;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+        }
+        .cards-control-title {
+            color: #000000 !important;
+            font-size: 1.35rem;
+            font-weight: 900;
+            margin-bottom: 0.35rem;
+        }
+        .cards-control-subtitle {
+            color: #0f172a !important;
+            font-size: 0.95rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .cards-filter-pills {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 0.75rem;
+            margin-bottom: 1.25rem;
+        }
+        .cards-filter-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            cursor: pointer;
+            background-color: #f8fafc;
+            color: #000000 !important;
+            padding: 0.5rem 1rem;
+            border-radius: 0.75rem;
+            border: 1.5px solid #cbd5e1;
+            font-size: 0.85rem;
+            font-weight: 800;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .cards-filter-pill:hover {
+            background-color: #e2e8f0;
+            border-color: #94a3b8;
+        }
+        .cards-filter-pill span {
+            color: #000000 !important;
+            font-weight: 800 !important;
+        }
+        .cards-control-actions {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+            border-top: 1px solid #e2e8f0;
+            padding-top: 1rem;
+        }
+        .cards-btn-back {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f1f5f9;
+            color: #000000 !important;
+            border: 1.5px solid #94a3b8;
+            padding: 0.55rem 1.75rem;
+            border-radius: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 800;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .cards-btn-back:hover {
+            background-color: #e2e8f0;
+            color: #000000 !important;
+        }
+        .cards-btn-print {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            background-color: #2563eb;
+            color: #ffffff !important;
+            border: none;
+            padding: 0.55rem 2.5rem;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            font-weight: 900;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(37, 99, 235, 0.25);
+            transition: all 0.15s ease;
+        }
+        .cards-btn-print:hover {
+            background-color: #1d4ed8;
+        }
+
         @media print {
             @page {
                 size: A4 portrait;
@@ -134,7 +235,6 @@
             .cards-page {
                 margin: 0 !important;
                 padding: 5mm !important;
-                /* الحفاظ على هوامش الأمان */
                 box-shadow: none !important;
             }
 
@@ -147,44 +247,39 @@
 
 <body>
 
-    <div class="no-print bg-slate-900 text-white p-6 mb-8 text-center sticky top-0 z-50 shadow-2xl">
-        <h1 class="text-xl font-bold mb-2">معاينة بطاقات المقاعد الرسمية</h1>
-        <p class="text-slate-400 text-sm mb-4">تحكم في ظهور العناصر المطبوعة من هنا:</p>
+    <div class="no-print cards-control-panel">
+        <h1 class="cards-control-title">معاينة بطاقات المقاعد الرسمية</h1>
+        <p class="cards-control-subtitle">تحكم في ظهور العناصر المطبوعة من هنا:</p>
 
-        <div class="flex flex-wrap justify-center gap-4 mb-6">
-            <label
-                class="flex items-center gap-2 cursor-pointer bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all">
-                <input type="checkbox" id="toggleId" checked class="w-4 h-4 text-indigo-600 rounded">
-                <span class="text-xs font-bold">الرقم الجامعي</span>
+        <div class="cards-filter-pills">
+            <label class="cards-filter-pill">
+                <input type="checkbox" id="toggleId" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>الرقم الجامعي</span>
             </label>
-            <label
-                class="flex items-center gap-2 cursor-pointer bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all">
-                <input type="checkbox" id="toggleSubject" checked class="w-4 h-4 text-indigo-600 rounded">
-                <span class="text-xs font-bold">اسم المادة</span>
+            <label class="cards-filter-pill">
+                <input type="checkbox" id="toggleSubject" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>اسم المادة</span>
             </label>
-            <label
-                class="flex items-center gap-2 cursor-pointer bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all">
-                <input type="checkbox" id="toggleDate" checked class="w-4 h-4 text-indigo-600 rounded">
-                <span class="text-xs font-bold">التاريخ</span>
+            <label class="cards-filter-pill">
+                <input type="checkbox" id="toggleDate" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>التاريخ</span>
             </label>
-            <label
-                class="flex items-center gap-2 cursor-pointer bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all">
-                <input type="checkbox" id="toggleDept" checked class="w-4 h-4 text-indigo-600 rounded">
-                <span class="text-xs font-bold">القسم</span>
+            <label class="cards-filter-pill">
+                <input type="checkbox" id="toggleDept" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>القسم</span>
             </label>
-            <label
-                class="flex items-center gap-2 cursor-pointer bg-slate-800 px-4 py-2 rounded-xl border border-slate-700 hover:bg-slate-700 transition-all">
-                <input type="checkbox" id="toggleHall" checked class="w-4 h-4 text-indigo-600 rounded">
-                <span class="text-xs font-bold">القاعة</span>
+            <label class="cards-filter-pill">
+                <input type="checkbox" id="toggleHall" checked class="w-4 h-4 text-blue-600 rounded">
+                <span>القاعة</span>
             </label>
         </div>
 
-        <div class="flex justify-center gap-4 border-t border-slate-800 pt-4">
-            <a href="{% url 'exams:session_detail' session.pk %}"
-                class="bg-slate-700 hover:bg-slate-600 px-6 py-2 rounded-xl text-sm font-bold transition-all">عودة</a>
-            <button onclick="window.print()"
-                class="bg-indigo-600 hover:bg-indigo-500 px-10 py-2 rounded-xl text-sm font-bold transition-all shadow-lg">طباعة
-                الآن</button>
+        <div class="cards-control-actions">
+            <a href="{% url 'exams:session_detail' session.pk %}" class="cards-btn-back">عودة</a>
+            <button onclick="window.print()" class="cards-btn-print">
+                <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                طباعة الآن
+            </button>
         </div>
     </div>
 

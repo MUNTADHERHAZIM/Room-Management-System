@@ -37,8 +37,12 @@
                 بطاقات المقاعد
             </a>
             <a href="{% url 'exams:department_attendance_lists' session.pk %}" class="bg-blue-600 hover:bg-blue-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                 قوائم حضور الأقسام
+            </a>
+            <a href="{% url 'exams:session_excel_export' session.pk %}" style="background-color: #047857; color: #ffffff;" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg shadow-emerald-600/20">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                تصدير Excel (شيتات شاملة)
             </a>
             {% endif %}
             <a href="{% url 'exams:generate_seating' session.pk %}" class="bg-purple-600 hover:bg-purple-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold transition-all flex items-center gap-2 shadow-lg">
@@ -94,7 +98,7 @@
                         <div class="w-4 h-4 rounded-full" style="background-color: {{ es.color_code }}"></div>
                         <div>
                             <span class="font-bold text-gray-900">{{ es.subject.name }}</span>
-                            <span class="text-xs text-gray-400 block">{{ es.students.count }} طالب</span>
+                            <span class="text-xs text-slate-500 font-medium block">{{ es.student_count }} طالب</span>
                         </div>
                     </div>
                     <div class="flex items-center gap-2">
