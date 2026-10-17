@@ -847,10 +847,27 @@ def hall_student_lists(request, pk):
             'color': es.color_code
         })
 
+    STAGE_ORDER = {
+        'المرحلة الأولى': 1, 'الأولى': 1,
+        'المرحلة الثانية': 2, 'الثانية': 2,
+        'المرحلة الثالثة': 3, 'الثالثة': 3,
+        'المرحلة الرابعة': 4, 'الرابعة': 4,
+        'المرحلة الخامسة': 5, 'الخامسة': 5,
+        'المرحلة السادسة': 6, 'السادسة': 6,
+    }
+    stages_set = set()
+    for h_data in halls_data:
+        for st in h_data['students_list']:
+            if st.get('stage'):
+                stages_set.add(st['stage'])
+
+    stages_filter_list = sorted(list(stages_set), key=lambda x: STAGE_ORDER.get(x.strip(), 99))
+
     context = {
         'session': session,
         'halls_data': halls_data,
         'legend': legend,
+        'stages_filter': stages_filter_list,
         'total_assigned': len(assignments),
     }
     return render(request, 'exams/hall_student_lists.html', context)
@@ -990,11 +1007,29 @@ def department_attendance_lists(request, pk):
     halls_filter_list = [{'id': hid, 'name': hname} for hid, hname in halls_filter_dict.items()]
     dept_filter_list = [{'id': did, 'name': dname} for did, dname in dept_filter_dict.items()]
 
+    STAGE_ORDER = {
+        'المرحلة الأولى': 1, 'الأولى': 1,
+        'المرحلة الثانية': 2, 'الثانية': 2,
+        'المرحلة الثالثة': 3, 'الثالثة': 3,
+        'المرحلة الرابعة': 4, 'الرابعة': 4,
+        'المرحلة الخامسة': 5, 'الخامسة': 5,
+        'المرحلة السادسة': 6, 'السادسة': 6,
+    }
+    stages_set = set()
+    for d_info in departments_data:
+        for h_info in d_info['halls']:
+            for s_info in h_info['students']:
+                if s_info.get('stage'):
+                    stages_set.add(s_info['stage'])
+
+    stages_filter_list = sorted(list(stages_set), key=lambda x: STAGE_ORDER.get(x.strip(), 99))
+
     context = {
         'session': session,
         'departments': departments_data,
         'halls_filter': halls_filter_list,
         'dept_filter': dept_filter_list,
+        'stages_filter': stages_filter_list,
         'total_assigned': assignments.count(),
     }
     return render(request, 'exams/department_attendance_lists.html', context)
@@ -1196,33 +1231,54 @@ def seating_pdf(request, pk):
 
     hide_names = request.GET.get('hide_names') == '1'
     hide_ids = request.GET.get('hide_ids') == '1'
+    hide_labels = request.GET.get('hide_labels') == '1'
+    hide_colors = request.GET.get('hide_colors') == '1'
+    hide_stage = request.GET.get('hide_stage') == '1'
+    hide_hall_info = request.GET.get('hide_hall_info') == '1'
+    stage_filter = request.GET.get('stage')
+
+    def check_student_stage(a, target):
+        stg = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else '')
+        stg_disp = stg if stg.startswith('المرحلة') else f"المرحلة {stg}" if stg else ''
+        return stg.strip() == target.strip() or stg_disp.strip() == target.strip()
+
+    if stage_filter and stage_filter != 'all':
+        assignments = [a for a in assignments if check_student_stage(a, stage_filter)]
+
+    rendered_halls_count = 0
+    total_halls = len(hall_setups)
 
     for hall_idx, hall in enumerate(hall_setups):
         hall_assignments = [a for a in assignments if a.hall_setup_id == hall.id]
+        if stage_filter and stage_filter != 'all' and not hall_assignments:
+            continue
 
-        # الترويسة العليا للقاعة مع إبراز اسم القاعة في أعلى اليمين
-        left_cell = [
-            Paragraph(reshape_arabic(f"خريطة توزيع مقاعد الامتحان — {session.name}"), title_left_style),
-            Paragraph(reshape_arabic(f"التاريخ: {session.date}   |   إجمالي الطلاب الموزعين: {len(hall_assignments)} طالب"), subtitle_left_style),
-        ]
-        right_cell = [
-            Paragraph(reshape_arabic(f"القاعة الامتحانية: {hall.room.name}"), hall_right_title_style),
-            Paragraph(reshape_arabic(f"الأبعاد: {hall.rows} صف × {hall.columns} عمود  ({hall.total_seats} مقعد)"), hall_right_sub_style),
-        ]
-        header_table = Table([[left_cell, right_cell]], colWidths=[17.1 * cm, 11.0 * cm])
-        header_table.setStyle(TableStyle([
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('ALIGN', (0, 0), (0, 0), 'LEFT'),
-            ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
-            ('BACKGROUND', (1, 0), (1, 0), colors.HexColor('#F8FAFC')),
-            ('BOX', (1, 0), (1, 0), 1.2, colors.HexColor('#0F172A')),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-            ('RIGHTPADDING', (1, 0), (1, 0), 8),
-            ('LEFTPADDING', (1, 0), (1, 0), 8),
-        ]))
-        elements.append(header_table)
-        elements.append(Spacer(1, 0.25 * cm))
+        rendered_halls_count += 1
+
+        # ترويسة القاعة
+        if not hide_hall_info:
+            left_cell = [
+                Paragraph(reshape_arabic(f"خريطة توزيع مقاعد الامتحان — {session.name}"), title_left_style),
+                Paragraph(reshape_arabic(f"التاريخ: {session.date}   |   إجمالي الطلاب الموزعين: {len(hall_assignments)} طالب"), subtitle_left_style),
+            ]
+            right_cell = [
+                Paragraph(reshape_arabic(f"القاعة الامتحانية: {hall.room.name}"), hall_right_title_style),
+                Paragraph(reshape_arabic(f"الأبعاد: {hall.rows} صف × {hall.columns} عمود  ({hall.total_seats} مقعد)"), hall_right_sub_style),
+            ]
+            header_table = Table([[left_cell, right_cell]], colWidths=[17.1 * cm, 11.0 * cm])
+            header_table.setStyle(TableStyle([
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('ALIGN', (0, 0), (0, 0), 'LEFT'),
+                ('ALIGN', (1, 0), (1, 0), 'RIGHT'),
+                ('BACKGROUND', (1, 0), (1, 0), colors.HexColor('#F8FAFC')),
+                ('BOX', (1, 0), (1, 0), 1.2, colors.HexColor('#0F172A')),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+                ('RIGHTPADDING', (1, 0), (1, 0), 8),
+                ('LEFTPADDING', (1, 0), (1, 0), 8),
+            ]))
+            elements.append(header_table)
+            elements.append(Spacer(1, 0.25 * cm))
 
         # حساب الأبعاد المتجاوبة للجدول
         total_avail_w = 28.1 * cm
@@ -1231,17 +1287,18 @@ def seating_pdf(request, pk):
         actual_table_w = row_hdr_w + (col_w * hall.columns)
 
         # شريط السبورة (اتجاه النظر)
-        board_data = [[Paragraph(reshape_arabic("◄ السبورة (اتجاه النظر) ►"), board_style)]]
-        board_table = Table(board_data, colWidths=[actual_table_w])
-        board_table.setStyle(TableStyle([
-            ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#1E293B')),
-            ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
-            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
-            ('TOPPADDING', (0, 0), (-1, -1), 3),
-            ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
-        ]))
-        elements.append(board_table)
-        elements.append(Spacer(1, 0.2 * cm))
+        if not hide_hall_info:
+            board_data = [[Paragraph(reshape_arabic("◄ السبورة (اتجاه النظر) ►"), board_style)]]
+            board_table = Table(board_data, colWidths=[actual_table_w])
+            board_table.setStyle(TableStyle([
+                ('BACKGROUND', (0, 0), (-1, -1), colors.HexColor('#1E293B')),
+                ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+                ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+                ('TOPPADDING', (0, 0), (-1, -1), 3),
+                ('BOTTOMPADDING', (0, 0), (-1, -1), 3),
+            ]))
+            elements.append(board_table)
+            elements.append(Spacer(1, 0.2 * cm))
 
         # بناء جدول الشبكة
         grid = [[None for _ in range(hall.columns + 1)] for _ in range(hall.rows + 1)]
@@ -1258,7 +1315,7 @@ def seating_pdf(request, pk):
         # تجهيز خريطة توزيع المقاعد
         assign_map = {(a.row, a.column): a for a in hall_assignments}
 
-        # ملء المقاعد
+        # ملء المقاعد مع احترام كامل لخيارات الحجب
         for r in range(hall.rows):
             for c in range(hall.columns):
                 a = assign_map.get((r, c))
@@ -1269,12 +1326,22 @@ def seating_pdf(request, pk):
                         parts.append(f"<b>{reshape_arabic(a.student.name)}</b>")
                     if not hide_ids:
                         parts.append(f"<font size=5.5 color='#334155'>{reshape_arabic(str(a.student.university_id))}</font>")
-                    parts.append(f"<font size=5 color='#64748B'>[{seat_label}]</font>")
-                    grid[r + 1][c + 1] = Paragraph("<br/>".join(parts), cell_student_style)
-                else:
-                    grid[r + 1][c + 1] = Paragraph(f"<font size=5.5 color='#94A3B8'>{seat_label}</font>", cell_empty_style)
+                    if not hide_labels:
+                        parts.append(f"<font size=5 color='#64748B'>[{seat_label}]</font>")
+                    if not hide_stage:
+                        s_val = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else '')
+                        s_disp = s_val if s_val.startswith('المرحلة') else f"المرحلة {s_val}" if s_val else ''
+                        if s_disp:
+                            parts.append(f"<font size=4.8 color='#475569'>{reshape_arabic(s_disp)}</font>")
 
-        # تحديد ارتفاع الصفوف لكي تتسع الصفحة دائماً بدون تجاوز
+                    cell_text = "<br/>".join(parts) if parts else reshape_arabic("—")
+                    grid[r + 1][c + 1] = Paragraph(cell_text, cell_student_style)
+                else:
+                    if hide_labels:
+                        grid[r + 1][c + 1] = Paragraph("<font size=5.5 color='#CBD5E1'>—</font>", cell_empty_style)
+                    else:
+                        grid[r + 1][c + 1] = Paragraph(f"<font size=5.5 color='#94A3B8'>{seat_label}</font>", cell_empty_style)
+
         row_h = min(1.6 * cm, max(1.05 * cm, (12.5 * cm) / max(1, hall.rows)))
         row_heights = [0.6 * cm] + [row_h] * hall.rows
         col_widths = [row_hdr_w] + [col_w] * hall.columns
@@ -1294,7 +1361,7 @@ def seating_pdf(request, pk):
             ('RIGHTPADDING', (0, 0), (-1, -1), 2),
         ]
 
-        # تلوين المقاعد الشاغرة بخلفية خفيفة جداً
+        # تلوين المقاعد الشاغرة
         for r in range(hall.rows):
             for c in range(hall.columns):
                 if (r, c) not in assign_map:
@@ -1302,21 +1369,22 @@ def seating_pdf(request, pk):
                         'BACKGROUND', (c + 1, r + 1), (c + 1, r + 1), colors.HexColor('#F8FAFC')
                     ))
 
-        # تلوين المقاعد حسب المادة بنعومة وتناسق
-        for a in hall_assignments:
-            if a.exam_subject and a.exam_subject.color_code:
-                hex_color = a.exam_subject.color_code.strip()
-                try:
-                    if hex_color.startswith('#') and len(hex_color) == 7:
-                        r_val = int(hex_color[1:3], 16) / 255
-                        g_val = int(hex_color[3:5], 16) / 255
-                        b_val = int(hex_color[5:7], 16) / 255
-                        bg = colors.Color(r_val, g_val, b_val, alpha=0.18)
-                        style_commands.append((
-                            'BACKGROUND', (a.column + 1, a.row + 1), (a.column + 1, a.row + 1), bg
-                        ))
-                except Exception:
-                    pass
+        # تلوين المقاعد حسب المادة (فقط في حال عدم حجب الألوان)
+        if not hide_colors:
+            for a in hall_assignments:
+                if a.exam_subject and a.exam_subject.color_code:
+                    hex_color = a.exam_subject.color_code.strip()
+                    try:
+                        if hex_color.startswith('#') and len(hex_color) == 7:
+                            r_val = int(hex_color[1:3], 16) / 255
+                            g_val = int(hex_color[3:5], 16) / 255
+                            b_val = int(hex_color[5:7], 16) / 255
+                            bg = colors.Color(r_val, g_val, b_val, alpha=0.18)
+                            style_commands.append((
+                                'BACKGROUND', (a.column + 1, a.row + 1), (a.column + 1, a.row + 1), bg
+                            ))
+                    except Exception:
+                        pass
 
         table.setStyle(TableStyle(style_commands))
         elements.append(table)
@@ -1330,7 +1398,7 @@ def seating_pdf(request, pk):
                 if sub_id not in hall_subjects:
                     stage_val = a.student.stage or a.exam_subject.subject.stage or ''
                     stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else ''
-                    display_label = stage_display if stage_display else a.exam_subject.subject.name
+                    display_label = (stage_display if stage_display and not hide_stage else a.exam_subject.subject.name)
                     hall_subjects[sub_id] = {
                         'name': display_label,
                         'color': a.exam_subject.color_code,
@@ -1351,26 +1419,30 @@ def seating_pdf(request, pk):
             for idx, (sub_id, info) in enumerate(hall_subjects.items()):
                 text = reshape_arabic(f"{info['name']} ({info['count']} طالب)")
                 legend_cells.append(Paragraph(text, legend_style_text))
-                hex_color = info['color'] or '#3B82F6'
-                try:
-                    if hex_color.startswith('#') and len(hex_color) == 7:
-                        r_val = int(hex_color[1:3], 16) / 255
-                        g_val = int(hex_color[3:5], 16) / 255
-                        b_val = int(hex_color[5:7], 16) / 255
-                        legend_styles.append((
-                            'BACKGROUND', (idx, 0), (idx, 0),
-                            colors.Color(r_val, g_val, b_val, alpha=0.22)
-                        ))
-                except Exception:
-                    pass
+                if not hide_colors:
+                    hex_color = info['color'] or '#3B82F6'
+                    try:
+                        if hex_color.startswith('#') and len(hex_color) == 7:
+                            r_val = int(hex_color[1:3], 16) / 255
+                            g_val = int(hex_color[3:5], 16) / 255
+                            b_val = int(hex_color[5:7], 16) / 255
+                            legend_styles.append((
+                                'BACKGROUND', (idx, 0), (idx, 0),
+                                colors.Color(r_val, g_val, b_val, alpha=0.22)
+                            ))
+                    except Exception:
+                        pass
 
             legend_table = Table([legend_cells], colWidths=[actual_table_w / max(1, len(legend_cells))] * len(legend_cells))
             legend_table.setStyle(TableStyle(legend_styles))
             elements.append(legend_table)
 
-        # فاصل صفحة بين القاعات إذا كانت هناك أكثر من قاعة
-        if hall_idx < len(hall_setups) - 1:
+        # فاصل صفحة بين القاعات
+        if hall_idx < total_halls - 1:
             elements.append(PageBreak())
+
+    if not elements:
+        elements.append(Paragraph(reshape_arabic("لا توجد بيانات مطابقة لخيارات التصفية المختارة"), title_style))
 
     doc.build(elements)
     return response
@@ -1395,6 +1467,23 @@ def session_excel_export(request, pk):
         'student', 'student__department', 'hall_setup', 'hall_setup__room',
         'exam_subject', 'exam_subject__subject'
     ).all().order_by('hall_setup__room__name', 'row', 'column', 'student__name'))
+
+    # معايير الحجب والتصفية
+    hide_names = request.GET.get('hide_names') == '1'
+    hide_ids = request.GET.get('hide_ids') == '1'
+    hide_labels = request.GET.get('hide_labels') == '1'
+    hide_colors = request.GET.get('hide_colors') == '1'
+    hide_stage = request.GET.get('hide_stage') == '1'
+    hide_hall_info = request.GET.get('hide_hall_info') == '1'
+    stage_filter = request.GET.get('stage')
+
+    def check_student_stage(a, target):
+        stg = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else '')
+        stg_disp = stg if stg.startswith('المرحلة') else f"المرحلة {stg}" if stg else ''
+        return stg.strip() == target.strip() or stg_disp.strip() == target.strip()
+
+    if stage_filter and stage_filter != 'all':
+        assignments = [a for a in assignments if check_student_stage(a, stage_filter)]
 
     wb = openpyxl.Workbook()
     
@@ -1731,17 +1820,29 @@ def session_excel_export(request, pk):
                     stage_val = assign.student.stage or (assign.exam_subject.subject.stage if assign.exam_subject and assign.exam_subject.subject else "")
                     stage_lbl = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else ""
 
-                    lines = [st_name, f"🆔 {st_id}", f"🪑 [{seat_lbl}]"]
-                    if stage_lbl:
+                    lines = []
+                    if not hide_names:
+                        lines.append(st_name)
+                    if not hide_ids:
+                        lines.append(f"🆔 {st_id}")
+                    if not hide_labels:
+                        lines.append(f"🪑 [{seat_lbl}]")
+                    if not hide_stage and stage_lbl:
                         lines.append(f"🎓 {stage_lbl}")
 
-                    seat_cell.value = "\n".join(lines)
-                    soft_hex = get_soft_color(assign.exam_subject.color_code if assign.exam_subject else "#3B82F6")
-                    seat_cell.fill = PatternFill(start_color=soft_hex, end_color=soft_hex, fill_type="solid")
+                    seat_cell.value = "\n".join(lines) if lines else "—"
+                    if not hide_colors:
+                        soft_hex = get_soft_color(assign.exam_subject.color_code if assign.exam_subject else "#3B82F6")
+                        seat_cell.fill = PatternFill(start_color=soft_hex, end_color=soft_hex, fill_type="solid")
+                    else:
+                        seat_cell.fill = fill_white
                     seat_cell.font = Font(name=FONT_NAME, size=9, bold=True, color="0F172A")
                     seat_cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
                 else:
-                    seat_cell.value = f"— مقعد شاغر —\n[{row_letter}{c_idx + 1}]"
+                    if hide_labels:
+                        seat_cell.value = "— مقعد شاغر —"
+                    else:
+                        seat_cell.value = f"— مقعد شاغر —\n[{row_letter}{c_idx + 1}]"
                     seat_cell.fill = fill_zebra
                     seat_cell.font = Font(name=FONT_NAME, size=8, color="94A3B8")
                     seat_cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
@@ -1776,7 +1877,7 @@ def session_excel_export(request, pk):
         for s_info in hall_sub_counts.values():
             ws_map.row_dimensions[leg_row].height = 22
             c_box = ws_map.cell(row=leg_row, column=1)
-            soft_hex = get_soft_color(s_info['color'])
+            soft_hex = get_soft_color(s_info['color']) if not hide_colors else "FFFFFF"
             c_box.fill = PatternFill(start_color=soft_hex, end_color=soft_hex, fill_type="solid")
             c_box.border = cell_border
 
@@ -1786,6 +1887,7 @@ def session_excel_export(request, pk):
             t_cell.alignment = align_right
             leg_row += 1
 
+        format_sheet_view_and_widths(ws_map, min_w=12, max_w=30)
         apply_print_setup(ws_map, orientation='landscape', fit_w=1, fit_h=1)
 
     # ═════════════════════════════════════════════════════════════════
@@ -1834,7 +1936,7 @@ def session_excel_export(request, pk):
         hall_name = a.hall_setup.room.name
         seat_lbl = a.seat_label
 
-        soft_bg = get_soft_color(a.exam_subject.color_code if a.exam_subject else "#3B82F6")
+        soft_bg = get_soft_color(a.exam_subject.color_code if a.exam_subject else "#3B82F6") if not hide_colors else "FFFFFF"
         card_fill = PatternFill(start_color=soft_bg, end_color=soft_bg, fill_type="solid")
 
         ws_cards.row_dimensions[card_row].height = 24
@@ -1846,7 +1948,12 @@ def session_excel_export(request, pk):
 
         # 1. Header
         c1 = ws_cards.cell(row=card_row, column=card_col)
-        c1.value = f"🏛️ {hall_name}   |   🪑 المقعد: {seat_lbl}"
+        h_parts = []
+        if not hide_hall_info:
+            h_parts.append(f"🏛️ {hall_name}")
+        if not hide_labels:
+            h_parts.append(f"🪑 المقعد: {seat_lbl}")
+        c1.value = "   |   ".join(h_parts) if h_parts else "بطاقة مقعد"
         c1.font = Font(name=FONT_NAME, size=11, bold=True, color="FFFFFF")
         c1.fill = fill_navy
         c1.alignment = align_center
@@ -1854,7 +1961,7 @@ def session_excel_export(request, pk):
 
         # 2. Student Name
         c2 = ws_cards.cell(row=card_row + 1, column=card_col)
-        c2.value = f"👤 {a.student.name}"
+        c2.value = f"👤 {a.student.name}" if not hide_names else "👤 [الاسم محجوب]"
         c2.font = Font(name=FONT_NAME, size=11, bold=True, color="0F172A")
         c2.fill = card_fill
         c2.alignment = align_center
@@ -1862,7 +1969,12 @@ def session_excel_export(request, pk):
 
         # 3. ID & Stage
         c3 = ws_cards.cell(row=card_row + 2, column=card_col)
-        c3.value = f"🆔 {a.student.university_id}   |   🎓 {stage_display}"
+        id_stg_parts = []
+        if not hide_ids:
+            id_stg_parts.append(f"🆔 {a.student.university_id}")
+        if not hide_stage and stage_display:
+            id_stg_parts.append(f"🎓 {stage_display}")
+        c3.value = "   |   ".join(id_stg_parts) if id_stg_parts else "—"
         c3.font = Font(name=FONT_NAME, size=9.5, bold=True, color="1E293B")
         c3.fill = fill_white
         c3.alignment = align_center
@@ -1887,13 +1999,51 @@ def session_excel_export(request, pk):
     apply_print_setup(ws_cards, orientation='portrait', fit_w=1, fit_h=0)
 
     # ═════════════════════════════════════════════════════════════════
+    # بناء أعمدة الشيتات الجدولية بشكل ديناميكي حسب خيارات الحجب
+    # ═════════════════════════════════════════════════════════════════
+    def build_attendance_columns(include_hall=True):
+        cols = [
+            {"title": "ت", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: idx},
+        ]
+        if not hide_labels:
+            cols.append({"title": "المقعد", "align": align_center, "bold": True, "fill_seat": True, "getter": lambda a, idx: a.seat_label})
+        if not hide_names:
+            cols.append({"title": "اسم الطالب الثلاثي واللقب", "align": align_right, "bold": True, "fill_seat": False, "getter": lambda a, idx: a.student.name})
+        if not hide_ids:
+            cols.append({"title": "الرقم الجامعي / الامتحاني", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: a.student.university_id})
+
+        cols.append({"title": "القسم العلمي", "align": align_right, "bold": False, "fill_seat": False, "getter": lambda a, idx: a.student.department.name})
+
+        if not hide_stage:
+            def get_stg(a):
+                s = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else "")
+                return s if s.startswith('المرحلة') else f"المرحلة {s}" if s else "—"
+            cols.append({"title": "المرحلة الدراسية", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: get_stg(a)})
+
+        cols.append({"title": "المادة الامتحانية", "align": align_right, "bold": False, "fill_seat": False, "getter": lambda a, idx: (a.exam_subject.subject.name if a.exam_subject and a.exam_subject.subject else "—")})
+
+        if include_hall and not hide_hall_info:
+            cols.append({"title": "القاعة الامتحانية", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: a.hall_setup.room.name})
+
+        cols.extend([
+            {"title": "حالة الحضور", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: ""},
+            {"title": "توقيع الطالب", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: ""},
+            {"title": "ملاحظات", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: ""},
+        ])
+        return cols
+
+    # ═════════════════════════════════════════════════════════════════
     # الشيت 2: قائمة الحضور الشاملة (All Students)
     # ═════════════════════════════════════════════════════════════════
+    master_cols = build_attendance_columns(include_hall=True)
+    total_cols = len(master_cols)
+    last_col_letter_all = get_column_letter(total_cols)
+
     ws_all = wb.create_sheet(title=sanitize_title("قائمة الحضور الشاملة"))
     ws_all.sheet_properties.tabColor = "047857"
 
     # Banner
-    ws_all.merge_cells("A1:K2")
+    ws_all.merge_cells(f"A1:{last_col_letter_all}2")
     ws_all["A1"] = f"قائمة الحضور الشاملة لجميع الطلاب — {session.name} ({session.date})"
     ws_all["A1"].font = title_font
     ws_all["A1"].fill = fill_emerald
@@ -1901,17 +2051,12 @@ def session_excel_export(request, pk):
 
     for r in range(1, 3):
         ws_all.row_dimensions[r].height = 24
-        for c in range(1, 12):
+        for c in range(1, total_cols + 1):
             ws_all.cell(row=r, column=c).fill = fill_emerald
 
-    master_hdrs = [
-        "ت", "اسم الطالب الثلاثي واللقب", "الرقم الجامعي / الامتحاني", 
-        "القسم العلمي", "المرحلة الدراسية", "المادة الامتحانية", 
-        "القاعة الامتحانية", "المقعد", "حالة الحضور", "توقيع الطالب", "ملاحظات"
-    ]
     ws_all.row_dimensions[4].height = 28
-    for col_idx, h_text in enumerate(master_hdrs, 1):
-        c = ws_all.cell(row=4, column=col_idx, value=h_text)
+    for col_idx, col_def in enumerate(master_cols, 1):
+        c = ws_all.cell(row=4, column=col_idx, value=col_def["title"])
         c.font = tbl_hdr_font
         c.fill = fill_navy
         c.alignment = align_center
@@ -1920,30 +2065,15 @@ def session_excel_export(request, pk):
     curr_row = 5
     for idx, a in enumerate(assignments, 1):
         ws_all.row_dimensions[curr_row].height = 24
-        stage_val = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else "")
-        stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else "—"
-
-        row_vals = [
-            idx,
-            a.student.name,
-            a.student.university_id,
-            a.student.department.name,
-            stage_display,
-            a.exam_subject.subject.name if a.exam_subject and a.exam_subject.subject else "—",
-            a.hall_setup.room.name,
-            a.seat_label,
-            "",  # حالة الحضور
-            "",  # توقيع الطالب
-            ""   # ملاحظات
-        ]
         row_fill = fill_zebra if idx % 2 == 0 else fill_white
 
-        for col_idx, val in enumerate(row_vals, 1):
+        for col_idx, col_def in enumerate(master_cols, 1):
+            val = col_def["getter"](a, idx)
             c = ws_all.cell(row=curr_row, column=col_idx, value=val)
-            c.font = data_font_bold if col_idx in [2, 8] else data_font
-            c.fill = fill_seat if col_idx == 8 else row_fill
+            c.font = data_font_bold if col_def["bold"] else data_font
+            c.fill = fill_seat if (col_def["fill_seat"] and not hide_colors) else row_fill
             c.border = cell_border
-            c.alignment = align_right if col_idx in [2, 4, 6] else align_center
+            c.alignment = col_def["align"]
         curr_row += 1
 
     format_sheet_view_and_widths(ws_all)
@@ -1952,8 +2082,15 @@ def session_excel_export(request, pk):
     # ═════════════════════════════════════════════════════════════════
     # الشيتات 3+: شيت لكل قاعة امتحانية (Per-Hall Sheets)
     # ═════════════════════════════════════════════════════════════════
+    hall_sheet_cols = build_attendance_columns(include_hall=False)
+    total_hall_cols = len(hall_sheet_cols)
+    last_col_letter_hall = get_column_letter(total_hall_cols)
+
     for hall in hall_setups:
         hall_assignments = [a for a in assignments if a.hall_setup_id == hall.id]
+        if stage_filter and stage_filter != 'all' and not hall_assignments:
+            continue
+
         hall_assignments.sort(key=lambda a: (a.row, a.column))
         
         sheet_title = sanitize_title(hall.room.name, prefix="قاعة-")
@@ -1961,7 +2098,7 @@ def session_excel_export(request, pk):
         ws_hall.sheet_properties.tabColor = "1D4ED8"
 
         # Banner
-        ws_hall.merge_cells("A1:J2")
+        ws_hall.merge_cells(f"A1:{last_col_letter_hall}2")
         ws_hall["A1"] = f"استمارة حضور وتوزيع القاعة الامتحانية: {hall.room.name}"
         ws_hall["A1"].font = title_font
         ws_hall["A1"].fill = fill_blue
@@ -1969,7 +2106,7 @@ def session_excel_export(request, pk):
 
         for r in range(1, 3):
             ws_hall.row_dimensions[r].height = 24
-            for c in range(1, 11):
+            for c in range(1, total_hall_cols + 1):
                 ws_hall.cell(row=r, column=c).fill = fill_blue
 
         # معلومات القاعة
@@ -1982,19 +2119,14 @@ def session_excel_export(request, pk):
         ws_hall.cell(row=meta_row, column=7, value="عدد طلاب القاعة:").font = label_font
         ws_hall.cell(row=meta_row, column=8, value=f"{len(hall_assignments)} طالب").font = value_font
 
-        for c in range(1, 11):
+        for c in range(1, total_hall_cols + 1):
             ws_hall.cell(row=meta_row, column=c).fill = fill_subtle
             ws_hall.cell(row=meta_row, column=c).border = cell_border
 
         # ترويسة الجدول
-        hall_cols = [
-            "ت", "المقعد", "اسم الطالب الثلاثي واللقب", "الرقم الجامعي / الامتحاني",
-            "القسم العلمي", "المرحلة الدراسية", "المادة الامتحانية", 
-            "حالة الحضور", "توقيع الطالب", "ملاحظات"
-        ]
         ws_hall.row_dimensions[5].height = 28
-        for col_idx, h_text in enumerate(hall_cols, 1):
-            c = ws_hall.cell(row=5, column=col_idx, value=h_text)
+        for col_idx, col_def in enumerate(hall_sheet_cols, 1):
+            c = ws_hall.cell(row=5, column=col_idx, value=col_def["title"])
             c.font = tbl_hdr_font
             c.fill = fill_navy
             c.alignment = align_center
@@ -2003,36 +2135,22 @@ def session_excel_export(request, pk):
         curr_row = 6
         for idx, a in enumerate(hall_assignments, 1):
             ws_hall.row_dimensions[curr_row].height = 24
-            stage_val = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else "")
-            stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else "—"
-
-            row_vals = [
-                idx,
-                a.seat_label,
-                a.student.name,
-                a.student.university_id,
-                a.student.department.name,
-                stage_display,
-                a.exam_subject.subject.name if a.exam_subject and a.exam_subject.subject else "—",
-                "",  # حالة الحضور
-                "",  # توقيع الطالب
-                ""   # ملاحظات
-            ]
             row_fill = fill_zebra if idx % 2 == 0 else fill_white
 
-            for col_idx, val in enumerate(row_vals, 1):
+            for col_idx, col_def in enumerate(hall_sheet_cols, 1):
+                val = col_def["getter"](a, idx)
                 c = ws_hall.cell(row=curr_row, column=col_idx, value=val)
-                c.font = data_font_bold if col_idx in [2, 3] else data_font
-                c.fill = fill_seat if col_idx == 2 else row_fill
+                c.font = data_font_bold if col_def["bold"] else data_font
+                c.fill = fill_seat if (col_def["fill_seat"] and not hide_colors) else row_fill
                 c.border = cell_border
-                c.alignment = align_right if col_idx in [3, 5, 7] else align_center
+                c.alignment = col_def["align"]
             curr_row += 1
 
         # خانات التوقيع لمراقب القاعة
         curr_row += 2
         ws_hall.row_dimensions[curr_row].height = 26
         ws_hall.cell(row=curr_row, column=2, value="اسم وتوقيع مراقب القاعة: ................................................").font = Font(name=FONT_NAME, size=11, bold=True, color="0F172A")
-        ws_hall.cell(row=curr_row, column=6, value="توقيع مسؤول اللجنة الامتحانية: ................................................").font = Font(name=FONT_NAME, size=11, bold=True, color="0F172A")
+        ws_hall.cell(row=curr_row, column=min(5, total_hall_cols), value="توقيع مسؤول اللجنة الامتحانية: ................................................").font = Font(name=FONT_NAME, size=11, bold=True, color="0F172A")
 
         format_sheet_view_and_widths(ws_hall)
         apply_print_setup(ws_hall, orientation='portrait', fit_w=1, fit_h=0, title_rows='5:5')
@@ -2058,8 +2176,34 @@ def session_excel_export(request, pk):
         ws_dept = wb.create_sheet(title=sheet_title)
         ws_dept.sheet_properties.tabColor = "6D28D9"
 
+        dept_cols_def = [
+            {"title": "ت", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: idx},
+        ]
+        if not hide_names:
+            dept_cols_def.append({"title": "اسم الطالب الثلاثي واللقب", "align": align_right, "bold": True, "fill_seat": False, "getter": lambda a, idx: a.student.name})
+        if not hide_ids:
+            dept_cols_def.append({"title": "الرقم الجامعي / الامتحاني", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: a.student.university_id})
+        if not hide_stage:
+            def get_stg_dept(a):
+                s = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else "")
+                return s if s.startswith('المرحلة') else f"المرحلة {s}" if s else "—"
+            dept_cols_def.append({"title": "المرحلة الدراسية", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: get_stg_dept(a)})
+        if not hide_hall_info:
+            dept_cols_def.append({"title": "القاعة الامتحانية", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: a.hall_setup.room.name})
+        if not hide_labels:
+            dept_cols_def.append({"title": "رقم المقعد", "align": align_center, "bold": True, "fill_seat": True, "getter": lambda a, idx: a.seat_label})
+
+        dept_cols_def.extend([
+            {"title": "المادة الامتحانية", "align": align_right, "bold": False, "fill_seat": False, "getter": lambda a, idx: (a.exam_subject.subject.name if a.exam_subject and a.exam_subject.subject else "—")},
+            {"title": "توقيع الطالب", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: ""},
+            {"title": "ملاحظات", "align": align_center, "bold": False, "fill_seat": False, "getter": lambda a, idx: ""},
+        ])
+
+        total_dept_cols = len(dept_cols_def)
+        last_col_letter_dept = get_column_letter(total_dept_cols)
+
         # Banner
-        ws_dept.merge_cells("A1:I2")
+        ws_dept.merge_cells(f"A1:{last_col_letter_dept}2")
         ws_dept["A1"] = f"قوائم توزيع وحضور طلاب قسم: {d_data['name']}"
         ws_dept["A1"].font = title_font
         ws_dept["A1"].fill = fill_purple
@@ -2067,7 +2211,7 @@ def session_excel_export(request, pk):
 
         for r in range(1, 3):
             ws_dept.row_dimensions[r].height = 24
-            for c in range(1, 10):
+            for c in range(1, total_dept_cols + 1):
                 ws_dept.cell(row=r, column=c).fill = fill_purple
 
         # معلومات القسم
@@ -2080,19 +2224,14 @@ def session_excel_export(request, pk):
         ws_dept.cell(row=meta_row, column=7, value="إجمالي طلاب القسم:").font = label_font
         ws_dept.cell(row=meta_row, column=8, value=f"{len(dept_students)} طالب").font = value_font
 
-        for c in range(1, 10):
+        for c in range(1, total_dept_cols + 1):
             ws_dept.cell(row=meta_row, column=c).fill = fill_subtle
             ws_dept.cell(row=meta_row, column=c).border = cell_border
 
         # ترويسة الجدول
-        dept_cols = [
-            "ت", "اسم الطالب الثلاثي واللقب", "الرقم الجامعي / الامتحاني", 
-            "المرحلة الدراسية", "القاعة الامتحانية", "رقم المقعد", 
-            "المادة الامتحانية", "توقيع الطالب", "ملاحظات"
-        ]
         ws_dept.row_dimensions[5].height = 28
-        for col_idx, h_text in enumerate(dept_cols, 1):
-            c = ws_dept.cell(row=5, column=col_idx, value=h_text)
+        for col_idx, col_def in enumerate(dept_cols_def, 1):
+            c = ws_dept.cell(row=5, column=col_idx, value=col_def["title"])
             c.font = tbl_hdr_font
             c.fill = fill_navy
             c.alignment = align_center
@@ -2101,35 +2240,22 @@ def session_excel_export(request, pk):
         curr_row = 6
         for idx, a in enumerate(dept_students, 1):
             ws_dept.row_dimensions[curr_row].height = 24
-            stage_val = a.student.stage or (a.exam_subject.subject.stage if a.exam_subject and a.exam_subject.subject else "")
-            stage_display = stage_val if stage_val.startswith('المرحلة') else f"المرحلة {stage_val}" if stage_val else "—"
-
-            row_vals = [
-                idx,
-                a.student.name,
-                a.student.university_id,
-                stage_display,
-                a.hall_setup.room.name,
-                a.seat_label,
-                a.exam_subject.subject.name if a.exam_subject and a.exam_subject.subject else "—",
-                "",  # توقيع الطالب
-                ""   # ملاحظات
-            ]
             row_fill = fill_zebra if idx % 2 == 0 else fill_white
 
-            for col_idx, val in enumerate(row_vals, 1):
+            for col_idx, col_def in enumerate(dept_cols_def, 1):
+                val = col_def["getter"](a, idx)
                 c = ws_dept.cell(row=curr_row, column=col_idx, value=val)
-                c.font = data_font_bold if col_idx in [2, 5, 6] else data_font
-                c.fill = fill_seat if col_idx == 6 else row_fill
+                c.font = data_font_bold if col_def["bold"] else data_font
+                c.fill = fill_seat if (col_def["fill_seat"] and not hide_colors) else row_fill
                 c.border = cell_border
-                c.alignment = align_right if col_idx in [2, 7] else align_center
+                c.alignment = col_def["align"]
             curr_row += 1
 
         # توقيع القسم واللجنة
         curr_row += 2
         ws_dept.row_dimensions[curr_row].height = 26
         ws_dept.cell(row=curr_row, column=2, value="توقيع رئيس القسم: ................................................").font = Font(name=FONT_NAME, size=11, bold=True, color="0F172A")
-        ws_dept.cell(row=curr_row, column=5, value="توقيع مسؤول اللجنة الامتحانية: ................................................").font = Font(name=FONT_NAME, size=11, bold=True, color="0F172A")
+        ws_dept.cell(row=curr_row, column=min(5, total_dept_cols), value="توقيع مسؤول اللجنة الامتحانية: ................................................").font = Font(name=FONT_NAME, size=11, bold=True, color="0F172A")
 
         format_sheet_view_and_widths(ws_dept)
         apply_print_setup(ws_dept, orientation='portrait', fit_w=1, fit_h=0, title_rows='5:5')

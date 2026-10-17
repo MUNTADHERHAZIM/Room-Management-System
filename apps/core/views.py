@@ -13,6 +13,7 @@ from apps.schedules.models import Schedule
 from apps.calendar_app.models import Holiday
 from apps.instructors.models import Instructor
 from apps.subjects.models import Subject
+from apps.core.search_utils import arabic_search_filter
 from django.db.models import Count, Sum, Q, Subquery, OuterRef, Exists
 
 
@@ -234,7 +235,7 @@ def dashboard(request):
         rooms = rooms.filter(room_type=room_type)
 
     if search_query:
-        rooms = rooms.filter(name__icontains=search_query)
+        rooms = rooms.filter(arabic_search_filter('name', search_query))
 
     # ✅ حساب حالة كل القاعات دفعة واحدة (3 استعلامات بدل مئات)
     current_datetime = timezone.localtime(timezone.now())

@@ -503,7 +503,40 @@
          showColors: true, 
          showHallInfo: true, 
          showIds: false, 
-         showSubjects: false 
+         showSubjects: false,
+         stagesMap: {
+             {% for item in legend %}
+             '{{ item.id }}': '{{ item.stage_only|default:item.name|escapejs }}',
+             {% endfor %}
+         },
+         getExcelUrl() {
+             const p = new URLSearchParams();
+             if (!this.showNames) p.set('hide_names', '1');
+             if (!this.showIds) p.set('hide_ids', '1');
+             if (!this.showLabels) p.set('hide_labels', '1');
+             if (!this.showColors) p.set('hide_colors', '1');
+             if (!this.showHallInfo) p.set('hide_hall_info', '1');
+             if (!this.showSubjects) p.set('hide_stage', '1');
+             if (this.activeSubject !== 'all' && this.stagesMap[this.activeSubject]) {
+                 p.set('stage', this.stagesMap[this.activeSubject]);
+             }
+             const q = p.toString();
+             return `{% url 'exams:session_excel_export' session.pk %}` + (q ? `?${q}` : '');
+         },
+         getPdfUrl() {
+             const p = new URLSearchParams();
+             if (!this.showNames) p.set('hide_names', '1');
+             if (!this.showIds) p.set('hide_ids', '1');
+             if (!this.showLabels) p.set('hide_labels', '1');
+             if (!this.showColors) p.set('hide_colors', '1');
+             if (!this.showHallInfo) p.set('hide_hall_info', '1');
+             if (!this.showSubjects) p.set('hide_stage', '1');
+             if (this.activeSubject !== 'all' && this.stagesMap[this.activeSubject]) {
+                 p.set('stage', this.stagesMap[this.activeSubject]);
+             }
+             const q = p.toString();
+             return `{% url 'exams:seating_pdf' session.pk %}` + (q ? `?${q}` : '');
+         }
      }"
      :class="{
          'hide-names': !showNames,
@@ -551,11 +584,11 @@
 
             <!-- Exports Group -->
             <div class="inline-flex items-center bg-slate-100/90 p-1 rounded-2xl gap-1 border border-slate-200">
-                <a href="{% url 'exams:session_excel_export' session.pk %}" class="bg-white text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
+                <a :href="getExcelUrl()" target="_blank" class="bg-white text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
                     <svg class="w-4 h-4 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     تصدير Excel
                 </a>
-                <a href="{% url 'exams:seating_pdf' session.pk %}" class="bg-white text-slate-700 hover:text-red-600 hover:bg-red-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
+                <a :href="getPdfUrl()" target="_blank" class="bg-white text-slate-700 hover:text-red-600 hover:bg-red-50 px-3.5 py-2 rounded-xl text-xs font-black transition-all flex items-center gap-1.5 shadow-sm">
                     <svg class="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     تصدير PDF
                 </a>

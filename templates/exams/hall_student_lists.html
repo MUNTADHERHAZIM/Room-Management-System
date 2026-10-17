@@ -98,6 +98,8 @@
     /* Column Toggles */
     .hidden-col { display: none !important; }
     .hidden-hall { display: none !important; }
+    .hidden-stage-row { display: none !important; }
+    .card-hidden { display: none !important; }
 
     /* Toggle Button Styling */
     .toggle-btn {
@@ -112,6 +114,20 @@
         color: #ffffff;
         border-color: #6366f1;
         box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+    }
+
+    .stage-filter-btn {
+        background: #ffffff;
+        color: #475569;
+        border: 2px solid #e2e8f0;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    .stage-filter-btn.active {
+        background: #0f172a;
+        color: #ffffff;
+        border-color: #0f172a;
+        box-shadow: 0 4px 12px rgba(15, 23, 42, 0.25);
     }
     .toggle-btn:hover:not(.active) {
         border-color: #6366f1;
@@ -203,7 +219,7 @@
                 </div>
             </div>
             <div class="flex items-center gap-3">
-                <a href="{% url 'exams:session_excel_export' session.pk %}" style="background-color: #047857; color: #ffffff;" class="bg-emerald-600 hover:bg-emerald-700 text-white px-7 py-3.5 rounded-2xl text-sm font-black shadow-xl shadow-emerald-600/20 transition-all flex items-center gap-3 active:scale-95">
+                <a id="hallListsExcelBtn" href="{% url 'exams:session_excel_export' session.pk %}" style="background-color: #047857; color: #ffffff;" class="bg-emerald-600 hover:bg-emerald-700 text-white px-7 py-3.5 rounded-2xl text-sm font-black shadow-xl shadow-emerald-600/20 transition-all flex items-center gap-3 active:scale-95">
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                     تصدير Excel (شيتات)
                 </a>
@@ -238,6 +254,24 @@
                     🏛️ معلومات القاعة
                 </button>
             </div>
+
+            {% if stages_filter %}
+            <div class="pt-4 border-t border-slate-100">
+                <span class="text-[0.65rem] font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block">
+                    🎓 تصفية حسب المرحلة الدراسية (لعرض أو طباعة مرحلة محددة فقط):
+                </span>
+                <div class="flex flex-wrap gap-2">
+                    <button onclick="filterByStage('all', this)" class="stage-filter-btn active px-4 py-2 rounded-xl text-xs font-black">
+                        كل المراحل
+                    </button>
+                    {% for stg in stages_filter %}
+                    <button onclick="filterByStage('{{ stg }}', this)" class="stage-filter-btn px-4 py-2 rounded-xl text-xs font-black">
+                        {{ stg }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 
@@ -275,7 +309,7 @@
             </thead>
             <tbody>
                 {% for student in hall_data.students_list %}
-                <tr>
+                <tr class="student-row" data-stage="{{ student.stage|default:student.subject_name }}">
                     <td style="text-align: center;"><span class="row-num">{{ forloop.counter }}</span></td>
                     <td>
                         <span class="font-bold text-slate-900">{{ student.student_name }}</span>
@@ -347,6 +381,7 @@ function toggleColumn(colClass) {
     } else {
         btn.classList.add('active');
     }
+    updateExcelExportLink();
 }
 
 function toggleHallHeaders() {
@@ -364,6 +399,7 @@ function toggleHallHeaders() {
     } else {
         btn.classList.add('active');
     }
+    updateExcelExportLink();
 }
 
 let sigVisible = false;
@@ -375,6 +411,61 @@ function toggleSignature() {
     if (btn) {
         btn.classList.toggle('active', sigVisible);
     }
+}
+
+let currentStage = 'all';
+function filterByStage(stage, btn) {
+    currentStage = stage;
+    document.querySelectorAll('.stage-filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cards = document.querySelectorAll('.hall-list-card');
+    cards.forEach(card => {
+        const rows = card.querySelectorAll('tbody tr.student-row');
+        let visibleCount = 0;
+
+        rows.forEach(row => {
+            const rowStage = (row.getAttribute('data-stage') || '').trim();
+            const match = (currentStage === 'all' || rowStage === currentStage.trim());
+            if (match) {
+                row.classList.remove('hidden-stage-row');
+                visibleCount++;
+                const numSpan = row.querySelector('.row-num');
+                if (numSpan) numSpan.textContent = visibleCount;
+            } else {
+                row.classList.add('hidden-stage-row');
+            }
+        });
+
+        if (visibleCount === 0 && rows.length > 0) {
+            card.classList.add('card-hidden');
+        } else {
+            card.classList.remove('card-hidden');
+        }
+    });
+    updateExcelExportLink();
+}
+
+function updateExcelExportLink() {
+    const excelBtn = document.getElementById('hallListsExcelBtn');
+    if (!excelBtn) return;
+    const base = "{% url 'exams:session_excel_export' session.pk %}";
+    const p = new URLSearchParams();
+    
+    const idBtn = document.querySelector('button[data-col="id-col"]');
+    if (idBtn && !idBtn.classList.contains('active')) p.set('hide_ids', '1');
+    
+    const subBtn = document.querySelector('button[data-col="sub-col"]');
+    if (subBtn && !subBtn.classList.contains('active')) p.set('hide_stage', '1');
+    
+    const hallBtn = document.getElementById('hallToggleBtn');
+    if (hallBtn && !hallBtn.classList.contains('active')) p.set('hide_hall_info', '1');
+    
+    if (currentStage && currentStage !== 'all') {
+        p.set('stage', currentStage);
+    }
+    const q = p.toString();
+    excelBtn.href = base + (q ? '?' + q : '');
 }
 </script>
 
